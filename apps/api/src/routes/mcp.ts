@@ -1,3 +1,4 @@
+import { loadRadar, loadEditorialTopics, readRadarSnapshot, researchBundle } from "@aihot/backend/publication/ophthalmology";
 import { dailyAnswer, hotAnswer, latestAnswer, searchAnswer, storyAnswer } from "@aihot/backend/publication/agent";
 // MCP: /api/mcp, remote Streamable HTTP, anonymous, read-only, stateless, no push. Five tools, named
 // after the site's prefix (industry/site.ts); they read through the public read layer and never
@@ -176,6 +177,20 @@ export function buildMcpServer(): McpServer {
     }),
   );
 
+  const radarInput=z.object({slot:z.enum(['08','20','ondemand']).default('ondemand'),date:z.string().optional(),hours:z.number().positive().default(24),memoryDays:z.number().int().positive().default(14),specialty:z.string().optional(),view:z.enum(['all','science','regulation','fact-check','early-signals','rising','new']).default('all')});
+  server.registerTool(T.radar,{description:'Leia o radar médico, sua evidência e a comparação de edições. A leitura não dispara pesquisas pagas.',inputSchema:radarInput,annotations:ANNOTATIONS},safe(T.radar,async(args:z.infer<typeof radarInput>)=>{
+    if(args.date&&!isValidDate(args.date))return fail('invalid_request','Data inválida.');
+    const result=args.slot==='ondemand'?await loadRadar({start:new Date(Date.now()-args.hours*3600000),memoryDays:args.memoryDays,specialty:args.specialty,view:args.view}):await readRadarSnapshot(args.slot,args.date,{specialty:args.specialty,view:args.view});
+    return result?ok(JSON.stringify(result),{...result,medicalReviewRequired:true}):fail('not_found','Edição ainda não registrada.');
+  }));
+  const topicInput=z.object({memoryDays:z.number().int().positive().default(14)});
+  server.registerTool(T.editorialTopics,{description:'Memória de temas, repetição, ângulos e saturação; janela configurável.',inputSchema:topicInput,annotations:ANNOTATIONS},safe(T.editorialTopics,async(args:z.infer<typeof topicInput>)=>{
+    const topics=await loadEditorialTopics(args.memoryDays);return ok(JSON.stringify(topics),{schemaVersion:1,memoryDays:args.memoryDays,topics});
+  }));
+  const researchInput=z.object({public_id:z.string().uuid()});
+  server.registerTool(T.deepResearch,{description:'Leia o dossiê persistido de um evento: fontes, evidência, checagens e limitações. Nenhuma compra ou busca é feita ao ler.',inputSchema:researchInput,annotations:ANNOTATIONS},safe(T.deepResearch,async(args:z.infer<typeof researchInput>)=>{
+    const result=await researchBundle(args.public_id);return result?ok(JSON.stringify(result),result):fail('not_found','Acontecimento público não encontrado.');
+  }));
   return server;
 }
 

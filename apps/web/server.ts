@@ -5,6 +5,7 @@ import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createServer, request as httpRequest } from "node:http";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { createRequestListener } from "@react-router/node";
 import { isApiOwned, resolveRedirect } from "@aihot/contracts/http-policy";
 
@@ -35,7 +36,7 @@ const TYPES: Record<string, string> = {
   ".map": "application/json",
 };
 
-const build = await import(path.resolve(import.meta.dirname, "build/server/index.js"));
+const build = await import(pathToFileURL(path.resolve(import.meta.dirname, "build/server/index.js")).href);
 const ssr = createRequestListener({ build, mode: "production" });
 
 class BadRequest extends Error {}
@@ -163,3 +164,4 @@ server.listen(PORT, HOST, () => console.log(JSON.stringify({ level: "info", msg:
 const shutdown = () => server.close(() => process.exit(0));
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
+process.on('message', (m:unknown) => { if (m && typeof m==='object' && 'type' in m && m.type==='aihot.shutdown') shutdown(); });

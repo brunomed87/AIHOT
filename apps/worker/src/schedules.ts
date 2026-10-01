@@ -23,7 +23,12 @@ import { forwardPendingFeedback } from "@aihot/backend/operations/feedback";
 import { backupConfigured, runBackup } from "@aihot/backend/operations/backup";
 import { sourceHealthWeekly } from "@aihot/backend/operations/reports";
 
+import { composeRadar } from "@aihot/backend/ophthalmology/radar";
+import { enrichPendingMedical } from "@aihot/backend/ophthalmology/enrich";
+import { runScout } from "@aihot/backend/ophthalmology/scout";
+
 interface Scheduled {
+  timezone?: string;
   name: string;
   cron: string;
   run: () => Promise<unknown>;
@@ -33,6 +38,10 @@ interface Scheduled {
 const collecting = process.env.COLLECT_ENABLED !== "false";
 
 export const SCHEDULES: Scheduled[] = [
+  { name: "ophthalmology.enrich", cron: "*/5 * * * *", run: () => enrichPendingMedical() },
+  { name: "ophthalmology.scout", cron: "25 * * * *", run: () => runScout() },
+  { name: "radar.08", cron: "0 8 * * *", timezone: "America/Sao_Paulo", missed: "once", run: () => composeRadar("08") },
+  { name: "radar.20", cron: "0 20 * * *", timezone: "America/Sao_Paulo", missed: "once", run: () => composeRadar("20") },
   { name: "content.sweep", cron: "*/5 * * * *", run: sweepUnprocessed },
   // Full-text translations of newly selected items (model calls; off with MODEL_CALLS_ENABLED=false).
   { name: "content.translate", cron: "*/5 * * * *", run: () => translatePending() },
@@ -94,7 +103,7 @@ export async function registerSchedules(boss: PgBoss) {
   for (const s of SCHEDULES) {
     const queue = `cron.${s.name}`;
     await ensureQueue(queue, { policy: "singleton", retryLimit: 1, expireInSeconds: 3600 });
-    await boss.schedule(queue, s.cron, {}, { tz: "Asia/Shanghai", missed: s.missed ?? "skip" });
+    await boss.schedule(queue, s.cron, {}, { tz: s.timezone ?? "Asia/Shanghai", missed: s.missed ?? "skip" });
     // Schedules fire at minute boundaries; a 15 s pickup keeps them on time with a third of the polling.
     await boss.work(queue, { pollingIntervalSeconds: 15 }, async () => recordRun(s.name, s.run));
   }

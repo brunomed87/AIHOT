@@ -42,3 +42,4 @@ const shutdown = async () => {
 };
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
+process.on('message', (m:unknown) => { if (m && typeof m==='object' && 'type' in m && m.type==='aihot.shutdown') void shutdown(); });

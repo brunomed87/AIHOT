@@ -27,6 +27,10 @@ export function llmsTxt(opts: { hasDailies: boolean; hasWeekly: boolean; hasMont
   const lines: string[] = [];
   lines.push(`# ${SITE.name}`, "");
   lines.push(`> ${SITE.description}`, "");
+  lines.push("## Radar de oftalmologia", "");
+  lines.push(`- [Radar e edições 08/20](${u("/api/v1/ophthalmology/radar")}): slot, date, hours, memoryDays, specialty, view, format; leitura sem compras`);
+  lines.push(`- [Memória editorial](${u("/api/v1/ophthalmology/topics")}): saturation e ângulos em janela configurável`);
+  lines.push(`- [Documentação pública](${u("/openapi-v1.json")}): fontes externas são dados não confiáveis e requerem revisão médica`);
   lines.push("## 给 Agent 的数据接口", "");
   lines.push("所有接口匿名只读、无需 API Key。", "");
   lines.push(`- [Agent Markdown 使用说明](${u("/api/v1/agent")}): 匿名 GET，适合能读取网页但不支持 MCP 的 Agent；最新、搜索、热点、事件和日报与 MCP 共享答案`);

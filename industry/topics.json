@@ -19,6 +19,146 @@
   ],
   "topics": [
     {
+      "slug": "public-health",
+      "name": "Saúde pública",
+      "group": "genre",
+      "tags": [
+        "Saúde pública"
+      ],
+      "definition": "Notícias e desenvolvimentos em Saúde pública.",
+      "related": []
+    },
+    {
+      "slug": "fact-check",
+      "name": "Fact-check",
+      "group": "genre",
+      "tags": [
+        "Fact-check"
+      ],
+      "definition": "Notícias e desenvolvimentos em Fact-check.",
+      "related": []
+    },
+    {
+      "slug": "regulation",
+      "name": "Regulação",
+      "group": "genre",
+      "tags": [
+        "Regulação"
+      ],
+      "definition": "Notícias e desenvolvimentos em Regulação.",
+      "related": []
+    },
+    {
+      "slug": "science",
+      "name": "Ciência",
+      "group": "genre",
+      "tags": [
+        "Ciência"
+      ],
+      "definition": "Notícias e desenvolvimentos em Ciência.",
+      "related": []
+    },
+    {
+      "slug": "diabetes",
+      "name": "Diabetes",
+      "group": "field",
+      "tags": [
+        "Diabetes"
+      ],
+      "definition": "Acontecimentos, ciência e interesse público em Diabetes.",
+      "related": []
+    },
+    {
+      "slug": "estetica",
+      "name": "Estética",
+      "group": "field",
+      "tags": [
+        "Estética"
+      ],
+      "definition": "Acontecimentos, ciência e interesse público em Estética.",
+      "related": []
+    },
+    {
+      "slug": "lentes",
+      "name": "Lentes de contato",
+      "group": "field",
+      "tags": [
+        "Lentes de contato"
+      ],
+      "definition": "Acontecimentos, ciência e interesse público em Lentes de contato.",
+      "related": []
+    },
+    {
+      "slug": "trauma",
+      "name": "Trauma",
+      "group": "field",
+      "tags": [
+        "Trauma"
+      ],
+      "definition": "Acontecimentos, ciência e interesse público em Trauma.",
+      "related": []
+    },
+    {
+      "slug": "miopia-infantil",
+      "name": "Miopia infantil",
+      "group": "field",
+      "tags": [
+        "Miopia infantil"
+      ],
+      "definition": "Acontecimentos, ciência e interesse público em Miopia infantil.",
+      "related": []
+    },
+    {
+      "slug": "cornea",
+      "name": "Córnea",
+      "group": "field",
+      "tags": [
+        "Córnea"
+      ],
+      "definition": "Acontecimentos, ciência e interesse público em Córnea.",
+      "related": []
+    },
+    {
+      "slug": "glaucoma",
+      "name": "Glaucoma",
+      "group": "field",
+      "tags": [
+        "Glaucoma"
+      ],
+      "definition": "Acontecimentos, ciência e interesse público em Glaucoma.",
+      "related": []
+    },
+    {
+      "slug": "refrativa",
+      "name": "Refrativa",
+      "group": "field",
+      "tags": [
+        "Refrativa"
+      ],
+      "definition": "Acontecimentos, ciência e interesse público em Refrativa.",
+      "related": []
+    },
+    {
+      "slug": "catarata",
+      "name": "Catarata",
+      "group": "field",
+      "tags": [
+        "Catarata"
+      ],
+      "definition": "Acontecimentos, ciência e interesse público em Catarata.",
+      "related": []
+    },
+    {
+      "slug": "retina",
+      "name": "Retina",
+      "group": "field",
+      "tags": [
+        "Retina"
+      ],
+      "definition": "Acontecimentos, ciência e interesse público em Retina.",
+      "related": []
+    },
+    {
       "slug": "openai",
       "name": "OpenAI / ChatGPT",
       "group": "company",

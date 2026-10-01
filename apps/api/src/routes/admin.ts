@@ -20,6 +20,7 @@ import { releaseReceipt } from "@aihot/backend/operations/recover";
 import { resolveDelivery } from "@aihot/backend/notify/deliver";
 import { sendProblem } from "../http/respond.ts";
 import { adminHandler } from "./admin-auth.ts";
+import {recordEditorialUse,recommendationHistory} from '@aihot/backend/ophthalmology/editorial';
 
 type Q = Record<string, string | undefined>;
 const q = (req: FastifyRequest) => req.query as Q;
@@ -36,6 +37,12 @@ function decodeImage(dataUrl: unknown): Buffer {
 }
 
 export function registerAdmin(app: FastifyInstance) {
+  app.get('/api/admin/ophthalmology/recommendations',adminHandler(async req=>({recommendations:await recommendationHistory(q(req).articleId)})));
+  app.post('/api/admin/ophthalmology/recommendations/:id/used',adminHandler(async(req,reply,admin)=>{
+    const b=body<{used?:boolean;reason?:string}>(req);
+    if(typeof b.used!=='boolean')return sendProblem(req,reply,{status:400,code:'invalid_request',detail:'used must be boolean'});
+    return orNotFound(req,reply,await recordEditorialUse(Number(param(req,'id')),b.used,actorOf(admin),String(b.reason ?? '')));
+  }));
   // Sources (F18)
   app.get("/api/admin/sources", adminHandler(async (req) => {
     const f = q(req);

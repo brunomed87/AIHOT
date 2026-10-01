@@ -28,6 +28,14 @@ export function parseLooseDate(value: string | null | undefined, utcOffset = "+0
   if (!value) return null;
   const v = value.trim();
   if (!v) return null;
+  // Brazilian publishers use day/month/year. Apply only when the source explicitly uses UTC-3.
+  const br = utcOffset === '-03:00' ? /\b(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{1,2})[h:](\d{2}))?/.exec(v) : null;
+  if (br) {
+    const result = atOffset(br[3]!, br[2]!, br[1]!, br[4] ?? '00', br[5] ?? '00', '00', utcOffset);
+    if (!result || Number(br[2]) < 1 || Number(br[2]) > 12 || Number(br[1]) < 1 || Number(br[1]) > 31) return null;
+    const day = new Intl.DateTimeFormat('en-CA', {timeZone:'America/Sao_Paulo',day:'2-digit'}).format(result);
+    return day === br[1] ? result : null;
+  }
   if (EXPLICIT_ZONE.test(v) || /^\d{4}-\d{2}-\d{2}$/.test(v)) {
     const direct = Date.parse(v);
     if (Number.isFinite(direct) && /\d{4}/.test(v)) return new Date(direct);

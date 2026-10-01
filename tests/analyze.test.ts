@@ -27,8 +27,8 @@ const MARKERS = ["CLEAR", "RESCUE", "LOW", "OFFTOPIC", "BARE", "VAGUE", "THIN", 
 const scoreAnswers: Record<string, number[]> = { CLEAR: [78, 72], RESCUE: [56, 50], LOW: [45, 40], THIN: [70, 70], SENSITIVE: [80, 80], 推文: [40, 40], BARE: [30, 34], VAGUE: [60, 62] };
 
 const stepOf = (system: string, user: string): Step =>
-  system.includes("宽召回的AI相关性预筛") ? "prefilter" : system.includes("事件注意力评分器") ? "score"
-  : system.includes("内容理解编辑") ? "understand" : system.includes("资料结构化助手") ? "structure"
+  system.includes("pré-filtro amplo de relevância oftalmológica") ? "prefilter" : system.includes("avaliador de atenção geral") ? "score"
+  : system.includes("escreve conteúdo de") ? "understand" : system.includes("extrai estrutura de material oftalmológico") ? "structure"
   : user.includes("title_zh") ? "summarize" : (() => { throw new Error("unknown request"); })();
 
 // One stub stands in for DashScope (prefilter, structure), Zhipu (score, understand) and DeepSeek (summarize).
@@ -88,7 +88,7 @@ test("every prompt in the pack renders, and the site's name replaces AIHOT's", (
     const text = promptText(file.slice(0, -3), values);
     assert.ok(text.length > 20 && !/\{\{/.test(text), file);
   }
-  assert.ok(PREFILTER_SYSTEM.startsWith(`为${SITE.name}做宽召回的AI相关性预筛`));
+  assert.ok(PREFILTER_SYSTEM.includes(`pré-filtro amplo de relevância oftalmológica para ${SITE.name}`));
 });
 
 test("a selected item: prefilter, two scores, the content understanding and the structure", async () => {
@@ -107,7 +107,7 @@ test("a selected item: prefilter, two scores, the content understanding and the 
   assert.deepEqual([score.body.temperature, score.body.reasoning_effort, score.body.max_tokens], [1, "high", 65536]);
   const understand = requests.find((q) => q.marker === "CLEAR" && q.step === "understand")!;
   assert.ok(understand.user.startsWith("请按系统规则理解以下单篇材料，一次返回全部六个字段。"));
-  assert.ok(understand.system.includes("【摘要答案前置规则") && understand.system.includes("【标题自洽规则"));
+  assert.ok(understand.system.includes("Responda o acontecimento") && understand.system.includes("Título claro"));
   const prefilter = requests.find((q) => q.marker === "CLEAR" && q.step === "prefilter")!;
   assert.ok(JSON.parse(prefilter.user).includes("【材料质量】"), "the material context, sent as a JSON string");
 });

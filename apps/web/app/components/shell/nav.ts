@@ -1,4 +1,4 @@
-// Site navigation, one place for the desktop sidebar, the mobile tab bar and the mobile "更多" page.
+// Site navigation, one place for the desktop sidebar, the mobile tab bar and the mobile "Mais" page.
 import { withSubject } from "@aihot/industry/site";
 import { FEATURES } from "@aihot/industry/features";
 import type { ReactNode } from "react";
@@ -17,49 +17,59 @@ export interface NavItem {
 }
 
 export const SIDEBAR: Array<{ title: string; items: NavItem[] }> = [
+  {title:"Oftalmologia",items:[
+    {to:"/radar",label:"Radar agora",icon:IconBolt},
+    {to:"/editorial-topics",label:"Memória editorial",icon:IconHistory},
+    {to:"/radar/08",label:"Radar 08h",icon:IconDoc},
+    {to:"/radar/20",label:"Radar 20h",icon:IconDoc},
+    {to:"/ophthalmology/science",label:"Ciência",icon:IconGrid},
+    {to:"/ophthalmology/regulation",label:"Regulação",icon:IconList},
+    {to:"/ophthalmology/fact-check",label:"Fact-check",icon:IconMessage},
+    {to:"/ophthalmology/early-signals",label:"Sinais precoces",icon:IconChart},
+  ]},
   {
-    title: "内容",
+    title: "Conteúdo",
     items: [
-      { to: "/", label: "精选", icon: IconBolt, end: true },
-      { to: "/all", label: `全部${withSubject("动态")}`, icon: IconList },
-      { to: "/hot", label: "热点榜", icon: IconFlame },
-      { to: "/daily", label: withSubject("日报"), icon: IconDoc },
-      { to: "/topics", label: "主题", icon: IconGrid },
-      { to: "/starred", label: "收藏", icon: IconBookmark },
+      { to: "/", label: "Destaques", icon: IconBolt, end: true },
+      { to: "/all", label: `全部${withSubject("Notícias")}`, icon: IconList },
+      { to: "/hot", label: "Hot", icon: IconFlame },
+      { to: "/daily", label: withSubject("Relatórios"), icon: IconDoc },
+      { to: "/topics", label: "Temas", icon: IconGrid },
+      { to: "/starred", label: "Favoritos", icon: IconBookmark },
     ],
   },
   // The optional AI-only modules (industry/features.ts).
   ...(FEATURES.leaderboard || FEATURES.codexResetMonitor
     ? [
         {
-          title: "模型",
+          title: "Modelos e monitores",
           items: [
-            ...(FEATURES.leaderboard ? [{ to: "/leaderboard", label: "模型榜", icon: IconChart }] : []),
-            ...(FEATURES.codexResetMonitor ? [{ to: "/codex-reset", label: "Tibo重置监控", icon: IconHistory }] : []),
+            ...(FEATURES.leaderboard ? [{ to: "/leaderboard", label: "Leaderboard", icon: IconChart }] : []),
+            ...(FEATURES.codexResetMonitor ? [{ to: "/codex-reset", label: "Monitor Codex", icon: IconHistory }] : []),
           ],
         },
       ]
     : []),
   {
-    title: "更多",
+    title: "Mais",
     items: [
-      { to: "/agent", label: "Agent 接入", icon: IconPlug },
-      { to: "/about", label: "关于", icon: IconHeart },
-      { to: "/changelog", label: "更新日志", icon: IconHistory, changelog: true },
-      { to: "/feedback", label: "反馈", icon: IconMessage },
+      { to: "/agent", label: "Integrações", icon: IconPlug },
+      { to: "/about", label: "Sobre", icon: IconHeart },
+      { to: "/changelog", label: "Atualizações", icon: IconHistory, changelog: true },
+      { to: "/feedback", label: "Feedback", icon: IconMessage },
     ],
   },
 ];
 
 export const TABBAR: NavItem[] = [
-  { to: "/", label: "精选", icon: IconBolt, end: true },
-  { to: "/all", label: "全部", icon: IconList },
-  { to: "/daily", label: "日报", icon: IconDoc },
-  { to: "/more", label: "更多", icon: IconApps, changelog: true },
+  { to: "/", label: "Destaques", icon: IconBolt, end: true },
+  { to: "/all", label: "Todas", icon: IconList },
+  { to: "/daily", label: "Relatórios", icon: IconDoc },
+  { to: "/more", label: "Mais", icon: IconApps, changelog: true },
 ];
 
-/** Pages reached from the mobile "更多" tab keep that tab highlighted. */
-export const MORE_PATHS = ["/more", "/hot", "/topics", "/starred", "/leaderboard", "/codex-reset", "/agent", "/about", "/changelog", "/feedback", "/terms", "/privacy"];
+/** Pages reached from the mobile "Mais" tab keep that tab highlighted. */
+export const MORE_PATHS = ["/editorial-topics","/radar","/ophthalmology","/more", "/hot", "/topics", "/starred", "/leaderboard", "/codex-reset", "/agent", "/about", "/changelog", "/feedback", "/terms", "/privacy"];
 
 export function tabIsActive(item: NavItem, pathname: string): boolean {
   if (item.end) return pathname === item.to;

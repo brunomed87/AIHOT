@@ -15,6 +15,7 @@ export interface Capability {
 }
 
 export const CAPABILITIES = {
+  medical: { label: "Evidência médica e inteligência editorial", env: "MEDICAL_MODEL", default: "default", purposes: ["ophthalmology_evidence"] },
   prefilter: { label: "精选预筛（是否属于这个行业，宽召回）", env: "PREFILTER_MODEL", default: "default", purposes: ["prefilter_article"] },
   score: { label: "精选评分（两次独立评分，按信源分级门槛）", env: "SCORE_MODEL", default: "default", purposes: ["score_article"] },
   understand: { label: "内容理解（入选和接近入选的标题、摘要、推荐理由、标签，能看图时看首图）", env: "UNDERSTAND_MODEL", default: "default", purposes: ["understand_article"] },

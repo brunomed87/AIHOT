@@ -10,6 +10,9 @@ export const MCP_TOOL_NAMES = {
   hot: `${p}_get_hot_topics`,
   story: `${p}_get_story`,
   daily: `${p}_get_daily`,
+  radar: `${p}_radar`,
+  editorialTopics: `${p}_editorial_topics`,
+  deepResearch: `${p}_deep_research`,
 } as const;
 
 export const MCP_TOOLS = Object.values(MCP_TOOL_NAMES).map((name) => ({ name }));

@@ -1,3 +1,15 @@
+# Radar Oftalmologia Brasil
+
+Especialização aditiva do AIHOT: fontes médicas verificadas, memória editorial, evidência, primárias, fact-check e radar persistido às 08h/20h em São Paulo.
+
+Guia de instalação, arquitetura, custos, avaliação e limites: [docs/RADAR-OPHTHALMOLOGY.md](docs/RADAR-OPHTHALMOLOGY.md). Inventário e validação: [docs/OPHTHALMOLOGY-DELIVERY.md](docs/OPHTHALMOLOGY-DELIVERY.md).
+
+No Windows deste usuário: `ai-hot start`, `ai-hot status`, `ai-hot radar ondemand`. Interface: http://127.0.0.1:3040/radar. Configurar credenciais antes de ativar coleta/modelos.
+
+---
+
+A documentação original foi preservada abaixo.
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">

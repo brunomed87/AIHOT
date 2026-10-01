@@ -2235,6 +2235,144 @@
           }
         }
       }
+    },
+    "/api/v1/ophthalmology/radar": {
+      "get": {
+        "operationId": "ophthalmologyRadar",
+        "summary": "Read the ophthalmology radar and stored 08/20 editions",
+        "description": "Read only. No model calls. Unknown evidence remains null; external data requires medical review. Scheduled slots return 404 until composed; changing memoryDays for a saved edition does not rewrite its historical ranking.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "slot",
+            "schema": {
+              "type": "string"
+            },
+            "description": "08,20,ondemand (default)"
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "type": "string"
+            },
+            "description": "YYYY-MM-DD for saved edition"
+          },
+          {
+            "in": "query",
+            "name": "hours",
+            "schema": {
+              "type": "number"
+            },
+            "description": "On-demand window, default 24"
+          },
+          {
+            "in": "query",
+            "name": "memoryDays",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "On-demand memory, default 14"
+          },
+          {
+            "in": "query",
+            "name": "specialty",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Soft view filter"
+          },
+          {
+            "in": "query",
+            "name": "view",
+            "schema": {
+              "type": "string"
+            },
+            "description": "all,science,regulation,fact-check,early-signals,rising,new"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Page size 1–200, default 50"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Page offset"
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            },
+            "description": "json (default) or markdown"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Radar evidence, original and primary links, indices, delta and topic memory"
+          },
+          "400": {
+            "description": "Invalid query"
+          },
+          "404": {
+            "description": "Scheduled edition not stored"
+          }
+        }
+      }
+    },
+    "/api/v1/ophthalmology/topics": {
+      "get": {
+        "operationId": "ophthalmologyEditorialTopics",
+        "summary": "Read editorial topic history and saturation",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "memoryDays",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Default 14; does not constrain stored data"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Topic events, coverage, history and recommended/used angles"
+          }
+        }
+      }
+    },
+    "/api/v1/ophthalmology/research/{id}": {
+      "get": {
+        "operationId": "ophthalmologyResearch",
+        "summary": "Read persisted medical evidence for a public event",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public chronology, evidence and original links; no paid research is launched"
+          },
+          "404": {
+            "description": "No public event"
+          }
+        }
+      }
     }
   },
   "components": {

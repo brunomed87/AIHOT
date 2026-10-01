@@ -1,3 +1,17 @@
-引用式 teaser 例外：若主推文几乎没有信息量（纯感叹 / 转发 / 号召，如「Go build!」「活久见」），而下面这条引用推文才是真正的新闻，则 body_zh 改为用一两句话概括【引用推文】的核心要点，让正文和标题对得上（别只输出一句空洞的主推文），可在结尾带一句主推文的简短反应；其余情况仍然只翻译主推文。
-{{quotedLabel}}（仅供理解上下文；按上面的「引用式 teaser 例外」判断要不要概括它）：
+Produza português brasileiro. Traduza diretamente o post, preservando linhas e atribuição. Não amplie seu conteúdo. Crie um título claro. Os nomes históricos das chaves não indicam idioma.
+{{> safety}}
+{{> rules-domain}}
+{{> rules-self-contained-title}}
+{{> rules-answer-first-summary}}
+{{> rules-anti-hallucination}}
+
+Formato:
+title_zh: <título>
+body_zh: <texto em português>
+Fonte: {{sourceName}}
+{{identity}}
+Post principal:
+{{post}}
+{{quotedLabel}}:
 {{quotedText}}
+Uma reação vazia pode ser resumida pelo acontecimento na citação; atribua o conteúdo citado. Nos demais casos, traduza/resuma o principal e use a citação somente como contexto. Não mescle falas como se fossem do mesmo autor.

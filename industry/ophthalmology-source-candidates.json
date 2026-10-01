@@ -1,0 +1,591 @@
+{
+  "comment": "Catalog researched from publisher pages. Only collector-verified sources are enabled; verification recorded in docs/source-verification.json.",
+  "sources": [
+    {
+      "id": "ms",
+      "name": "Ministério da Saúde",
+      "kind": "web_list",
+      "config": {
+        "url": "https://www.gov.br/saude/pt-br/assuntos/noticias-ms",
+        "itemSelector": ".tileItem",
+        "linkSelector": ".tileHeadline a",
+        "titleSelector": ".tileHeadline",
+        "publishedAtSelector": ".summary-view-icon",
+        "publishedAtUtcOffset": "-03:00",
+        "allowUrlPrefixes": [
+          "https://www.gov.br/saude/pt-br/assuntos/noticias-ms/"
+        ],
+        "detail": {
+          "publishedAtSelector": ".documentPublished",
+          "publishedAtUtcOffset": "-03:00",
+          "maxFetches": 4
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": "ministerio-saude",
+      "first_party": true,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Brasil"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "anvisa",
+      "name": "ANVISA",
+      "kind": "web_list",
+      "config": {
+        "url": "https://www.gov.br/anvisa/pt-br/assuntos/noticias-anvisa",
+        "itemSelector": ".tileItem",
+        "linkSelector": ".tileHeadline a",
+        "titleSelector": ".tileHeadline",
+        "publishedAtSelector": ".summary-view-icon",
+        "publishedAtUtcOffset": "-03:00",
+        "allowUrlPrefixes": [
+          "https://www.gov.br/anvisa/pt-br/assuntos/noticias-anvisa/"
+        ],
+        "detail": {
+          "publishedAtSelector": ".documentPublished",
+          "publishedAtUtcOffset": "-03:00",
+          "maxFetches": 4
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": "anvisa",
+      "first_party": true,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": false,
+      "tags": [
+        "Brasil"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "conitec",
+      "name": "Conitec",
+      "kind": "web_list",
+      "config": {
+        "url": "https://www.gov.br/conitec/pt-br/assuntos/noticias",
+        "itemSelector": ".tileItem",
+        "linkSelector": ".tileHeadline a",
+        "titleSelector": ".tileHeadline",
+        "publishedAtSelector": ".summary-view-icon",
+        "publishedAtUtcOffset": "-03:00",
+        "allowUrlPrefixes": [
+          "https://www.gov.br/conitec/pt-br/assuntos/noticias/"
+        ],
+        "detail": {
+          "publishedAtSelector": ".documentPublished",
+          "publishedAtUtcOffset": "-03:00",
+          "maxFetches": 4
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": "conitec",
+      "first_party": true,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": false,
+      "tags": [
+        "Brasil"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "inca",
+      "name": "INCA",
+      "kind": "web_list",
+      "config": {
+        "url": "https://www.gov.br/inca/pt-br/assuntos/noticias",
+        "itemSelector": ".conteudo",
+        "linkSelector": "h2.titulo a",
+        "titleSelector": "h2.titulo",
+        "publishedAtUtcOffset": "-03:00",
+        "allowUrlPrefixes": [
+          "https://www.gov.br/inca/pt-br/assuntos/noticias/"
+        ],
+        "detail": {
+          "publishedAtSelector": ".documentPublished",
+          "publishedAtUtcOffset": "-03:00",
+          "maxFetches": 4
+        },
+        "publishedAtSelector": ".data"
+      },
+      "tier": "T1",
+      "owner_entity_id": "inca",
+      "first_party": true,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Brasil"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "ebserh",
+      "name": "Hospitais universitários EBSERH",
+      "kind": "web_list",
+      "config": {
+        "url": "https://www.gov.br/hubrasil/pt-br/comunicacao/noticias",
+        "itemSelector": ".conteudo",
+        "linkSelector": "h2.titulo a",
+        "titleSelector": "h2.titulo",
+        "publishedAtUtcOffset": "-03:00",
+        "allowUrlPrefixes": [
+          "https://www.gov.br/hubrasil/pt-br/comunicacao/noticias/"
+        ],
+        "detail": {
+          "publishedAtSelector": ".documentPublished",
+          "publishedAtUtcOffset": "-03:00",
+          "maxFetches": 4
+        },
+        "publishedAtSelector": ".data"
+      },
+      "tier": "T1",
+      "owner_entity_id": "ebserh",
+      "first_party": true,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Brasil"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "agencia-brasil",
+      "name": "Agência Brasil",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "ebc",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Nacional"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "g1-saude",
+      "name": "G1 Saúde",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://g1.globo.com/rss/g1/ciencia-e-saude/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "globo",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": false,
+      "tags": [
+        "Nacional"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "g1-pa",
+      "name": "G1 Pará",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://g1.globo.com/rss/g1/pa/para/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "globo",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Norte"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "g1-ba",
+      "name": "G1 Bahia",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://g1.globo.com/rss/g1/ba/bahia/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "globo",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Nordeste"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "g1-go",
+      "name": "G1 Goiás",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://g1.globo.com/rss/g1/go/goias/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "globo",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Centro-Oeste"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "g1-sp",
+      "name": "G1 São Paulo",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://g1.globo.com/rss/g1/sp/sao-paulo/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "globo",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Sudeste"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "g1-rs",
+      "name": "G1 Rio Grande do Sul",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://g1.globo.com/rss/g1/rs/rio-grande-do-sul/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "globo",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Sul"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "usp",
+      "name": "Jornal da USP",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://jornal.usp.br/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": "usp",
+      "first_party": true,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Sudeste"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "ufpa",
+      "name": "UFPA",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://ufpa.br/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": "ufpa",
+      "first_party": true,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Norte"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "medicalxpress-oph",
+      "name": "Medical Xpress Ophthalmology",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://medicalxpress.com/rss-feed/ophthalmology-news/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "science-x",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Internacional"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "pubmed-retina",
+      "name": "PubMed / retina",
+      "kind": "json_list",
+      "config": {
+        "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=%28retina%29+AND+SRC%3AMED+AND+FIRST_PDATE%3A%5B1900-01-01+TO+%7Btoday%7D%5D+SORT_DATE%3Ay&format=json&pageSize=30&resultType=core",
+        "itemsPath": "resultList.result",
+        "titlePaths": [
+          "title"
+        ],
+        "publishedAtPath": "firstPublicationDate",
+        "externalIdPath": "id",
+        "urlTemplate": "https://pubmed.ncbi.nlm.nih.gov/{id}/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        },
+        "summaryPaths": [
+          "abstractText"
+        ],
+        "summaryIsBody": true,
+        "authorPaths": [
+          "authorString"
+        ]
+      },
+      "tier": "T1",
+      "owner_entity_id": "nlm",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Internacional"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "pubmed-cataract",
+      "name": "PubMed / catarata",
+      "kind": "json_list",
+      "config": {
+        "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=%28cataract%29+AND+SRC%3AMED+AND+FIRST_PDATE%3A%5B1900-01-01+TO+%7Btoday%7D%5D+SORT_DATE%3Ay&format=json&pageSize=30&resultType=core",
+        "itemsPath": "resultList.result",
+        "titlePaths": [
+          "title"
+        ],
+        "publishedAtPath": "firstPublicationDate",
+        "externalIdPath": "id",
+        "urlTemplate": "https://pubmed.ncbi.nlm.nih.gov/{id}/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        },
+        "summaryPaths": [
+          "abstractText"
+        ],
+        "summaryIsBody": true,
+        "authorPaths": [
+          "authorString"
+        ]
+      },
+      "tier": "T1",
+      "owner_entity_id": "nlm",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Internacional"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "pubmed-refractive",
+      "name": "PubMed / refrativa",
+      "kind": "json_list",
+      "config": {
+        "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=%28refractive+surgery%29+AND+SRC%3AMED+AND+FIRST_PDATE%3A%5B1900-01-01+TO+%7Btoday%7D%5D+SORT_DATE%3Ay&format=json&pageSize=30&resultType=core",
+        "itemsPath": "resultList.result",
+        "titlePaths": [
+          "title"
+        ],
+        "publishedAtPath": "firstPublicationDate",
+        "externalIdPath": "id",
+        "urlTemplate": "https://pubmed.ncbi.nlm.nih.gov/{id}/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        },
+        "summaryPaths": [
+          "abstractText"
+        ],
+        "summaryIsBody": true,
+        "authorPaths": [
+          "authorString"
+        ]
+      },
+      "tier": "T1",
+      "owner_entity_id": "nlm",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Internacional"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "pubmed-general",
+      "name": "PubMed / glaucoma e córnea",
+      "kind": "json_list",
+      "config": {
+        "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=%28glaucoma+OR+cornea+OR+ophthalmology%29+AND+SRC%3AMED+AND+FIRST_PDATE%3A%5B1900-01-01+TO+%7Btoday%7D%5D+SORT_DATE%3Ay&format=json&pageSize=30&resultType=core",
+        "itemsPath": "resultList.result",
+        "titlePaths": [
+          "title"
+        ],
+        "publishedAtPath": "firstPublicationDate",
+        "externalIdPath": "id",
+        "urlTemplate": "https://pubmed.ncbi.nlm.nih.gov/{id}/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        },
+        "summaryPaths": [
+          "abstractText"
+        ],
+        "summaryIsBody": true,
+        "authorPaths": [
+          "authorString"
+        ]
+      },
+      "tier": "T1",
+      "owner_entity_id": "nlm",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Internacional"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    },
+    {
+      "id": "cfm",
+      "name": "Conselho Federal de Medicina",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://portal.cfm.org.br/noticias/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": "cfm",
+      "first_party": true,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true,
+      "tags": [
+        "Sudeste"
+      ],
+      "cursor": null,
+      "fail_count": 0
+    }
+  ]
+}

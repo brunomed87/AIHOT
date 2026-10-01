@@ -1,0 +1,338 @@
+[
+  {
+    "id": "ms",
+    "status": "verified",
+    "count": 15,
+    "sample": [
+      {
+        "title": "Ministro da Saúde visita instalações da nova Unidade Básica de Saúde e Hospital Materno Infantil em Santarém-PA",
+        "url": "https://www.gov.br/saude/pt-br/assuntos/noticias-ms/2026/setembro/ministro-da-saude-visita-instalacoes-da-nova-unidade-basica-de-saude-e-hospital-materno-infantil-em-santarem-pa",
+        "publishedAt": "2026-09-30T03:00:00.000Z"
+      },
+      {
+        "title": "Ministério da Saúde disponibiliza formação para uso de combo de equipamentos para UBS",
+        "url": "https://www.gov.br/saude/pt-br/assuntos/noticias-ms/2026/setembro/ministerio-da-saude-disponibiliza-formacao-para-uso-de-combo-de-equipamentos-para-ubs",
+        "publishedAt": "2026-09-30T03:00:00.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:47.703Z"
+  },
+  {
+    "id": "inca",
+    "status": "verified",
+    "count": 30,
+    "sample": [
+      {
+        "title": "INCA participa da Campanha de Conscientização e Incentivo ao Diagnóstico Precoce do Retinoblastoma",
+        "url": "https://www.gov.br/inca/pt-br/assuntos/noticias/2026/inca-participa-da-campanha-de-conscientizacao-e-incentivo-ao-diagnostico-precoce-do-retinoblastoma",
+        "publishedAt": "2026-10-01T03:00:00.000Z"
+      },
+      {
+        "title": "INCA é um dos vencedores da 6ª edição do Prêmio Marcos Moraes",
+        "url": "https://www.gov.br/inca/pt-br/assuntos/noticias/2026/inca-e-um-dos-vencedores-da-6a-edicao-do-premio-marcos-moraes",
+        "publishedAt": "2026-09-28T03:00:00.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:47.774Z"
+  },
+  {
+    "id": "conitec",
+    "status": "failed",
+    "error": "Error: no items matched (html)",
+    "verifiedAt": "2026-10-01T17:26:47.917Z"
+  },
+  {
+    "id": "anvisa",
+    "status": "failed",
+    "error": "Error: no items matched (html)",
+    "verifiedAt": "2026-10-01T17:26:48.017Z"
+  },
+  {
+    "id": "ebserh",
+    "status": "verified",
+    "count": 30,
+    "sample": [
+      {
+        "title": "Você sabe reconhecer o capacitismo? Especialista da HU Brasil explica como atitudes comuns podem criar barreiras para pessoas com deficiência",
+        "url": "https://www.gov.br/hubrasil/pt-br/comunicacao/noticias/voce-sabe-reconhecer-o-capacitismo-especialista-da-hu-brasil-explica-como-atitudes-comuns-podem-criar-barreiras-para-pessoas-com-deficiencia",
+        "publishedAt": "2026-10-01T03:00:00.000Z"
+      },
+      {
+        "title": "HU Brasil inicia implementação do AGHU 11, sistema com foco na segurança do paciente e eficiência hospitalar",
+        "url": "https://www.gov.br/hubrasil/pt-br/comunicacao/noticias/hu-brasil-inicia-implementacao-do-aghu-11-sistema-com-foco-na-seguranca-do-paciente-e-eficiencia-hospitalar",
+        "publishedAt": "2026-10-01T03:00:00.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:48.168Z"
+  },
+  {
+    "id": "g1-saude",
+    "status": "verified",
+    "count": 100,
+    "sample": [
+      {
+        "title": "'Ciência Aberta': centro que abriga o Sirius recebe público para apresentar curiosidades e atrações da ciência",
+        "url": "https://g1.globo.com/sp/campinas-regiao/noticia/2024/08/09/ciencia-aberta-centro-que-abriga-o-sirius-recebe-publico-para-apresentar-curiosidades-e-atracoes-da-ciencia.ghtml",
+        "publishedAt": "2024-08-09T09:49:43.000Z"
+      },
+      {
+        "title": "Mayaro e o que mais? Unicamp aponta possível transmissão urbana do vírus em Roraima e vê indícios de novas ameaças",
+        "url": "https://g1.globo.com/sp/campinas-regiao/noticia/2024/05/12/mayaro-e-o-que-mais-unicamp-aponta-possivel-transmissao-urbana-do-virus-em-roraima-e-ve-indicios-de-novas-ameacas.ghtml",
+        "publishedAt": "2024-05-12T06:46:09.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:48.338Z"
+  },
+  {
+    "id": "g1-pa",
+    "status": "verified",
+    "count": 100,
+    "sample": [
+      {
+        "title": "Qual é o número de Fernanda Lopes (UP) para o Senado no Pará?",
+        "url": "https://g1.globo.com/pa/para/eleicoes/2026/noticia/2026/10/01/qual-e-o-numero-de-fernanda-lopes-up-para-o-senado-no-para.ghtml",
+        "publishedAt": "2026-10-01T16:24:38.000Z"
+      },
+      {
+        "title": "Qual é o número de Coronel Jonildo (DC) para o Senado no Pará?",
+        "url": "https://g1.globo.com/pa/para/eleicoes/2026/noticia/2026/10/01/qual-e-o-numero-de-coronel-jonildo-dc-para-o-senado-no-para.ghtml",
+        "publishedAt": "2026-10-01T16:24:13.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:48.360Z"
+  },
+  {
+    "id": "agencia-brasil",
+    "status": "verified",
+    "count": 10,
+    "sample": [
+      {
+        "title": "Dino declara perda de objeto em pedido de Tabet sobre Nossa Senhora",
+        "url": "https://agenciabrasil.ebc.com.br/justica/noticia/2026-10/dino-declara-perda-de-objeto-em-pedido-de-tabet-sobre-nossa-senhora",
+        "publishedAt": "2026-10-01T16:42:00.000Z"
+      },
+      {
+        "title": "Petrobras reajusta preço médio do querosene de aviação em 11,76%",
+        "url": "https://agenciabrasil.ebc.com.br/geral/noticia/2026-10/petrobras-reajusta-preco-medio-do-querosene-de-aviacao-em-1176",
+        "publishedAt": "2026-10-01T16:15:00.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:48.423Z"
+  },
+  {
+    "id": "g1-sp",
+    "status": "verified",
+    "count": 100,
+    "sample": [
+      {
+        "title": "Após setembro mais chuvoso da história, Sistema Cantareira passará a operar na Faixa de Atenção a partir desta quinta-feira (1°)",
+        "url": "https://g1.globo.com/sp/sao-paulo/noticia/2026/10/01/apos-mes-mais-chuvoso-da-historia-sistema-cantareira-passara-a-operar-na-faixa-de-atencao-a-partir-desta-quinta-feira-1.ghtml",
+        "publishedAt": "2026-10-01T14:19:56.000Z"
+      },
+      {
+        "title": "Lula e Flávio Bolsonaro escolhem estado de São Paulo para último ato de campanha antes do 1º turno",
+        "url": "https://g1.globo.com/sp/sao-paulo/eleicoes/2026/noticia/2026/10/01/lula-e-flavio-bolsonaro-ultimo-ato-de-campanha.ghtml",
+        "publishedAt": "2026-10-01T14:04:22.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:48.472Z"
+  },
+  {
+    "id": "g1-ba",
+    "status": "verified",
+    "count": 100,
+    "sample": [
+      {
+        "title": "Vídeos do g1 e TV Subaé - quinta-feira, 1 de outubro de 2026",
+        "url": "https://g1.globo.com/ba/feira-de-santana-regiao/edicao/2026/10/01/videos-do-g1-e-tv-subae-quinta-feira-1-de-outubro-de-2026.ghtml",
+        "publishedAt": "2026-10-01T16:36:22.000Z"
+      },
+      {
+        "title": "Assista aos telejornais da TV Bahia",
+        "url": "https://g1.globo.com/ba/bahia/ao-vivo/assista-aos-telejornais-da-tv-bahia.ghtml",
+        "publishedAt": "2026-10-01T16:35:15.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:48.502Z"
+  },
+  {
+    "id": "g1-go",
+    "status": "verified",
+    "count": 100,
+    "sample": [
+      {
+        "title": "Ex-funcionário é investigado por desviar R$ 8,7 milhões em carros de montadora de Anápolis",
+        "url": "https://g1.globo.com/go/goias/noticia/2026/10/01/ex-funcionario-e-investigado-por-desviar-r-87-milhoes-em-carros-de-montadora-de-anapolis.ghtml",
+        "publishedAt": "2026-10-01T17:03:44.000Z"
+      },
+      {
+        "title": "VÍDEOS: Jornal Anhanguera 1ª Edição de quinta-feira, 1º outubro de 2026",
+        "url": "https://g1.globo.com/go/goias/edicao/2026/10/01/videos-jornal-anhanguera-1-edicao-de-quinta-feira-1-outubro-de-2026.ghtml",
+        "publishedAt": "2026-10-01T16:19:14.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:48.517Z"
+  },
+  {
+    "id": "g1-rs",
+    "status": "verified",
+    "count": 100,
+    "sample": [
+      {
+        "title": "'Não estão autorizados afastamentos': o que dizia a ordem que fez PM relatar situação 'constrangedora' ao precisar usar banheiro no expediente",
+        "url": "https://g1.globo.com/rs/rio-grande-do-sul/noticia/2026/10/01/ordem-pm-uso-banheiro-patrulhamento-porto-alegre.ghtml",
+        "publishedAt": "2026-10-01T16:13:02.000Z"
+      },
+      {
+        "title": "RS busca reter talentos e ampliar investimentos para impulsionar desenvolvimento econômico",
+        "url": "https://g1.globo.com/rs/rio-grande-do-sul/eleicoes/2026/noticia/2026/10/01/rs-busca-reter-talentos-e-ampliar-investimentos-para-impulsionar-desenvolvimento-economico.ghtml",
+        "publishedAt": "2026-10-01T13:49:46.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:48.569Z"
+  },
+  {
+    "id": "usp",
+    "status": "verified",
+    "count": 20,
+    "sample": [
+      {
+        "title": "Cine Cult USP exibe o filme “Branco Sai, Preto Fica”, de Adirley Queirós",
+        "url": "https://jornal.usp.br/campus-ribeirao-preto/cine-cult-usp-exibe-o-filme-branco-sai-preto-fica-de-adirley-queiros/",
+        "publishedAt": "2026-10-01T13:11:59.000Z"
+      },
+      {
+        "title": "Há razões para olhar o futuro com otimismo",
+        "url": "https://jornal.usp.br/radio-usp/ha-razoes-para-olhar-o-futuro-com-otimismo/",
+        "publishedAt": "2026-10-01T12:07:06.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:48.755Z"
+  },
+  {
+    "id": "ufpa",
+    "status": "verified",
+    "count": 10,
+    "sample": [
+      {
+        "title": "Avaliação de Desempenho 2026 deve ser realizada até 31 de outubro",
+        "url": "https://ufpa.br/avaliacao-de-desempenho-2026-deve-ser-realizada-ate-31-de-outubro/",
+        "publishedAt": "2026-10-01T15:14:29.000Z"
+      },
+      {
+        "title": "Ciência na Ilha abre inscrições para oficinas e exposições para edição 2026 em Cotijuba",
+        "url": "https://ufpa.br/ciencia-na-ilha-abre-inscricoes-para-oficinas-e-exposicoes-para-edicao-2026-em-cotijuba/",
+        "publishedAt": "2026-09-30T21:48:16.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:49.092Z"
+  },
+  {
+    "id": "medicalxpress-oph",
+    "status": "verified",
+    "count": 30,
+    "sample": [
+      {
+        "title": "Using smartphones as retinal cameras—new opportunities for global eye care",
+        "url": "https://medicalxpress.com/news/2026-09-smartphones-retinal-cameras-opportunities-global.html",
+        "publishedAt": "2026-09-30T19:20:12.000Z"
+      },
+      {
+        "title": "Decadelong study finds smoking worsens sickle cell retinopathy",
+        "url": "https://medicalxpress.com/news/2026-09-decadelong-worsens-sickle-cell-retinopathy.html",
+        "publishedAt": "2026-09-30T18:20:16.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:49.097Z"
+  },
+  {
+    "id": "pubmed-retina",
+    "status": "verified",
+    "count": 30,
+    "sample": [
+      {
+        "title": "Spontaneous Head Turn in Central Retinal Artery Occlusion With Nasal Cilioretinal Artery Sparing: A Case Report.",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42817155/",
+        "publishedAt": "2026-10-01T00:00:00.000Z"
+      },
+      {
+        "title": "Morphological Comparison of Human Midgestational and Mouse Postnatal Retinal Development.",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42816941/",
+        "publishedAt": "2026-10-01T00:00:00.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:50.442Z"
+  },
+  {
+    "id": "pubmed-general",
+    "status": "verified",
+    "count": 30,
+    "sample": [
+      {
+        "title": "Design considerations for incorporating serological monitoring into trachoma prevalence surveys.",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42817805/",
+        "publishedAt": "2026-10-01T00:00:00.000Z"
+      },
+      {
+        "title": "Spontaneous Head Turn in Central Retinal Artery Occlusion With Nasal Cilioretinal Artery Sparing: A Case Report.",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42817155/",
+        "publishedAt": "2026-10-01T00:00:00.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:51.354Z"
+  },
+  {
+    "id": "pubmed-cataract",
+    "status": "verified",
+    "count": 30,
+    "sample": [
+      {
+        "title": "Optical versus Ultrasonographic Axial Length Measurement before Cataract Surgery: A Comparison across Short, Normal and Long Eyeballs.",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42811851/",
+        "publishedAt": "2026-10-01T00:00:00.000Z"
+      },
+      {
+        "title": "Long-Term Ocular Outcomes of Dupilumab in Atopic Dermatitis: Results From the BioDay Registry.",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42808463/",
+        "publishedAt": "2026-10-01T00:00:00.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:51.473Z"
+  },
+  {
+    "id": "cfm",
+    "status": "verified",
+    "count": 10,
+    "sample": [
+      {
+        "title": "Fórum CFM discute na próxima semana medidas necessárias para melhoria organizacional dos serviços",
+        "url": "https://portal.cfm.org.br/noticias/forum-cfm-discute-na-proxima-semana-medidas-necessarias-para-melhoria-organizacional-dos-servicos/",
+        "publishedAt": "2026-10-01T15:12:07.000Z"
+      },
+      {
+        "title": "CFM destaca: segurança do paciente começa no diagnóstico, na prescrição e no acompanhamento médico",
+        "url": "https://portal.cfm.org.br/noticias/cfm-destaca-seguranca-do-paciente-comeca-no-diagnostico-na-prescricao-e-no-acompanhamento-medico/",
+        "publishedAt": "2026-10-01T12:51:32.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:51.532Z"
+  },
+  {
+    "id": "pubmed-refractive",
+    "status": "verified",
+    "count": 30,
+    "sample": [
+      {
+        "title": "Optical versus Ultrasonographic Axial Length Measurement before Cataract Surgery: A Comparison across Short, Normal and Long Eyeballs.",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42811851/",
+        "publishedAt": "2026-10-01T00:00:00.000Z"
+      },
+      {
+        "title": "Study of a Frugal Design Picosecond Laser System for Laser-Assisted Corneal Surgery.",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42805780/",
+        "publishedAt": "2026-10-01T00:00:00.000Z"
+      }
+    ],
+    "verifiedAt": "2026-10-01T17:26:51.904Z"
+  }
+]

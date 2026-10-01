@@ -8,6 +8,12 @@
  * 没归上类的资料在日报里放进第一个 key 为 industry 的类别所在的节（没有就放最后一节）。
  */
 export const CATEGORIES = [
+  { key: "science", label: "Ciência", section: "Ciência", guide: "Estudos, ensaios, revisões, congresso e ciência pré-clínica; conservar estágio de evidência" },
+  { key: "regulation", label: "Regulação", section: "Regulação e segurança", guide: "ANVISA, Conitec, FDA, EMA, CFM, alertas, aprovações e recomendações oficiais" },
+  { key: "public-health", label: "Saúde pública", section: "Saúde pública", guide: "Acesso, SUS, campanhas, epidemias, acidentes, perda visual e ações regionais" },
+  { key: "innovation", label: "Inovação", section: "Inovação", guide: "Medicamentos, dispositivos, IA ocular e novas tecnologias" },
+  { key: "patient-interest", label: "Pacientes", section: "Interesse público", guide: "Comportamento, celebridades, estética, esportes e ângulos de saúde ocular" },
+  { key: "fact-check", label: "Fact-check", section: "Checagem", guide: "Afirmações médicas problemáticas, percentuais, causalidade e sensacionalismo" },
   { key: "ai-models", label: "模型", section: "模型发布/更新", guide: "新模型、模型版本、权重开放、模型能力与价格变化的发布与评测结果" },
   { key: "ai-products", label: "产品", section: "产品发布/更新", guide: "AI 产品、功能、应用、工具、API 与平台的发布和更新" },
   { key: "industry", label: "行业", section: "行业动态", guide: "公司经营、融资并购、人事、合作、诉讼、监管与政策、市场与基础设施" },
@@ -26,17 +32,20 @@ export const ITEM_TYPES = ["model_release", "product_launch", "tool_or_prompt", 
 
 /** 每篇资料的第一个标签必须是这些“分类标签”之一。 */
 export const CATEGORY_TAGS = [
+  "Ciência", "Regulação", "Saúde pública", "Inovação", "Interesse público", "Fact-check",
   "产品更新", "模型发布", "论文/研究", "开源/仓库", "教程/实践", "现象/趋势", "大佬观点", "评测/基准", "安全/对齐", "行业动态", "政策/监管",
   "非AI/通用工具", "其他",
 ] as const;
 
 /** 可选的主题标签。 */
 export const TOPIC_TAGS = [
+  "Retina", "Catarata", "Refrativa", "Glaucoma", "Córnea", "Miopia infantil", "Neuro-oftalmologia", "Trauma", "Lentes de contato", "Estética", "Diabetes", "Brasil",
   "Agent", "编码", "推理", "多模态", "语音", "视频", "图像生成", "RAG", "端侧", "数据/训练", "搜索", "部署/工程", "开源生态", "具身智能", "MCP/工具调用",
 ] as const;
 
 /** 可选的实体标签（公司、机构、平台）。 */
-export const ENTITY_TAGS = ["OpenAI", "Anthropic", "DeepSeek", "DeepMind", "Google", "Meta", "Microsoft", "xAI", "Hugging Face", "GitHub", "arXiv"] as const;
+export const ENTITY_TAGS = [
+  "ANVISA", "CBO", "CFM", "Conitec", "Ministério da Saúde", "FDA", "EMA", "NEI","OpenAI", "Anthropic", "DeepSeek", "DeepMind", "Google", "Meta", "Microsoft", "xAI", "Hugging Face", "GitHub", "arXiv"] as const;
 
 /** 模型常写的近义词，统一成词表里的写法。 */
 export const TAG_SYNONYMS: Readonly<Record<string, string>> = {
@@ -61,6 +70,9 @@ export const CATEGORY_BY_ITEM_TYPE: Readonly<Record<string, string>> = {
 
 /** 公司主题：id → 显示名、卡片上显示的标签（null 表示只用 entity:<id> 归类）、别名。 */
 export const ENTITIES: Record<string, { name: string; displayTag: string | null; aliases: string[] }> = {
+  anvisa: { name: "ANVISA", displayTag: "ANVISA", aliases: ["ANVISA", "Agência Nacional de Vigilância Sanitária"] },
+  cbo: { name: "CBO", displayTag: "CBO", aliases: ["CBO", "Conselho Brasileiro de Oftalmologia"] },
+  fda: { name: "FDA", displayTag: "FDA", aliases: ["FDA", "Food and Drug Administration"] },
   openai: { name: "OpenAI", displayTag: "OpenAI", aliases: ["OpenAI", "ChatGPT", "Sora", "Codex", "GPT"] },
   anthropic: { name: "Anthropic", displayTag: "Anthropic", aliases: ["Anthropic", "Claude"] },
   google: { name: "Google", displayTag: "Google", aliases: ["Google", "DeepMind", "Gemini", "谷歌"] },
@@ -83,6 +95,9 @@ export const ENTITIES: Record<string, { name: string; displayTag: string | null;
  * 行业没有这个问题时可以留空数组。
  */
 export const IDENTITY_LEXICON: ReadonlyArray<{ id: string; name: string; patterns: RegExp[] }> = [
+  { id: "anvisa", name: "ANVISA", patterns: [/anvisa|agência nacional de vigilância sanitária/i] },
+  { id: "cbo", name: "CBO", patterns: [/\bcbo\b|conselho brasileiro de oftalmologia/i] },
+  { id: "fda", name: "FDA", patterns: [/\bfda\b|food and drug administration/i] },
   { id: "openai", name: "OpenAI", patterns: [/openai|chatgpt|\bgpt-?[o\d]|\bsora\b|\bcodex\b/i] },
   { id: "anthropic", name: "Anthropic", patterns: [/anthropic|\bclaude\b/i, /\b(?:opus|sonnet|haiku)\s*\d+(?:[.\-]\d+)*\b/i, /\bfable\s*\d+(?:[.\-]\d+)*\b|\bmythos\b/i] },
   { id: "google", name: "Google / Gemini", patterns: [/google|deepmind|\bgemini\b|notebooklm|\bveo\s?\d|\bAlphaFold\b|\bAMIE\b/i] },

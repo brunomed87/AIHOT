@@ -132,7 +132,8 @@ function embeddedJson(html: string, source: SourceRow): unknown {
 
 export async function fetchJsonList(source: SourceRow): Promise<Candidate[]> {
   const c = source.config;
-  const url = String(c.url ?? "");
+  // Public API date ranges can roll forward without changing the source identity/config daily.
+  const url = String(c.url ?? "").replace(/\{today\}|%7Btoday%7D/gi,new Date().toISOString().slice(0,10));
   const headers: Record<string, string> = { accept: "application/json, text/html;q=0.9", ...(c.headers ?? {}) };
   if (/^https:\/\/api\.github\.com\//.test(url)) {
     const token = credential("collectors", "GITHUB_TOKEN");

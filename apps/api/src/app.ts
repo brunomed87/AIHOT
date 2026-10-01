@@ -3,6 +3,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import { randomUUID } from "node:crypto";
 import { OAUTH_PROBE_PATHS, resolveRedirect } from "@aihot/contracts/http-policy";
 import { sql } from "@aihot/backend/db";
+import { registerOphthalmology } from "./routes/ophthalmology.ts";
 import { registerSite } from "./routes/site.ts";
 import { registerLeaderboard } from "./routes/leaderboard.ts";
 import { registerOg } from "./routes/og.ts";
@@ -72,6 +73,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   registerIngest(app);
   registerV1(app);
+  registerOphthalmology(app);
   registerAgent(app);
   registerMedia(app);
 
