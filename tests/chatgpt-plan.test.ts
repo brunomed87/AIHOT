@@ -130,7 +130,7 @@ test("Responses da assinatura omite parâmetros não permitidos e preserva image
 });
 
 function stream(event: unknown, byteChunks = false) {
-  const bytes = new TextEncoder().encode(`event: response\r\ndata: ${JSON.stringify(event)}\r\n\r\n`);
+  const bytes = new TextEncoder().encode((Array.isArray(event) ? event : [event]).map(e => `event: response\r\ndata: ${JSON.stringify(e)}\r\n\r\n`).join(""));
   return new Response(new ReadableStream({ start(c) { if (byteChunks) for (const b of bytes) c.enqueue(new Uint8Array([b])); else c.enqueue(bytes); c.close(); } }));
 }
 test("stream preserva UTF-8 e CRLF divididos e só conclui após response.completed", async () => {
@@ -138,4 +138,22 @@ test("stream preserva UTF-8 e CRLF divididos e só conclui após response.comple
   assert.equal(result.choices[0].message.content, '{"título":"Córnea e visão"}'); assert.equal(result.usage.prompt_tokens, 12); assert.equal(result.usage.completion_tokens, 8);
   await assert.rejects(readChatGPTStream(stream({ type: "response.output_text.delta", delta: "Texto parcial" })), /antes de confirmar/);
   await assert.rejects(readChatGPTStream(stream({ type: "response.failed" })), /não concluiu/);
+});
+test("texto em partes só é aceito com confirmação final, mesmo quando output é omitido", async () => {
+  const deltas = [
+    { type: "response.output_text.delta", output_index: 0, content_index: 0, delta: '{"título":' },
+    { type: "response.output_text.delta", output_index: 0, content_index: 0, delta: '"Visão"}' },
+    { type: "response.output_text.done", output_index: 0, content_index: 0, text: '{"título":"Visão"}' },
+  ];
+  const completed = { type: "response.completed", response: { id: "response-deltas", status: "completed", usage: { input_tokens: 3, output_tokens: 4 } } };
+  const result = await readChatGPTStream(stream([...deltas, completed], true));
+  assert.equal(result.choices[0].message.content, '{"título":"Visão"}'); assert.equal(result.usage.completion_tokens, 4);
+  await assert.rejects(readChatGPTStream(stream(deltas)), /antes de confirmar/);
+  for (const type of ["response.failed", "response.incomplete", "error"]) await assert.rejects(readChatGPTStream(stream([...deltas, { type }])), /não concluiu/);
+});
+test("texto final tem prioridade sobre deltas e partes são reunidas na ordem correta", async () => {
+  const deltas = [{ type: "response.output_text.delta", output_index: 1, delta: "B" }, { type: "response.output_text.delta", output_index: 0, delta: "A" }];
+  const completed = { type: "response.completed", response: { id: "ordered", status: "completed" } };
+  assert.equal((await readChatGPTStream(stream([...deltas, completed]))).choices[0].message.content, "AB");
+  assert.equal((await readChatGPTStream(stream([...deltas, { ...completed, response: { ...completed.response, output: [{ content: [{ type: "output_text", text: "Final" }] }] } }]))).choices[0].message.content, "Final");
 });

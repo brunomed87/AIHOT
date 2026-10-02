@@ -27,10 +27,11 @@ globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
   const body = JSON.parse(String(init?.body));
   assert.equal(body.model, "plan-test-model"); assert.equal(body.store, false); assert.equal(body.stream, true);
   assert.equal("temperature" in body, false); assert.equal("max_tokens" in body, false); assert.equal("messages" in body, false);
-  const event = partial ? { type: "response.output_text.delta", delta: "parcial" } : { type: "response.completed", response: {
-    id: `plan-test-${requests}`, status: "completed", output: [{ content: [{ type: "output_text", text: '{"conexao":"ok"}' }] }], usage: { input_tokens: 10, output_tokens: 5 },
-  } };
-  return new Response(`data: ${JSON.stringify(event)}\n\n`, { headers: { "content-type": "text/event-stream" } });
+  const events = partial ? [{ type: "response.output_text.delta", delta: "parcial" }] : [
+    { type: "response.output_text.delta", output_index: 0, content_index: 0, delta: '{"conexao":"ok"}' },
+    { type: "response.completed", response: { id: `plan-test-${requests}`, status: "completed", usage: { input_tokens: 10, output_tokens: 5 } } },
+  ];
+  return new Response(events.map(event => `data: ${JSON.stringify(event)}\n\n`).join(""), { headers: { "content-type": "text/event-stream" } });
 }) as typeof fetch;
 const app = await buildApp();
 after(async () => {

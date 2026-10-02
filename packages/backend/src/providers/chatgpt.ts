@@ -273,6 +273,7 @@ export async function readChatGPTStream(response: Response): Promise<{ id: strin
   if (!response.body) throw fail("A OpenAI não retornou uma resposta de processamento.", 503);
   const reader = response.body.getReader(), decoder = new TextDecoder();
   let pending = "", bytes = 0;
+  const textParts = new Map<string, { output: number; content: number; text: string }>();
   try {
     for (;;) {
       const chunk = await reader.read();
@@ -285,10 +286,19 @@ export async function readChatGPTStream(response: Response): Promise<{ id: strin
         const frame = pending.slice(0, boundary.index).replace(/\r\n/g, "\n"); pending = pending.slice(boundary.index + boundary[0].length);
         const data = frame.split("\n").filter(l => l.startsWith("data:")).map(l => l.slice(5).trimStart()).join("\n");
         if (!data || data === "[DONE]") continue;
-        const event = JSON.parse(data) as { type: string; response?: { id: string; status?: string; output?: Array<{ content?: Array<{ type: string; text?: string }> }>; usage?: Record<string, unknown> } };
+        const event = JSON.parse(data) as { type: string; delta?: string; text?: string; output_index?: number; content_index?: number; response?: { id: string; status?: string; output?: Array<{ content?: Array<{ type: string; text?: string }> }>; usage?: Record<string, unknown> } };
         if (["response.failed", "response.incomplete", "error"].includes(event.type)) throw fail("O ChatGPT não concluiu o processamento. Confira o uso e as permissões do plano.", 503);
+        if (event.type === "response.output_text.delta" || event.type === "response.output_text.done") {
+          const output = event.output_index ?? 0, content = event.content_index ?? 0, key = `${output}:${content}`;
+          if (!Number.isSafeInteger(output) || output < 0 || !Number.isSafeInteger(content) || content < 0) throw fail("A OpenAI retornou partes de resposta inválidas.", 503);
+          const previous = textParts.get(key)?.text ?? "";
+          if (event.type === "response.output_text.delta" && typeof event.delta === "string") textParts.set(key, { output, content, text: previous + event.delta });
+          if (event.type === "response.output_text.done" && typeof event.text === "string") textParts.set(key, { output, content, text: event.text });
+        }
         if (event.type === "response.completed" && event.response?.status === "completed") {
-          const text = (event.response.output ?? []).flatMap(o => o.content ?? []).filter(c => c.type === "output_text").map(c => c.text ?? "").join("");
+          const finalText = (event.response.output ?? []).flatMap(o => o.content ?? []).filter(c => c.type === "output_text").map(c => c.text ?? "").join("");
+          // A modalidade por assinatura pode omitir output no evento final; o texto já veio em deltas.
+          const text = finalText || [...textParts.values()].sort((a, b) => a.output - b.output || a.content - b.content).map(p => p.text).join("");
           if (!text.trim()) throw fail("O ChatGPT retornou uma resposta vazia.", 503);
           const usage = event.response.usage ?? {};
           return { id: event.response.id, choices: [{ message: { content: text } }], usage: { ...usage, prompt_tokens: usage.input_tokens ?? 0, completion_tokens: usage.output_tokens ?? 0 } };
