@@ -6,6 +6,8 @@ import { config, credential } from "../config.ts";
 import { audit } from "../audit.ts";
 import { sql } from "../db.ts";
 import { sha256 } from "../lib/ids.ts";
+import { safeAdminReturn as safeReturn } from "@aihot/contracts/admin-return";
+export { safeAdminReturn as safeReturn } from "@aihot/contracts/admin-return";
 
 export const SESSION_COOKIE = "aihot_admin";
 export const STATE_COOKIE = "aihot_oauth_state";
@@ -67,21 +69,6 @@ export function loginRedirect(returnTo: string): { url: string; stateCookie: str
   return { url, stateCookie: sign(state) };
 }
 
-/** Only admin paths on this site; anything else (other hosts, protocol-relative) falls back to /admin. */
-export function safeReturn(target: string): string {
-  let path = target;
-  // A proxy's login redirect may pass the whole original URL; keep only its path and query.
-  if (/^https?:\/\//i.test(path)) {
-    try {
-      const u = new URL(path);
-      path = `${u.pathname}${u.search}`;
-    } catch {
-      return "/admin";
-    }
-  }
-  return /^\/admin(\/|\?|$)/.test(path) && !path.startsWith("//") ? path : "/admin";
-}
-
 interface FeishuUser {
   union_id?: string;
   email?: string;
@@ -122,7 +109,7 @@ export async function completeLogin(code: string, state: string, stateCookie: st
   const expected = unsign(stateCookie);
   const given = unsign(state);
   if (!expected || !given || expected !== given) throw new LoginRejected("Sessão expirada. Entre novamente");
-  const returnTo = given.split("|")[1] ?? "/admin";
+  const returnTo = safeReturn(given.split("|")[1] ?? "/admin");
   const u = await feishuUser(code);
   const email = (u.enterprise_email ?? u.email ?? "").toLowerCase() || null;
   const allowed = (u.union_id && config.adminUnionIds.includes(u.union_id)) || (email && config.adminEmails.includes(email));

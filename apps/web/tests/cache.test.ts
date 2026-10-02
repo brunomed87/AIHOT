@@ -83,6 +83,20 @@ after(async () => {
   await new Promise<void>((resolve) => api.close(() => resolve()));
 });
 
+test("admin data navigation and old login links return the browser to an HTML document", async () => {
+  const response = await fetch(`${origin}/admin/sources.data?_routes=admin-layout&page=2`);
+  assert.equal(response.status, 202);
+  const payload = JSON.parse(await response.text()) as unknown[];
+  const destination = payload.find((value): value is string => typeof value === "string" && value.startsWith("/admin/login?"));
+  assert(destination);
+  assert.equal(new URL(destination, origin).searchParams.get("return"), "/admin/sources?page=2");
+  for (const login of [destination, `/admin/login?${new URLSearchParams({ return: "/admin/sources.data?_routes=admin-layout&page=2" })}`]) {
+    const page = await fetch(new URL(login, origin));
+    assert.match(page.headers.get("content-type")!, /text\/html/);
+    assert.match(await page.text(), /name="return" value="\/admin\/sources\?page=2"/);
+  }
+});
+
 test("public route subsets produce the same complete navigation data; filters still differ", async () => {
   const answers = await Promise.all(["", "?_routes=root", "?_routes=routes%2Fhome", "?_routes=unknown"].map(async (query) => {
     const res = await fetch(`${origin}/_.data${query}`);

@@ -3,6 +3,7 @@
 import { useLoaderData } from "react-router";
 import type { Route } from "./+types/admin-login";
 import { SITE } from "@aihot/industry/site";
+import { safeAdminReturn } from "@aihot/contracts/admin-return";
 import { apiGet } from "../lib/api.server";
 import { Wordmark } from "../components/Logo";
 import { buttonClass } from "../components/ui/Controls";
@@ -17,7 +18,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const returnTo = url.searchParams.get("return") ?? "/admin";
   const options = await apiGet<{ password: boolean; feishu: boolean }>("/api/auth/options", { signal: request.signal }).catch(() => ({ password: true, feishu: false }));
-  return { returnTo: returnTo.startsWith("/admin") ? returnTo : "/admin", error: url.searchParams.get("error"), ...options };
+  return { returnTo: safeAdminReturn(returnTo), error: url.searchParams.get("error"), ...options };
 }
 
 export const meta: Route.MetaFunction = () => [{ title: `Entrar · ${SITE.name} Painel administrativo` }, { name: "robots", content: "noindex, nofollow" }];
