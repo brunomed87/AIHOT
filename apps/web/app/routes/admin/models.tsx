@@ -1,7 +1,7 @@
 import { SITE } from "@aihot/industry/site";
 import { useState } from "react";
 import { Link } from "react-router";
-import type { AdminModels } from "@aihot/contracts/admin";
+import type { AdminModels, AdminChatGPTConnection } from "@aihot/contracts/admin";
 import type { Route } from "./+types/models";
 import { adminGet } from "../../lib/admin.server";
 import { useAdminAction } from "../../features/admin/action";
@@ -12,7 +12,11 @@ import { AdminPage, Badge, Button, Card, DataTable, Empty, Field, FilterChips, R
 
 export async function loader({ request }: Route.LoaderArgs) {
   const days = new URL(request.url).searchParams.get("days") ?? "7";
-  return adminGet<AdminModels>(request, `/api/admin/models?days=${encodeURIComponent(days)}`);
+  const [models, chatgpt] = await Promise.all([
+    adminGet<AdminModels>(request, `/api/admin/models?days=${encodeURIComponent(days)}`),
+    adminGet<AdminChatGPTConnection>(request, "/api/admin/chatgpt"),
+  ]);
+  return { ...models, chatgpt };
 }
 
 export const meta: Route.MetaFunction = () => [{ title: `Modelos e avaliações · ${SITE.name} Painel administrativo` }];
@@ -24,6 +28,8 @@ export default function ModelsAdmin({ loaderData: m }: Route.ComponentProps) {
   const { run, pending } = useAdminAction();
   const [target, setTarget] = useState<AdminModels["capabilities"][number] | null>(null);
   const [choice, setChoice] = useState<string>("");
+  const [planModels, setPlanModels] = useState<Array<{ slug: string; displayName: string }>>([]);
+  const [planChoice, setPlanChoice] = useState("");
   const labelOf = (key: string) => m.capabilities.find((c) => `capability:${c.key}` === key)?.label ?? key;
 
   return (
@@ -32,6 +38,37 @@ export default function ModelsAdmin({ loaderData: m }: Route.ComponentProps) {
       subtitle="Modelo atual por capacidade e origem, com prioridade painel > ambiente > código; sucesso, duração e custos recentes. Alterações afetam somente novas tarefas, sem recalcular resultados anteriores. Antes de trocar o modelo de seleção, compare o mesmo conjunto no SelectBench."
       actions={<FilterChips param="days" options={[{ value: "1", label: "24 horas" }, { value: "", label: "7 dias" }, { value: "30", label: "30 dias" }]} />}
     >
+      <Card title="Sua assinatura do ChatGPT">
+        <div className="grid gap-3">
+          <p className="text-sm text-ink-3">Conecte um plano elegível Plus ou Pro para processar notícias com sua assinatura. O uso compartilha os limites do ChatGPT; gerencie a permissão de créditos nas configurações da sua conta.</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge tone={m.chatgpt.sharing ? "accent" : "muted"}>{m.chatgpt.status === "connecting" ? "Login em andamento" : m.chatgpt.sharing ? "Assinatura autorizada" : m.chatgpt.status === "connected" ? "Falta autorizar o uso do plano" : "Desconectado"}</Badge>
+            {m.chatgpt.email && <span className="text-sm">{m.chatgpt.email}</span>}
+            {m.chatgpt.model && <span className="text-sm">Modelo: {m.chatgpt.model}</span>}
+          </div>
+          {m.chatgpt.error && <p role="alert" className="text-sm text-hot">{m.chatgpt.error}</p>}
+          <div className="flex flex-wrap gap-3">
+            <Button disabled={!!pending || m.chatgpt.status === "connecting"} onClick={async () => {
+              const result = await run<{ authorizationUrl: string }>("POST", "/api/admin/chatgpt/connect", {}, { revalidate: false });
+              if (result) window.location.assign(result.authorizationUrl);
+            }}>Continuar com ChatGPT</Button>
+            {m.chatgpt.status === "connecting" && <Button onClick={() => run("POST", "/api/admin/chatgpt/cancel", {}, { success: "Login cancelado" })}>Cancelar login</Button>}
+            {m.chatgpt.sharing && <Button disabled={!!pending} onClick={async () => {
+              const result = await run<{ models: Array<{ slug: string; displayName: string }> }>("POST", "/api/admin/chatgpt/models", {});
+              if (result) { setPlanModels(result.models); setPlanChoice(m.chatgpt.model ?? result.models[0]?.slug ?? ""); }
+            }}>Consultar modelos disponíveis</Button>}
+            {m.chatgpt.status === "connected" && <Button disabled={!!pending} onClick={() => run("POST", "/api/admin/chatgpt/disconnect", {}, { success: "Conexão local removida; confira o estado acima" })}>Desconectar</Button>}
+            <a href={m.chatgpt.usageUrl} target="_blank" rel="noreferrer" className="self-center text-sm text-accent">Gerenciar uso no ChatGPT</a>
+          </div>
+          {planModels.length > 0 && <div className="flex flex-wrap items-end gap-3">
+            <Field label="Modelo da sua assinatura"><Select value={planChoice} onChange={e => setPlanChoice(e.target.value)}>
+              {planModels.map(model => <option key={model.slug} value={model.slug}>{model.displayName}</option>)}
+            </Select></Field>
+            <Button disabled={!!pending || !planChoice} onClick={() => run("POST", "/api/admin/chatgpt/model", { slug: planChoice }, { success: "Modelo da assinatura selecionado" })}>Usar este modelo</Button>
+          </div>}
+          <p className="text-xs text-ink-3">Conectar a conta não ativa a coleta automática. O piloto será conferido antes de iniciar a operação contínua.</p>
+        </div>
+      </Card>
       <div className="grid gap-5">
         {m.capabilities.map((c) => {
           const total = c.usage.reduce((a, u) => a + u.calls, 0);

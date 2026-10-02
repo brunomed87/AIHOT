@@ -45,9 +45,20 @@ if(command==='serve') {
   const existing=await control('status').catch(()=>null);
   if(existing){console.log(existing);process.exit(0);}
   if(!existsSync(path.join(root,'apps/web/build/server/index.js')))throw new Error('Compile primeiro: npm run build -w @aihot/web');
-  const log=openSync(path.join(directory,'local.log'),'a');
-  const c=spawn(process.execPath,['--env-file=.env','scripts/local.ts','serve'],{cwd:root,env,detached:true,windowsHide:true,stdio:['ignore',log,log]});c.unref();
-  console.log(`Iniciando em segundo plano. Registros: ${path.join(directory,'local.log')}`);
+  if(process.platform==='win32') {
+    // Start-Process mantém o servidor fora do console temporário que iniciou o comando.
+    // Fechar esse console não deve interromper a recuperação do PostgreSQL.
+    const literal=(value:string)=>`'${value.replaceAll("'","''")}'`;
+    const ps=`Start-Process -FilePath ${literal(process.execPath)} -ArgumentList @('--env-file=.env','scripts/local.ts','serve') -WorkingDirectory ${literal(root)} -WindowStyle Hidden -RedirectStandardOutput ${literal(path.join(directory,'local-stdout.log'))} -RedirectStandardError ${literal(path.join(directory,'local-stderr.log'))}`;
+    const c=spawn('powershell.exe',['-NoProfile','-NonInteractive','-EncodedCommand',Buffer.from(ps,'utf16le').toString('base64')],{cwd:root,windowsHide:true,stdio:'ignore'});
+    await new Promise<void>((resolve,reject)=>{c.once('error',reject);c.once('exit',code=>code===0?resolve():reject(new Error('Não foi possível iniciar a instalação local')));});
+    console.log(`Registros do Windows: ${path.join(directory,'local-stdout.log')} e ${path.join(directory,'local-stderr.log')}`);
+  }else {
+    const log=openSync(path.join(directory,'local.log'),'a');
+    const c=spawn(process.execPath,['--env-file=.env','scripts/local.ts','serve'],{cwd:root,env,detached:true,windowsHide:true,stdio:['ignore',log,log]});c.unref();
+    console.log(`Registros: ${path.join(directory,'local.log')}`);
+  }
+  console.log('Iniciando em segundo plano.');
   // O auxiliar de início pode ter um processo pai IPC (backup). Desvincule-o também.
   process.exit(0);
 }else if(command==='stop'||command==='status')console.log(await control(command).catch(()=> 'A instalação local está parada.'));
@@ -64,6 +75,7 @@ else if(command==='backup') {
 }
 else if(command==='radar')await run(['scripts/radar.ts',...process.argv.slice(3)]);
 else if(command==='report')await run(['scripts/compose-report.ts',...process.argv.slice(3)]);
+else if(command==='chatgpt')await run(['scripts/chatgpt.ts',...process.argv.slice(3)]);
 else if(command==='test') {
   // Esta instalação controla o banco descartável. Os testes originais exigem um banco novo.
   const target=new URL(env.DATABASE_URL!);
@@ -75,6 +87,7 @@ else if(command==='test') {
   env.DATABASE_URL=env.DATABASE_URL!.replace('/radar_oftalmologia','/radar_oftalmologia_test');
   // Os modelos dos testes usam substitutos HTTP locais e credenciais exclusivas de teste.
   env.COLLECT_ENABLED='false';env.MODEL_CALLS_ENABLED='true';env.OPHTHALMOLOGY_SCOUT_ENABLED='false';
+  env.LLM_TRANSPORT='chat-completions';
   await run(['scripts/migrate.ts']);
   await run(['--test','--test-concurrency=1','--test-timeout=120000','tests/*.test.ts']);
-}else throw new Error('Use start, stop, status, backup, test, report daily|weekly|monthly ou radar 08|20|ondemand|enrich|scout');
+}else throw new Error('Use start, stop, status, backup, test, chatgpt status|models|test, report daily|weekly|monthly ou radar 08|20|ondemand|enrich|scout');

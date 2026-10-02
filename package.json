@@ -24,6 +24,7 @@
   "devDependencies": {
     "@modelcontextprotocol/client": "2.1.0",
     "@types/node": "26.6.3",
+    "@types/proper-lockfile": "^4.1.4",
     "@types/sanitize-html": "2.16.1",
     "@types/turndown": "5.0.6",
     "embedded-postgres": "17.10.0-beta.17",

@@ -21,6 +21,8 @@ import { resolveDelivery } from "@aihot/backend/notify/deliver";
 import { sendProblem } from "../http/respond.ts";
 import { adminHandler } from "./admin-auth.ts";
 import {recordEditorialUse,recommendationHistory} from '@aihot/backend/ophthalmology/editorial';
+import { chatGPTPlan } from "@aihot/backend/providers/chatgpt";
+import { audit } from "@aihot/backend/audit";
 
 type Q = Record<string, string | undefined>;
 const q = (req: FastifyRequest) => req.query as Q;
@@ -37,6 +39,25 @@ function decodeImage(dataUrl: unknown): Buffer {
 }
 
 export function registerAdmin(app: FastifyInstance) {
+  app.get("/api/admin/chatgpt", adminHandler(async () => chatGPTPlan.status()));
+  app.post("/api/admin/chatgpt/connect", adminHandler(async (_req, _reply, admin) => {
+    const result = await chatGPTPlan.beginSignIn();
+    await audit(actorOf(admin), "chatgpt.connect", "chatgpt-plan", "Login da assinatura iniciado", null, null);
+    return result;
+  }));
+  app.post("/api/admin/chatgpt/cancel", adminHandler(async () => { chatGPTPlan.cancelSignIn(); return { cancelled: true }; }));
+  app.post("/api/admin/chatgpt/models", adminHandler(async () => ({ models: await chatGPTPlan.models() })));
+  app.post("/api/admin/chatgpt/model", adminHandler(async (req, _reply, admin) => {
+    const model = await chatGPTPlan.selectModel(String(body(req).slug ?? ""));
+    await audit(actorOf(admin), "chatgpt.model", "chatgpt-plan", "Modelo da assinatura selecionado", null, { model: model.slug });
+    return model;
+  }));
+  app.post("/api/admin/chatgpt/disconnect", adminHandler(async (_req, _reply, admin) => {
+    const result = await chatGPTPlan.disconnect();
+    await audit(actorOf(admin), "chatgpt.disconnect", "chatgpt-plan", "Conexão da assinatura removida", null, result);
+    return result;
+  }));
+  app.addHook("onClose", async () => { chatGPTPlan.cancelSignIn(); });
   app.get('/api/admin/ophthalmology/recommendations',adminHandler(async req=>({recommendations:await recommendationHistory(q(req).articleId)})));
   app.post('/api/admin/ophthalmology/recommendations/:id/used',adminHandler(async(req,reply,admin)=>{
     const b=body<{used?:boolean;reason?:string}>(req);

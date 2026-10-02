@@ -392,6 +392,16 @@ export interface AdminModels {
   benches: Array<{ id: string; label: string; sample_size: number; prompt_version: string | null; models: string[]; created_at: Timestamp }>;
 }
 
+export interface AdminChatGPTConnection {
+  status: "disconnected" | "connecting" | "connected" | "reauth_required";
+  sharing: boolean;
+  name: string | null;
+  email: string | null;
+  model: string | null;
+  error: string | null;
+  usageUrl: string;
+}
+
 export interface AdminSelectBenchRun {
   id: string;
   label: string;

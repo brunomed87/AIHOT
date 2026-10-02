@@ -6,6 +6,7 @@ import { config, credential } from "../config.ts";
 import { sha256 } from "../lib/ids.ts";
 import { completeReceipt, paidRequest, ProviderRejectedError, rejectReceivedResponse } from "./receipts.ts";
 import { sql } from "../db.ts";
+import { chatGPTPlan, chatGPTRequestBody, readChatGPTStream, selectedChatGPTModel } from "./chatgpt.ts";
 
 export interface ModelSpec {
   key: string;
@@ -17,6 +18,7 @@ export interface ModelSpec {
   extra?: Record<string, unknown>;
   jsonMode: boolean;
   vision?: boolean;
+  transport?: "chatgpt-plan";
 }
 
 function extraFromEnv(value: string | undefined): Record<string, unknown> | undefined {
@@ -31,11 +33,16 @@ function extraFromEnv(value: string | undefined): Record<string, unknown> | unde
 export const MODELS: Record<string, ModelSpec> = {
   // Read from the environment at call time.
   default: {
-    key: "default", service: "llm", baseUrlEnv: "LLM_BASE_URL", apiKeyEnv: "LLM_API_KEY",
-    get model() { return process.env.LLM_MODEL ?? ""; },
+    key: "default", get service() { return process.env.LLM_TRANSPORT === "chatgpt-plan" ? "chatgpt-plan" : "llm"; }, baseUrlEnv: "LLM_BASE_URL", apiKeyEnv: "LLM_API_KEY",
+    get model() { return process.env.LLM_TRANSPORT === "chatgpt-plan" ? selectedChatGPTModel() : process.env.LLM_MODEL ?? ""; },
+    get transport() { return process.env.LLM_TRANSPORT === "chatgpt-plan" ? "chatgpt-plan" as const : undefined; },
     get extra() { return extraFromEnv(process.env.LLM_EXTRA_JSON); },
     get jsonMode() { return process.env.LLM_JSON_MODE !== "false"; },
     get vision() { return process.env.LLM_VISION === "true"; },
+  },
+  "chatgpt-plan": {
+    key: "chatgpt-plan", service: "chatgpt-plan", baseUrlEnv: "", apiKeyEnv: "", transport: "chatgpt-plan",
+    get model() { return selectedChatGPTModel(); }, jsonMode: false,
   },
   // Named presets (the models AIHOT itself runs on); each needs its own key.
   // GLM 5.3 Flash always reasons; the lowest effort keeps short structured tasks fast.
@@ -161,15 +168,19 @@ export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): P
   const spec = MODELS[opts.model];
   if (!spec) throw new Error(`Unknown model ${opts.model}`);
   if (!config.modelCallsEnabled) throw new Error("Model calls are disabled (MODEL_CALLS_ENABLED=false)");
+  const plan = spec.transport === "chatgpt-plan";
+  const model = spec.model;
+  if (plan && !model) throw new Error("Selecione um modelo da assinatura ChatGPT no painel de modelos.");
+  const planCredentials = plan ? await chatGPTPlan.credentials() : null;
   const baseUrl = credential("models", spec.baseUrlEnv);
   const apiKey = credential("models", spec.apiKeyEnv);
-  if (!baseUrl || !apiKey || !spec.model) throw new Error(`Model ${opts.model} is not configured (${spec.baseUrlEnv}, ${spec.apiKeyEnv}${spec.key === "default" ? ", LLM_MODEL" : ""})`);
+  if (!plan && (!baseUrl || !apiKey || !model)) throw new Error(`Model ${opts.model} is not configured (${spec.baseUrlEnv}, ${spec.apiKeyEnv}${spec.key === "default" ? ", LLM_MODEL" : ""})`);
 
   const temperature = opts.temperature ?? 0.2;
   const maxTokens = Math.max(opts.maxTokens ?? 1500, 512) + (spec.key.endsWith("-think") ? 4000 : 0);
   const userText = typeof opts.user === "string" ? opts.user : JSON.stringify(opts.user);
   const body: Record<string, unknown> = {
-    model: spec.model,
+    model,
     messages: [
       // A prompt given as one user message (the title/summary prompts) has no system message.
       ...(opts.system ? [{ role: "system", content: opts.system }] : []),
@@ -181,14 +192,16 @@ export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): P
     ...(spec.jsonMode && opts.json !== false ? { response_format: { type: "json_object" } } : {}),
     ...(spec.extra ?? {}),
   };
+  const planBody = chatGPTRequestBody(model, opts.system, opts.user, opts.json !== false);
 
   const receipt = await paidRequest(
     {
-      service: spec.service,
-      model: spec.model,
+      service: plan ? "chatgpt-plan" : spec.service,
+      model,
       purpose: opts.purpose,
       subject: opts.subject,
-      identity: { model: spec.model, promptVersion: opts.promptVersion, system: sha256(opts.system), user: sha256(userText), temperature, maxTokens, extra: spec.extra ?? null },
+      identity: { model, promptVersion: opts.promptVersion, system: sha256(opts.system), user: sha256(userText), temperature, maxTokens, extra: spec.extra ?? null,
+        ...(planCredentials ? { transport: "chatgpt-plan", account: planCredentials.accountKey } : {}) },
       requestSummary: { promptVersion: opts.promptVersion, systemHash: sha256(opts.system), userHash: sha256(userText), userChars: userText.length, temperature, maxTokens },
       attemptTag: opts.attemptTag,
     },
@@ -196,15 +209,20 @@ export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): P
       const started = Date.now();
       let res: Response;
       try {
-        res = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
+        res = await fetch(plan ? "https://api.openai.com/v1/responses" : `${baseUrl!.replace(/\/$/, "")}/chat/completions`, {
           method: "POST",
-          headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
-          body: JSON.stringify(body),
+          headers: { "content-type": "application/json", authorization: `Bearer ${planCredentials?.accessToken ?? apiKey}` },
+          body: JSON.stringify(plan ? planBody : body),
           signal: AbortSignal.timeout(opts.timeoutMs ?? 120_000),
         });
       } catch (error) {
         if (isConnectFailure(error)) throw new ProviderRejectedError(`connect failed: ${String(error)}`, null, true);
         throw error;
+      }
+      if (plan) {
+        if (!res.ok) throw new ProviderRejectedError(`ChatGPT retornou HTTP ${res.status}. Confira permissões e limites do plano.`, res.status, res.status === 429 || res.status >= 500);
+        const response = await readChatGPTStream(res);
+        return { response: { ...response, _latencyMs: Date.now() - started }, requestId: response.id, usage: response.usage, cost: null };
       }
       const text = await res.text();
       if (!res.ok) {

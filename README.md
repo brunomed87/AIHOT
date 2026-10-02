@@ -16,6 +16,8 @@ ai-hot radar ondemand
 
 Interface: <http://127.0.0.1:3040/radar>. A instalação deste usuário mantém banco isolado e escuta somente o computador local. Coleta, modelos e descoberta externa começam desativados; configure credenciais e orçamento antes de ativar. Não existe implantação pública automática.
 
+Para usar sua assinatura elegível do ChatGPT Plus/Pro, abra **Modelos e avaliações** no painel e escolha **Continuar com ChatGPT**. Veja o [guia de conexão e limites](docs/CHATGPT.md). A opção por chave de API continua disponível.
+
 ## Funcionamento
 
 ```mermaid
