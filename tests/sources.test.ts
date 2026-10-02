@@ -2,7 +2,7 @@
 // an image, a title attribute, http links under https prefixes, and navigation that is no post. Also
 // what made articles flip between versions: in-page anchors of an HTML listing and
 // promotions a feed rotates inside its posts. And the Xiaomi MiMo homepage, whose posts have no links in
-// its HTML: read without its adapter, it gave the menu (MiMo Desktop, 简体中文) as articles.
+// Seu HTML sem adaptador interpretava menu como artigos.
 import "./setup.ts";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -196,7 +196,7 @@ test("hidden page parts are dropped whole, and a news page's closing blocks are 
 });
 
 test("noise words match whatever their case", () => {
-  // 笔记本 is noise, but the lower-case exemption agent keeps a post about an Agent product.
+  // Termo de notebook é ruído; exceção agent em minúsculas preserva notícia de agente.
   const source = { config: { ingestNoiseFilter: { dropMarkers: ["笔记本", "iphone"], keepIfMatches: ["agent"] } } } as never;
   const c = (title: string, excerpt: string) => ({ url: "https://example.org/a", title, excerpt }) as never;
   assert.equal(noiseFiltered(c("Manus：正组建团队开发面向国内市场的产品", "与笔记本厂商合作的 Agent 产品"), source), false);

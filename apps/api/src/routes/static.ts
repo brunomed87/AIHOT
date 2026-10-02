@@ -45,7 +45,7 @@ async function sendFile(req: FastifyRequest, reply: FastifyReply, file: string, 
   try {
     entry = await loadFile(file);
   } catch {
-    return reply.code(404).type("text/plain; charset=utf-8").send("Not found");
+    return reply.code(404).type("text/plain; charset=utf-8").send("Não encontrado");
   }
   reply.header("Content-Type", opts.type ?? TYPES[path.extname(file)] ?? "application/octet-stream");
   reply.header("Cache-Control", opts.cacheControl);
@@ -130,7 +130,7 @@ export function registerStatic(app: FastifyInstance) {
   app.get("/robots.txt", (req, reply) => sendTextWithEtag(req, reply, robotsTxt(), { etagPrefix: "robots", cacheControl: "public, max-age=3600", contentType: "text/plain; charset=utf-8" }));
 
   app.get("/.well-known/security.txt", (req, reply) => {
-    if (!SITE.contactEmail) return reply.code(404).type("text/plain; charset=utf-8").send("Not found");
+    if (!SITE.contactEmail) return reply.code(404).type("text/plain; charset=utf-8").send("Não encontrado");
     const expires = new Date(Date.now() + 180 * 86400_000).toISOString();
     const text = `Contact: mailto:${SITE.contactEmail}\nExpires: ${expires}\nPreferred-Languages: zh, en\nCanonical: ${config.siteUrl}/.well-known/security.txt\n`;
     return sendTextWithEtag(req, reply, text, { etagPrefix: "security", cacheControl: "public, max-age=86400", contentType: "text/plain; charset=utf-8" });

@@ -48,10 +48,10 @@ export function siteHandler(fn: Handler): Handler {
       if (error instanceof BadRequest) return sendProblem(req, reply, { status: 400, code: "invalid_request", detail: error.message });
       if (error instanceof InvalidCursorError) return sendProblem(req, reply, { status: 400, code: "invalid_cursor", detail: error.message });
       if (error instanceof SearchBusyError) {
-        return sendProblem(req, reply, { status: 503, code: "temporarily_unavailable", detail: "search busy", retryAfter: error.retryAfter });
+        return sendProblem(req, reply, { status: 503, code: "temporarily_unavailable", detail: "Busca ocupada", retryAfter: error.retryAfter });
       }
       req.log.error({ err: error, path: req.url.split("?")[0] }, "site api error");
-      return sendProblem(req, reply, { status: 503, code: "temporarily_unavailable", detail: "temporarily unavailable", retryAfter: 10 });
+      return sendProblem(req, reply, { status: 503, code: "temporarily_unavailable", detail: "Temporariamente indisponível", retryAfter: 10 });
     }
   };
 }
@@ -113,23 +113,23 @@ export function registerSite(app: FastifyInstance) {
 
   app.get("/api/site/items/:id", siteHandler(async (req, reply) => {
     const id = (req.params as { id: string }).id;
-    if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "item not found" });
+    if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Item não encontrado" });
     const result = await loadItemDetail(id);
-    if (result.kind === "not_found") return sendProblem(req, reply, { status: 404, code: "not_found", detail: "item not found", cacheControl: "public, max-age=60" });
+    if (result.kind === "not_found") return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Item não encontrado", cacheControl: "public, max-age=60" });
     return sendJsonWithEtag(req, reply, siteItemDetail(result.detail), { etagPrefix: "item", cacheControl: "public, max-age=60, s-maxage=60" });
   }));
 
   app.get("/api/site/items/:id/original", siteHandler(async (req, reply) => {
     const id = (req.params as { id: string }).id;
-    if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "item not found" });
+    if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Item não encontrado" });
     const result = await loadItemDetail(id);
-    if (result.kind === "not_found") return sendProblem(req, reply, { status: 404, code: "not_found", detail: "item not found", cacheControl: "public, max-age=60" });
+    if (result.kind === "not_found") return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Item não encontrado", cacheControl: "public, max-age=60" });
     return sendJsonWithEtag(req, reply, siteItemDetail(result.detail, true), { etagPrefix: "item-original", cacheControl: "public, max-age=60, s-maxage=60" });
   }));
 
   app.get("/api/site/stories/:publicId/followups", siteHandler(async (req, reply) => {
     const result = await loadStoryFollowups((req.params as { publicId: string }).publicId);
-    if (!result) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "story not found" });
+    if (!result) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Acontecimento não encontrado" });
     return reply.header("Cache-Control", "no-store").send(result);
   }));
 
@@ -183,7 +183,7 @@ export function registerSite(app: FastifyInstance) {
     const slug = (req.params as { slug: string }).slug;
     const page = Number(looseQuery(req).page ?? 1);
     const data = Number.isInteger(page) ? await loadTopicPage(slug, page) : null;
-    if (!data) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "topic page not found", cacheControl: "no-store" });
+    if (!data) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Página do tema não encontrada", cacheControl: "no-store" });
     return sendJsonWithEtag(req, reply, data, { etagPrefix: "topic", cacheControl: cacheUntil(reply, 60, data.refreshAt) });
   }));
 
@@ -201,7 +201,7 @@ export function registerSite(app: FastifyInstance) {
     if (found.kind === "merged") {
       return reply.code(308).header("Location", `/api/site/stories/${found.target}`).header("Cache-Control", "public, max-age=300").send({ mergedInto: found.target });
     }
-    if (found.kind === "not_found") return sendProblem(req, reply, { status: 404, code: "not_found", detail: "story not found", cacheControl: "public, max-age=60" });
+    if (found.kind === "not_found") return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Acontecimento não encontrado", cacheControl: "public, max-age=60" });
     const data = await loadStoryDetail(found.storyId);
     if (!data) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "story not public", cacheControl: "public, max-age=60" });
     return sendJsonWithEtag(req, reply, data, { etagPrefix: "story", cacheControl: "public, max-age=60, s-maxage=60" });
@@ -225,32 +225,32 @@ export function registerSite(app: FastifyInstance) {
 
   app.get("/api/site/reports/:kind/navigation/:key", siteHandler(async (req, reply) => {
     const { kind, key } = req.params as { kind: string; key: string };
-    if (!["daily", "weekly", "monthly"].includes(kind) || !/^\d{4}-(\d{2}(-\d{2})?|W\d{2})$/.test(key)) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "report not found" });
+    if (!["daily", "weekly", "monthly"].includes(kind) || !/^\d{4}-(\d{2}(-\d{2})?|W\d{2})$/.test(key)) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Relatório não encontrado" });
     return sendJsonWithEtag(req, reply, { items: await loadReportNavigation(kind as ReportKind, key) }, { etagPrefix: "report-navigation", cacheControl: "public, max-age=60, s-maxage=60" });
   }));
 
   app.get("/api/site/reports/daily/months/:month", siteHandler(async (req, reply) => {
     const { month } = req.params as { month: string };
-    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "month not found" });
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Mês não encontrado" });
     return sendJsonWithEtag(req, reply, { items: await loadReportMonth("daily", month) }, { etagPrefix: "report-month", cacheControl: "public, max-age=60, s-maxage=60" });
   }));
 
   app.get("/api/site/reports/:kind/:key", siteHandler(async (req, reply) => {
     const { kind, key } = req.params as { kind: string; key: string };
     if (!["daily", "weekly", "monthly"].includes(kind) || !/^\d{4}-(\d{2}(-\d{2})?|W\d{2})$/.test(key)) {
-      return sendProblem(req, reply, { status: 404, code: "not_found", detail: "report not found" });
+      return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Relatório não encontrado" });
     }
     const data = await loadReport(kind as ReportKind, key);
-    if (!data) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "report not found", cacheControl: "public, max-age=60" });
+    if (!data) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Relatório não encontrado", cacheControl: "public, max-age=60" });
     return sendJsonWithEtag(req, reply, data, { etagPrefix: "report", cacheControl: "public, max-age=120, s-maxage=120" });
   }));
 
   // Markdown export: attachment, 404 when there is nothing to export (same predicate as the button).
   app.get("/items/:id/markdown", siteHandler(async (req, reply) => {
     const id = (req.params as { id: string }).id;
-    if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) return reply.code(404).type("text/plain; charset=utf-8").send("Not found");
+    if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) return reply.code(404).type("text/plain; charset=utf-8").send("Não encontrado");
     const md = await exportMarkdown(id);
-    if (!md) return reply.code(404).header("Cache-Control", "public, max-age=60").type("text/plain; charset=utf-8").send("Not found");
+    if (!md) return reply.code(404).header("Cache-Control", "public, max-age=60").type("text/plain; charset=utf-8").send("Não encontrado");
     return reply
       .header("Content-Type", "text/markdown; charset=utf-8")
       .header("Content-Disposition", `attachment; filename="${md.filename}"`)
@@ -268,7 +268,7 @@ function registerCodexReset(app: FastifyInstance) {
 
   app.get("/api/site/codex-reset/days/:date", siteHandler(async (req, reply) => {
     const { date } = req.params as { date: string };
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "date not found" });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Data não encontrada" });
     return sendJsonWithEtag(req, reply, await loadSiteCodexResetDay(date), { etagPrefix: "codex-day", cacheControl: "no-store" });
   }));
 

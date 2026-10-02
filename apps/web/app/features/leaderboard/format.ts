@@ -5,7 +5,7 @@ import { beijingDate, beijingTime } from "@aihot/contracts/time";
 export function yuan(v: number | null | undefined): string {
   if (v == null || !Number.isFinite(v)) return "—";
   const n = v >= 0.1 ? Number(v.toFixed(2)) : Number(v.toPrecision(3));
-  return `¥${n.toLocaleString("en-US", { maximumFractionDigits: 6 })}`;
+  return `¥${n.toLocaleString("pt-BR", { maximumFractionDigits: 6 })}`;
 }
 
 export function listPrice(v: number | null, currency: LbPrice["currency"]): string {
@@ -15,8 +15,9 @@ export function listPrice(v: number | null, currency: LbPrice["currency"]): stri
 
 /** "09/26 20:00" in Beijing time, as the leaderboard has always shown update times. */
 export function shortStamp(iso: string | null | undefined): string {
-  if (!iso) return "待核实";
-  return `${beijingDate(iso).slice(5).replace("-", "/")} ${beijingTime(iso)}`;
+  if (!iso) return "A verificar";
+  const date = beijingDate(iso);
+  return `${date.slice(8, 10)}/${date.slice(5, 7)} ${beijingTime(iso)}`;
 }
 
 export function pct(weight: number, digits = 1): string {
@@ -31,8 +32,7 @@ export function pctFixed(weight: number): string {
 
 export function tokensWan(n: number | null): string {
   if (!n) return "—";
-  const w = n / 10000;
-  return `${Number(w >= 100 ? w.toFixed(1) : w.toFixed(1))}万`.replace(".0万", "万");
+  return n.toLocaleString("pt-BR");
 }
 
 export function boardHref(key: string): string {

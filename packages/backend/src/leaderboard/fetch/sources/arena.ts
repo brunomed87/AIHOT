@@ -23,7 +23,7 @@ const BOARDS: Array<{ key: string; name: string; config: string; category: strin
   { key: "arena-text", name: "Arena Text Style-Controlled", config: "text_style_control", category: "overall" },
   {
     key: "arena-creative-writing", name: "Arena Creative Writing", config: "text_style_control", category: "creative_writing",
-    license: "CC BY 4.0 · Arena 官方 Hugging Face leaderboard-dataset；保留署名、来源链接并说明聚合改动。", attributionUrl: "https://arena.ai/leaderboard/text/creative-writing",
+    license: "CC BY 4.0 · conjunto oficial Arena leaderboard-dataset no Hugging Face; preserve créditos, origem e descrição das alterações de agregação.", attributionUrl: "https://arena.ai/leaderboard/text/creative-writing",
   },
   { key: "arena-webdev", name: "Arena WebDev", config: "webdev", category: "overall" },
   { key: "arena-vision", name: "Arena Vision Style-Controlled", config: "vision_style_control", category: "overall" },

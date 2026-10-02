@@ -25,11 +25,11 @@ export interface HotEntry {
   representativeItemId: string | null;
   representativeUrl: string | null;
   representativeSource: string | null;
-  /** 精选组 first by tier, then 氛围组; tier is absent on rankings from before 2026-09-29. */
+  /** Fontes editoriais por classe, depois sinais. Classe ausente em rankings anteriores a 29/09/2026. */
   participants: Array<{ name: string; kind: "editorial" | "signal"; tier?: string }>;
 }
 
-/** Participants in the 精选组 order: T1 before T1.5 before T2, then everything else. */
+/** Participantes na ordem editorial: T1, T1.5, T2 e demais. */
 const TIER_ORDER = ["T1", "T1_5", "T2"];
 export function tierRank(tier: string | undefined): number {
   const i = TIER_ORDER.indexOf(tier ?? "");
@@ -227,7 +227,7 @@ export async function computeHotRanking(at = new Date()): Promise<{ id: number; 
       representativeItemId: rep.id,
       representativeUrl: rep.url,
       representativeSource: rep.source_name,
-      // Faces go to the 精选组 by tier, the most recently active first within a tier (ordered before the cap).
+      // Avatares editoriais por classe e atividade recente, ordenados antes do limite.
       participants: participants
         .sort((x, y) => Number(y.kind === "editorial") - Number(x.kind === "editorial") || tierRank(x.tier) - tierRank(y.tier) || y.at.getTime() - x.at.getTime())
         .slice(0, 40).map(({ name, kind, tier }) => ({ name, kind, tier })),

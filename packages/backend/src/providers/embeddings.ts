@@ -31,7 +31,7 @@ export function embeddingsAvailable(): boolean {
   return config.modelCallsEnabled && !!(credential("models", "EMBEDDING_API_KEY") ?? credential("models", "DASHSCOPE_API_KEY")) && process.env.EMBEDDINGS_ENABLED !== "false";
 }
 
-/** 默认维度由提供方决定；显式维度必须匹配，所有坐标都必须是有限数值。 */
+/** Dimensão padrão definida pelo fornecedor; dimensão explícita deve coincidir e coordenadas devem ser finitas. */
 export function compatibleEmbedding(vector: unknown): vector is number[] {
   if (!Array.isArray(vector) || vector.length === 0 || (EMBEDDING_DIMS > 0 && vector.length !== EMBEDDING_DIMS)) return false;
   for (const value of vector) if (!Number.isFinite(value)) return false;
@@ -60,7 +60,7 @@ async function embedBatch(texts: string[], subject: string): Promise<number[][]>
   );
   const data = (receipt.response as { data?: Array<{ embedding: unknown; index: number }> } | null)?.data;
   if (!Array.isArray(data) || data.length !== texts.length) throw new Error("Invalid embedding response: batch size mismatch");
-  // 整批校验后再返回，避免部分写入；坏回执仍可复用，不另发付费请求。
+  // Validar lote inteiro antes de devolver para evitar gravação parcial; recibos inválidos são reutilizados sem cobrança nova.
   const vectors: number[][] = [];
   for (const d of data) {
     if (!d || !Number.isInteger(d.index) || d.index < 0 || d.index >= texts.length || vectors[d.index] || !compatibleEmbedding(d.embedding)) {

@@ -1,10 +1,10 @@
-# Leaderboard source marks
+# Marcas das fontes do ranking
 
-The files in this directory are the official favicon or brand mark published by each leaderboard operator. They are displayed only to identify the corresponding source and remain the property of their respective owners.
+Os arquivos deste diretório são ícones oficiais publicados pelos responsáveis dos rankings. São exibidos somente para identificar as fontes e continuam pertencendo aos respectivos titulares.
 
-| File | Source |
+| Arquivo | Fonte |
 |---|---|
-| `artificial-analysis-purple-2026.svg` | Artificial Analysis official brand kit: https://artificialanalysiscdn.com/brand-kit/aa_icon_logo_svg.zip |
+| `artificial-analysis-purple-2026.svg` | Conjunto oficial de marca Artificial Analysis: https://artificialanalysiscdn.com/brand-kit/aa_icon_logo_svg.zip |
 | `epoch.svg` | https://epoch.ai/ |
 | `vals.svg` | https://www.vals.ai/ |
 | `livebench.png` | https://livebench.ai/ |
@@ -14,8 +14,8 @@ The files in this directory are the official favicon or brand mark published by 
 | `agents-last-exam.svg` | https://agents-last-exam.org/ |
 | `deepswe.svg` | https://deepswe.datacurve.ai/ |
 | `taptap-maker.svg` | https://maker.taptap.cn/maker-logo.svg |
-| `rapidata.svg` | Official Rapidata Benchmark site favicon: https://www.benchmark.ai/icon.svg?icon.ef71c7bc.svg |
-| `sierra.png` | Official Sierra τ-bench site favicon: https://taubench.com/sierra-logo.png |
+| `rapidata.svg` | Ícone oficial do site Rapidata Benchmark: https://www.benchmark.ai/icon.svg?icon.ef71c7bc.svg |
+| `sierra.png` | Ícone oficial do site Sierra τ-bench: https://taubench.com/sierra-logo.png |
 | `llm2014.svg` | https://github.com/llm2014 |
 
-Which mark each source uses is registered in `packages/backend/src/leaderboard/registry.ts`. An `.svg` filename is not proof of vector artwork: `agents-last-exam.svg`, `eqbench.svg`, and `llm2014.svg` contain embedded raster images.
+O registro das marcas por fonte está em `packages/backend/src/leaderboard/registry.ts`. A extensão `.svg` não garante conteúdo vetorial: `agents-last-exam.svg`, `eqbench.svg` e `llm2014.svg` contêm imagens rasterizadas incorporadas.

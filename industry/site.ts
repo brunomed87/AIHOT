@@ -1,65 +1,55 @@
-// 站点身份和读者看得到的文案。换成你的行业时，先改这个文件。
-// 网页和后端都读它；改完重新构建（docker compose up --build）即可生效。
-// 域名不在这里：部署时用环境变量 SITE_URL 设置。
+// Identidade e textos visíveis do site. Primeiro arquivo ao adaptar setor.
+// Interface e backend compartilham configuração; recompilar para aplicar, como docker compose up --build.
+// Endereço público definido por SITE_URL na implantação.
 
 export const SITE = {
-  /** 站名：导航、页面标题、分享图、RSS、MCP、后台都用它。 */
+  /** Nome em navegação, títulos, imagens, RSS, MCP e administração. */
   name: "Radar Oftalmologia Brasil",
-  /**
-   * 行业词：拼进默认说法里，比如“AI 日报”“AI 动态”。
-   * 改成“法律”“HR”“黄金”之类，页面上就会变成“法律日报”“法律动态”。
-   */
+  /** Nome do setor combinado aos rótulos de notícias e relatórios; adaptar ao segmento desejado. */
   subject: "Oftalmologia",
-  /** 首页的完整标题（浏览器标签、搜索结果）。 */
+  /** Título completo inicial para aba do navegador e busca. */
   homeTitle: "Radar Oftalmologia Brasil — notícias, ciência e oportunidades editoriais",
-  /** 一句话介绍：搜索引擎、分享卡片、RSS、llms.txt 会用。 */
+  /** Apresentação curta para buscadores, cartões, RSS e llms.txt. */
   description: "Descoberta contínua de notícias, ciência e regulação, com memória editorial e evidência médica.",
-  /** 首页左上角和侧边栏下面的一行小字。 */
+  /** Texto curto no início e abaixo da navegação. */
   tagline: "O que mudou na saúde dos olhos",
-  /** 界面语言（HTML lang、og:locale）。 */
+  /** Idioma de HTML lang e og:locale. */
   locale: "pt-BR",
-  /** 默认域名，只在没设置 SITE_URL 时使用。 */
+  /** Endereço padrão quando SITE_URL não está definido. */
   defaultUrl: "http://localhost:3000",
-  /**
-   * MCP 工具名的前缀（小写字母、数字、下划线），工具会叫 myhot_get_latest、myhot_search……
-   * 已经有人接入后就不要再改。
-   */
+  /** Prefixo de ferramentas MCP com letras minúsculas, números e sublinhado. Preserve depois que clientes integrarem. */
   mcpPrefix: "radar_oftalmo",
-  /** 对外联系邮箱（选填）：使用规则、llms.txt、响应头里会写。 */
+  /** Contato público opcional nos termos, llms.txt e cabeçalhos. */
   contactEmail: null as string | null,
-  /** 页脚的一行小字（选填）。 */
-  footerNote: "由 AIHOT 开源框架驱动",
-  /** 中国大陆网站的 ICP 备案号（选填），填了就显示在页脚并链接到工信部备案系统。 */
+  /** Nota opcional de rodapé. */
+  footerNote: "Desenvolvido com o framework de código aberto AIHOT",
+  /** Registro ICP opcional para China continental, com link ao órgão responsável. */
   icp: null as string | null,
-  /** 结构化数据里的网站运营者（搜索引擎用）。 */
+  /** Organização responsável nos dados estruturados de busca. */
   organization: {
     name: "Radar Oftalmologia Brasil",
-    /** 创始人（选填）：{ name, url, description }。 */
+    /** Fundador opcional: name, url e description. */
     founder: null as null | { name: string; url?: string; description?: string },
   },
-  /** 抓取信源时报上的名字（User-Agent 里用），不要冒用别的站。 */
+  /** Nome do coletor em User-Agent; não usar nome de outro site. */
   crawlerName: "RadarOftalmologiaBot",
 } as const;
 
-/** 关于页的文案。数字（信源数、收录数、精选数、日报期数）来自站内实时统计，不用写在这里。 */
+/** Apresentação do site; contagens de fontes, materiais, selecionados e relatórios vêm das estatísticas atuais. */
 export const ABOUT = {
   kicker: `Sobre ${SITE.name}`,
-  /** 大标题：第一行正常颜色，第二行强调色。 */
+  /** Título com primeira linha normal e segunda em cor de destaque. */
   headline: ["A saúde dos olhos muda todos os dias.", "Acompanhe os acontecimentos e a evidência."] as [string, string],
-  /** 标题下面的一段话。{sources} 会换成实时的信源数。 */
+  /** Texto abaixo do título; {sources} recebe contagem atual de fontes. */
   lead: `${SITE.name} acompanha {sources} fontes, agrupa acontecimentos e preserva a trajetória de notícias e ciência.`,
-  /** 信源河动画下面的四个环节。 */
+  /** Quatro etapas abaixo da animação de fontes. */
   steps: {
     collect: "Fontes oficiais, ciência, imprensa nacional e regional e descoberta na web.",
     store: "Material preservado com origem; acontecimentos distintos e temas editoriais têm memórias separadas.",
     select: "Atenção original e dimensões médicas se complementam; campos desconhecidos permanecem explícitos.",
-    publish: "Radar às 08h e 20h em São Paulo, sob demanda, Hot e relatórios periódicos.",
+    publish: "Radar às 08h e 20h em São Paulo, sob demanda, repercussão e relatórios periódicos.",
   },
-  /**
-   * 作者块（选填），null 就不显示。
-   * avatarSourceId：一个 X 账号信源的 id，头像取它的（选填）。
-   * 二维码在后台“设置”里上传，或者放进 industry/brand/contact/；没有二维码就不显示那张卡片。
-   */
+  /** Autoria opcional, oculta quando null. avatarSourceId usa avatar de fonte X. QR pelo painel ou industry/brand/contact/; ausência oculta cartão. */
   maker: null as null | {
     name: string;
     greeting: string[];
@@ -67,11 +57,11 @@ export const ABOUT = {
     wechat?: { title: string; note: string };
     feishu?: { title: string; note: string };
   },
-  /** 页面底部的版权与下架说明（结尾会接“反馈页”的链接）。 */
+  /** Direitos e retirada no rodapé, seguido do link de sugestões. */
   copyright: `${SITE.name} publica resumos próprios e links. Os direitos dos originais pertencem às fontes. Solicitações de correção e retirada podem ser enviadas por`,
 } as const;
 
-/** “AI 日报”这类说法：行业词和名词之间，英文词加空格，中文词不加。 */
+/** Combina substantivo e setor em português, como Relatório de Oftalmologia. */
 export function withSubject(noun: string): string {
-  return /[A-Za-z0-9]$/.test(SITE.subject) ? `${SITE.subject} ${noun}` : `${SITE.subject}${noun}`;
+  return `${noun} de ${SITE.subject}`;
 }

@@ -48,18 +48,18 @@ export async function composeStoryDigest(storyId: number, opts: { afterCorrectio
   const incremental = proven && !opts.afterCorrection;
   const window = reports.slice(-40);
   const contextIds = [...new Set([...(incremental ? last!.context_article_ids! : []), ...window.map(r => r.id)])].sort();
-  const lines = window.map(r => `${incremental && !known.has(r.id) ? "【新】" : ""}${beijingDate(r.at)} ${beijingTime(r.at)}｜${r.source_name}${r.first_party ? "（一手）" : ""}｜${r.title}｜${(r.summary ?? "").slice(0, 220)}`);
-  // 旧标题本身没有独立provenance；即使保留已验证综述，也不将它作为模型依据。
+  const lines = window.map(r => `${incremental && !known.has(r.id) ? "[NOVO]" : ""}${beijingDate(r.at)} ${beijingTime(r.at)}｜${r.source_name}${r.first_party ? "(primeira mão)" : ""}｜${r.title}｜${(r.summary ?? "").slice(0, 220)}`);
+  // Título antigo não possui origem independente e não vira entrada do modelo mesmo com síntese verificada preservada.
   const user = incremental
-    ? `已核对输入的上一版综述：${story.digest}\n\n报道（按时间，标【新】的是新增报道）：\n${lines.join("\n")}`
-    : `请只依据下面这些报道的当前内容重写综述，不要沿用以前版本的说法。\n报道（按时间）：\n${lines.join("\n")}`;
+    ? `Síntese anterior com entrada verificada:${story.digest}\n\nReportagens em ordem cronológica; [NOVO] indica novas reportagens:\n${lines.join("\n")}`
+    : `Reescreva a síntese usando somente o conteúdo atual das reportagens abaixo. Não reutilize afirmações de versões anteriores.\nReportagens em ordem cronológica:\n${lines.join("\n")}`;
   const res = await chatJson({
     model: await modelFor("digest"), purpose: "story_digest", subject: `story:${storyId}@${ids.length}`, promptVersion: DIGEST_PROMPT_VERSION,
     system: SYSTEM, user, schema: Schema, temperature: 0.3, maxTokens: 1200,
   });
   return sql.begin(async (tx) => {
     const [current] = await tx<{ version: number }[]>`SELECT version FROM stories WHERE id=${storyId} AND merged_into IS NULL FOR UPDATE`;
-    // 不持锁等待HTTP；回来后与撤回/合并/其他生成串行，再核对所有当前输入。
+    // Não manter bloqueio durante HTTP. Ao retornar, serializar com retirada, mesclagem e geração, verificando entradas atuais.
     if (!current || current.version !== story.version || digestInputsHash(await digestReports(storyId, tx)) !== inputsHash) {
       await completeReceipt(tx, res.receiptId);
       return { updated: false };
@@ -75,7 +75,7 @@ export async function composeStoryDigest(storyId: number, opts: { afterCorrectio
   });
 }
 
-/** Periodic: statuses follow activity (持续更新 / 观察中 / 历史事件). */
+/** Estados periódicos seguem atividade: atualização contínua, em observação ou histórico. */
 export async function refreshStoryStatuses(): Promise<{ updated: number }> {
   const res = await sql`
     UPDATE stories SET status = CASE

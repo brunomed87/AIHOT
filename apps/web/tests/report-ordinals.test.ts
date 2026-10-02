@@ -1,4 +1,4 @@
-// 使用真实生产 SSR 服务与回环 API 夹具验证报头；不是浏览器截图或画布交互测试。
+// Verifica cabeçalho com servidor SSR real e API local de teste; não é captura de navegador nem interação de tela.
 import assert from "node:assert/strict";
 import { spawn, type ChildProcess } from "node:child_process";
 import { once } from "node:events";
@@ -16,10 +16,10 @@ const keys = Object.fromEntries(kinds.map((kind) => [kind, Array.from({ length: 
   const day = new Date(Date.UTC(2020, 0, 6 + i * (kind === "weekly" ? 7 : 1))).toISOString().slice(0, 10);
   return kind === "weekly" ? isoWeekLabel(day) : day;
 })])) as Record<ReportKind, string[]>;
-const index = (kind: ReportKind): ReportNavigationEntry[] => keys[kind].map((key, i) => ({ key, issueNumber: i + 1, title: `第${i + 1}期` })).reverse().slice(0, 400);
+const index = (kind: ReportKind): ReportNavigationEntry[] => keys[kind].map((key, i) => ({ key, issueNumber: i + 1, title: `nº${i + 1}edições` })).reverse().slice(0, 400);
 function report(kind: ReportKind, key: string): ReportDetail {
   return {
-    kind, key, issueNumber: keys[kind].indexOf(key) + 1, title: "测试刊物", windowStart: "2020-01-01T00:00:00Z", windowEnd: "2020-01-02T00:00:00Z", generatedAt: "2020-01-02T00:00:00Z", revision: 1,
+    kind, key, issueNumber: keys[kind].indexOf(key) + 1, title: "Publicação de teste", windowStart: "2020-01-01T00:00:00Z", windowEnd: "2020-01-02T00:00:00Z", generatedAt: "2020-01-02T00:00:00Z", revision: 1,
     lead: null, overview: null, highlights: [], sections: [], stories: [], flashes: [], cover: null, metrics: {}, readingMinutes: 1, prev: null, next: null,
   };
 }
@@ -77,8 +77,8 @@ for (const kind of kinds) {
     assert.equal(response.status, 200, logs);
     const html = await response.text();
     const visible = masthead(html);
-    assert.match(visible, /第\s*405\s*期/);
-    assert.doesNotMatch(visible, /第\s*400\s*期/);
+    assert.match(visible, /edição\s*405/);
+    assert.doesNotMatch(visible, /edição\s*400/);
   });
   test(`production SSR ${kind} oldest detail retains its own first issue number`, async () => {
     const first = keys[kind][0]!;
@@ -86,7 +86,7 @@ for (const kind of kinds) {
     const response = await fetch(`${origin}/${kind}/${first}`);
     assert.equal(response.status, 200, logs);
     const visible = masthead(await response.text());
-    assert.match(visible, /第\s*1\s*期/);
+    assert.match(visible, /edição\s*1/);
   });
 }
 
@@ -97,14 +97,14 @@ for (const kind of kinds) {
     const grid = periodGrid(kind, first, index(kind), 1);
     const current = grid.cells.find((cell) => cell.key === first)!;
     assert.equal(current.state, "current");
-    assert.match(current.label, /第 1 期/);
-    assert.doesNotMatch(current.label, /未出刊/);
+    assert.match(current.label, /edição 1/);
+    assert.doesNotMatch(current.label, /Não publicada/);
     const absent = grid.cells.find((cell) => cell.key === keys[kind][1])!;
     assert.equal(absent.state, "none");
-    assert.match(absent.label, /未出刊/);
+    assert.match(absent.label, /Não publicada/);
     assert.equal(issueNumber(index(kind), keys[kind].at(-1)!), 405);
     const refreshed = periodGrid(kind, first, [{ key: first, issueNumber: 9 }], 10);
-    assert.match(refreshed.cells.find((cell) => cell.key === first)!.label, /第 10 期/, "current detail metadata wins over an older navigation snapshot");
+    assert.match(refreshed.cells.find((cell) => cell.key === first)!.label, /edição 10/, "current detail metadata wins over an older navigation snapshot");
   });
   test(`${kind} known entries without numbers stay published without length-based fallback`, () => {
     const current = keys[kind].at(-1)!;
@@ -114,8 +114,8 @@ for (const kind of kinds) {
     const grid = periodGrid(kind, current, legacy);
     for (const key of [current, previous]) {
       const cell = grid.cells.find((entry) => entry.key === key)!;
-      assert.match(cell.label, /已出刊/);
-      assert.doesNotMatch(cell.label, /未出刊|第 \d+ 期/);
+      assert.match(cell.label, /Publicada/);
+      assert.doesNotMatch(cell.label, /Não publicada|edição \d+/);
     }
     for (const n of [0, -1, NaN, 1.5]) assert.equal(issueNumber([{ key: current, issueNumber: n }], current), null);
   });

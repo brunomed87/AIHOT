@@ -1,124 +1,66 @@
-# 把它改成你的行业
+# Adaptar ao seu setor
 
-这份仓库默认是一个“AI 行业”的示例站：示范信源是一批公开的 AI 资讯源，精选口味是 AIHOT 在 AI 领域调了很久的那一套。要把它变成“法律热点”“HR 热点”“黄金热点”，要改的东西几乎都在 [`industry/`](../industry/) 这一个文件夹里，代码基本不用动。
+A configuração original demonstra notícias de IA; esta cópia especializa oftalmologia e mantém módulos herdados. A maioria das adaptações fica em [industry/](../industry/). Um agente pode ler AGENTS.md e este guia, receber o setor desejado, fontes importantes, critérios de relevância e ruído, executar verificações e informar decisões que exigem o responsável.
 
-如果你用 Claude Code、Codex 这类 Agent，可以把下面这段直接发给它，然后回答它的问题：
+## 1. Nome e textos: industry/site.ts
 
-```text
-请读 AGENTS.md 和 docs/customize.md，把这个站改成「XX 行业」的热点站。
-我关心的是：……（写你想盯的信源、你觉得什么消息重要、什么不重要，越具体越好）。
-改完帮我跑 npm run typecheck、npm test 和 node scripts/smoke.ts，并告诉我还需要我自己决定哪些事。
-```
+name identifica navegação, títulos, imagens, RSS, MCP e painel. subject compõe nomes do setor; homeTitle, description e tagline definem apresentação. mcpPrefix determina nomes como lawhot_get_latest: preserve após uso por clientes. crawlerName identifica o coletor sem usar marca alheia. ABOUT reúne título, etapas, autoria opcional e direitos. icp atende registro de sites na China continental, quando aplicável. O endereço público vem de SITE_URL, não deste arquivo.
 
-下面是它（或者你）要做的事，按顺序。
+## 2. Categorias, marcadores e temas
 
-## 1. 站名和文案：`industry/site.ts`
+CATEGORIES em taxonomy.ts define filtros: key aparece em /all?category= e /feed/category/<key>.xml e deve permanecer estável. label é visível; section agrupa relatórios; guide orienta classificação. CATEGORY_TAGS, TOPIC_TAGS e ENTITY_TAGS limitam o vocabulário, com categoria obrigatória na primeira posição. ENTITIES define instituições; IDENTITY_LEXICON e PUBLISHER_DOMAINS impedem atribuições ausentes do original e podem ficar vazios em setores sem esse problema. ITEM_TYPES corresponde às tabelas de peso dos modelos e exige atualização conjunta das instruções.
 
-- `name`：站名。导航、标题、分享图、RSS、MCP、后台都用它。
-- `subject`：行业词。页面上“AI 日报”“全部 AI 动态”会变成“法律日报”“全部法律动态”。
-- `homeTitle`、`description`、`tagline`：首页标题、一句话介绍、侧边栏小字。
-- `mcpPrefix`：MCP 工具名前缀，比如 `lawhot` 会得到 `lawhot_get_latest`。有人接入以后不要再改。
-- `crawlerName`：抓取信源时报的名字，别用别人的站名。
-- `ABOUT`：关于页的大标题、四个环节的说明、作者块（可选）、版权说明。
-- `icp`：中国大陆网站的备案号，填了就显示在页脚。
+O catálogo topics.json contém grupos company, field e genre. tags ou entityId definem conteúdo; preserve slug após publicação. Atualize temas com node --env-file=.env scripts/seed.ts; Docker executa a carga inicial ao iniciar.
 
-站点地址不写在这里，部署时用环境变量 `SITE_URL` 设置。
+## 3. Fontes: industry/sources.json
 
-## 2. 分类、标签和主题：`industry/taxonomy.ts`、`industry/topics.json`
+Importadas somente quando inexistentes. Alterações posteriores ficam no painel Fontes, com criação, tentativa de coleta, intervalos e diagnóstico.
 
-- `CATEGORIES`：首页和“全部动态”的筛选类别。`key` 会出现在网址和接口里（`/all?category=`、`/feed/category/<key>.xml`），上线后不要改；`label` 是显示名；`section` 是日报里的分节；`guide` 告诉模型怎么归类。
-- `CATEGORY_TAGS`、`TOPIC_TAGS`、`ENTITY_TAGS`：模型打标签时只能从这里选。第一个标签必须是“分类标签”。
-- `ENTITIES`：行业里的主要公司或机构，用于“公司”类主题页。`IDENTITY_LEXICON`、`PUBLISHER_DOMAINS` 用来防止模型在标题摘要里写进原文没提到的公司，别的行业没有这个需要可以清空。
-- `ITEM_TYPES`：内容类型，和评分提示词里的权重表对应，改了要一起改提示词。
-- `topics.json`：主题目录（`/topics`）。分三组：`company`（公司与机构）、`field`（方向）、`genre`（内容形态）。每个主题用 `tags` 或 `entityId` 决定收哪些内容。`slug` 上线后不要改。
-
-改完主题后运行 `node --env-file=.env scripts/seed.ts`（Docker 里会在启动时自动运行），主题会更新进数据库。
-
-## 3. 信源：`industry/sources.json`
-
-这是首次启动时导入的示范信源，已经存在的不会被覆盖。上线后更常用的是后台“信源”页：能新建、试抓、调频率、看失败原因。
-
-每个信源的关键字段：
-
-| 字段 | 含义 |
+| Campo | Significado |
 |---|---|
-| `kind` | `rss`、`web_list`（网页列表，配选择器）、`json_list`（JSON 接口）、`x_search`（X 账号，需要 SocialData）、`mp_account`（公众号，需要极致了）、`external`（外部推送） |
-| `config` | 每种信源的配置，见 [信源](sources.md) |
-| `tier` | 信源分级：`T1` 官方一手、`T1_5` 官方账号与准官方、`T2` 媒体与个人、`EXCLUDE_MP` 不参与精选。不同分级的入选门槛不同 |
-| `participation_mode` | `editorial` 进精选和全部动态；`hot_signal` 只作热度证据；`isolated` 不进任何公开页面 |
-| `first_party` | 是不是当事方自己发的（官网、官方账号） |
-| `site_fulltext` | 站内能不能展示全文。**默认关**：只展示摘要和原文链接。只有来源明确允许时才打开 |
+| kind | rss, web_list, json_list, x_search, mp_account ou external |
+| config | Parâmetros de cada leitor; veja [fontes](sources.md) |
+| tier | T1 oficial; T1_5 contas oficiais ou próximas; T2 imprensa e pessoas; EXCLUDE_MP fora da seleção |
+| participation_mode | editorial público; hot_signal somente evidência de repercussão; isolated privado |
+| first_party | Publicador é parte direta do acontecimento |
+| site_fulltext | Texto integral no site, desativado por padrão e somente permitido pela fonte |
 
-中国大陆的很多行业，一手信息在公众号上。公众号信源需要极致了（Dajiala）的 key，按请求计费，有预算熔断。
+X precisa de SocialData; contas WeChat usam Dajiala, com cobrança por requisição e controle de orçamento.
 
-## 4. 精选标准：`industry/prompts/`
+## 4. Instruções: industry/prompts/
 
-这是最值得花时间的一步：你的行业 KnowHow 就写在这里。
-
-| 文件 | 作用 |
+| Arquivo | Função |
 |---|---|
-| `prefilter.md` | 预筛：这条资料是不是这个行业的事。宽召回，只拦明显无关的 |
-| `selection-score.md` | **评分标准**：给 0–100 分。里面有内容类型、五个维度、各类型的权重、必须正常评价的价值、必须压住的噪声 |
-| `content-understanding.md` | 入选内容的写法：中文标题、答案先行的摘要、推荐理由、标签 |
-| `rules-domain.md` | 行业术语的翻译与保留规则（示例是 AI 术语：LLM 译作大语言模型、Token 保留英文……） |
-| `summarize-*.md` | 其他内容的标题摘要写法 |
-| `structure.md` | 分类、标签、主体公司、事实的结构化抽取 |
-| `group-*.md` | 事件归组：两篇报道是不是同一件事 |
-| `story-digest.md`、`report-*.md` | 事件综述、日报导语、周报月报 |
-| `translate-*.md` | 全文翻译 |
+| prefilter.md | Abrangência ampla, bloqueando somente materiais claramente alheios |
+| selection-score.md | Nota 0–100 por tipo e cinco dimensões, com relevância e supressão de ruído |
+| content-understanding.md | Título em português, resumo com resposta inicial, justificativa e marcadores |
+| rules-domain.md | Terminologia e regras de tradução e preservação |
+| summarize-*.md | Redação resumida dos demais materiais |
+| structure.md | Categorias, instituições e fatos estruturados |
+| group-*.md | Relações entre relatos |
+| story-digest.md e report-*.md | Síntese, introdução diária e relatórios maiores |
+| translate-*.md | Tradução integral |
 
-提示词里用 `{{siteName}}` 指代站名，`{{> 文件名}}` 引用另一份提示词。改提示词不用改代码。
+{{siteName}} substitui o nome; {{> arquivo}} inclui outra instrução. Mudanças não exigem código. Preserve ponderação, controle de ruído e segurança; troque exemplos do setor. No direito, novas normas, decisões e sanções merecem análise, enquanto propaganda e cursos exigem controle de ruído.
 
-**建议的做法**：先保留结构（五个维度加权、噪声压制规则、安全边界），只把“什么算重要”“什么算噪声”的例子换成你的行业。比如法律行业，“新法规正式公布、重要判决、监管处罚”应该正常评价，“律所营销软文、课程广告”要压住。
+## 5. Limites e calibração
 
-## 5. 门槛与校准：`industry/selection.ts`
+A soma de duas notas deve atingir duas vezes o limite. Os limites originais T1 60, T1_5 65 e T2 76 foram calibrados em IA e exigem nova calibração ao trocar setor ou instruções. Anote 100–200 materiais em .data/gold.jsonl, seguindo [seleção](selection.md), execute scripts/eval-selection.ts e examine acertos, precisão, cobertura e erros no SelectBench. Ajuste instruções e depois limites.
 
-两次评分之和 ≥ 2 × 门槛才入选。默认门槛（T1 60、T1_5 65、T2 76）是 AIHOT 在 AI 领域校准出来的，换了行业和提示词，需要重新校准：
+## 6. Módulos de IA
 
-1. 从你的信源里挑 100–200 条资料，自己标“该选 / 不该选”，存成 `.data/gold.jsonl`（格式见 [精选与校准](selection.md)，`industry/gold.example.jsonl` 有两条示例）。
-2. 运行 `node --env-file=.env scripts/eval-selection.ts --gold .data/gold.jsonl`，看准确率、查准率、查全率，和不同门槛下的结果。
-3. 在后台 SelectBench 里逐条看判错的资料，回去改评分提示词或门槛，再跑一遍。
+leaderboard e codexResetMonitor em features.ts controlam rankings e monitor, incluindo navegação, agendas, interfaces e sitemap. Para outros setores, podem ser false. Remoção definitiva exige retirar os módulos backend leaderboard/ e monitor/, as funções e rotas correspondentes da interface e apps/api/src/routes/leaderboard.ts, resolvendo dependências de compilação.
 
-这一步决定了你的站“选得准不准”。
+## 7. Marca
 
-## 6. 只对 AI 有意义的两个模块：`industry/features.ts`
+industry/brand/ contém logo.svg, icon.png de 512, icon-192.png, apple-icon.png de 180 e favicon.ico. nameplates/ guarda cabeçalhos dos relatórios; regenere após mudança de setor com scripts/nameplates.ts, conforme suas fontes. O gerador original usa Noto Sans SC 5.3.0, obtido por npm pack @fontsource/noto-sans-sc@5.3.0 e extraído antes da execução. Na interface, components/Logo.tsx usa o nome textual e pode receber uma marca própria. Códigos QR entram pelo painel Configurações ou brand/contact/. Não use nome ou logotipo AIHOT como marca própria.
 
-- `leaderboard`：模型榜（`/leaderboard`）。
-- `codexResetMonitor`：Codex 重置监控（`/codex-reset`）。
+## 8. Páginas e atualizações
 
-别的行业把两项都设为 `false`：导航入口、定时任务、接口和站点地图都会跟着关掉。想彻底删掉代码，删这些目录并处理掉编译错误即可：`packages/backend/src/leaderboard/`、`packages/backend/src/monitor/`、`apps/web/app/features/leaderboard/`、`apps/web/app/features/monitor/`、`apps/web/app/routes/leaderboard*.tsx`、`apps/web/app/routes/codex-reset.tsx`、`apps/api/src/routes/leaderboard.ts`。
+terms.md e privacy.md são modelos: adapte à operação e obtenha confirmação do responsável antes de publicar um site. changelog.json recebe entradas novas no início e latestVersion com data e hora para o indicador de novidades.
 
-## 7. 品牌：`industry/brand/`
+## 9. Modelos e implantação
 
-- `logo.svg`、`icon.png`（512）、`icon-192.png`、`apple-icon.png`（180）、`favicon.ico`：站点图标。
-- `nameplates/`：日报、周报、月报页顶部的报头字（比如“AI日报”）。换了行业词以后重新生成：
-  ```bash
-  npm pack @fontsource/noto-sans-sc@5.3.0 && tar xzf fontsource-noto-sans-sc-5.3.0.tgz
-  node scripts/nameplates.ts package
-  ```
-- 关于页的二维码：在后台“设置”里上传，或者把图片放进 `industry/brand/contact/`。
-- 网页左上角的站名标志在 `apps/web/app/components/Logo.tsx`，默认用站名文字；有自己的 Logo 可以换成图片。
+LLM_BASE_URL, LLM_API_KEY e LLM_MODEL no .env aceitam serviço compatível com OpenAI. Rotas específicas usam parâmetros de .env.example. Veja [implantação](deploy.md).
 
-请不要使用 AIHOT 的名字和 Logo。
-
-## 8. 页面文案：`industry/pages/`、`industry/changelog.json`
-
-- `pages/terms.md`、`pages/privacy.md`：使用规则和隐私说明。**现在是模板**，上线前按你的实际情况改写，必要时请专业人士看一下。
-- `changelog.json`：更新日志。新条目写在最前面，把 `latestVersion` 改成它的日期和时间。
-
-## 9. 模型和部署
-
-- 模型：`.env` 里的 `LLM_BASE_URL`、`LLM_API_KEY`、`LLM_MODEL`，任何 OpenAI 兼容接口都行，所有步骤默认都用它。想让某一步用别家模型，见 `.env.example`。
-- 部署：见 [部署](deploy.md)。
-
-## 改完以后检查
-
-```bash
-npm run typecheck
-DATABASE_URL=postgres://…/myhot_test npm test     # 库名必须以 _test 或 _ci 结尾
-node scripts/smoke.ts --base http://localhost:3000   # 站点跑起来以后
-```
-
-`tests/` 里有些测试用的是示例行业的分类、标签和公司（比如 `ai-models`、“模型发布”、Anthropic）。改了 `industry/taxonomy.ts` 以后这些测试会失败，把例子换成你行业里的对应项即可，测的规则本身不用改。
-
-然后打开网站看一眼首页、全部动态、日报和关于页，再去后台“信源”页看信源是不是都抓成功了。
+Execute tipos, testes com banco terminado em _test ou _ci, compilação, testes da interface e smoke. Ajuste exemplos dos testes quando mudar o vocabulário, preservando regras verificadas. Confira início, notícias, relatórios e apresentação, além do estado das fontes no painel.

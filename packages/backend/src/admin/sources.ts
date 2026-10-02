@@ -84,7 +84,7 @@ export async function previewSource(draft: Pick<SourceRow, "id" | "kind" | "conf
   else if (source.kind === "web_list") candidates = await fetchWebList(source, { preview: true });
   else if (source.kind === "json_list") candidates = await fetchJsonList(source);
   else if (source.kind === "x_search") candidates = (await fetchXSearch(source)).candidates;
-  else throw new Error(`preview is not available for ${source.kind} sources`);
+  else throw new Error(`Prévia indisponível para fontes do tipo ${source.kind}`);
   return {
     ms: Date.now() - started,
     count: candidates.length,
@@ -117,14 +117,14 @@ export async function updateSource(id: string, input: { patch: unknown; version:
     if (patch.config) await tx`SELECT pg_advisory_xact_lock(hashtext('admin-source-identity'))`;
     const [before] = await tx`SELECT * FROM sources WHERE id = ${id} FOR UPDATE`;
     if (!before) return null;
-    if (new Date(before.updated_at as Date).toISOString() !== input.version) throw new Conflict("信源已被其他操作修改，请刷新后再改");
+    if (new Date(before.updated_at as Date).toISOString() !== input.version) throw new Conflict("Fonte alterada por outra ação. Atualize antes de editar");
     if (patch.config) {
       assertSupportedConfig(before.kind as SourceRow["kind"], patch.config);
       // A changed address must not be one another source already collects from. (Sources that share a
       // feed on purpose, with different filters, keep editing their other settings.)
       const moved = sourceIdentity(String(before.kind), patch.config) !== sourceIdentity(String(before.kind), before.config as Record<string, unknown>);
       const dup = moved ? await findDuplicateSource(String(before.kind), patch.config, id, tx) : null;
-      if (dup) throw new Conflict(`与已有信源重复：${dup.name}（${dup.id}）`);
+      if (dup) throw new Conflict(`Duplicata de uma fonte existente:${dup.name}(${dup.id})`);
     }
     const keys = Object.keys(patch) as Array<keyof typeof patch>;
     if (!keys.length) return before;
@@ -210,7 +210,7 @@ export async function createSource(input: unknown, actor: string): Promise<Befor
     VALUES (${s.id}, ${s.name}, ${s.kind}, ${tx.json(s.config as never)}, ${s.tier}, ${s.participation_mode}, ${s.interval_minutes}, ${s.first_party}, ${s.tags},
             ${s.site_fulltext}, ${s.syndicate_fulltext}, now())
     ON CONFLICT (id) DO NOTHING RETURNING *`;
-    if (!row) throw new Conflict(`信源 ID ${s.id} 已存在`);
+    if (!row) throw new Conflict(`ID da fonte ${s.id} já existe`);
     await audit(actor, "source.create", `source:${s.id}`, null, null, s, { db: tx });
     return { created: true as const, source: row };
   });

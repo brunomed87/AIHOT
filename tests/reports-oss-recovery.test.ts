@@ -11,7 +11,7 @@ import { catchUpReports, composeDaily, composeWeekly, composeMonthly } from "@ai
 
 const T = tag();
 const SOURCE = `report-recovery-${T}`;
-let answer = async (user: string) => ({ title: user.slice(0, 100), leadParagraph: "导语", highlights: [1], headline: "本期进展", overview: "总述", themes: [{ heading: "主题", summary: "摘要", refs: [1] }] });
+let answer = async (user: string) => ({ title: user.slice(0, 100), leadParagraph: "导语", highlights: [1], headline: "本期进展", overview: "总述", themes: [{ heading: "Temas", summary: "Resumo", refs: [1] }] });
 const provider = await stub(async (_hit, request) => ({
   choices: [{ message: { content: JSON.stringify(await answer(JSON.parse(request.body).messages.at(-1).content)) } }],
 }));

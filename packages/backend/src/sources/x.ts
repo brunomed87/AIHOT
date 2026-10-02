@@ -63,7 +63,7 @@ export function tweetToCandidate(t: SdTweet): Candidate {
     author: t.user.screen_name,
     language: t.lang ?? null,
     publishedAt: new Date(t.tweet_created_at),
-    bodyText: [post.text, post.quoted ? `\n\n【引用 @${post.quoted.handle}】${post.quoted.text}` : ""].join("").trim(),
+    bodyText: [post.text, post.quoted ? `\n\n[Citação de @${post.quoted.handle}]${post.quoted.text}` : ""].join("").trim(),
     // A linked X Article is the post's real body: extraction fetches it (jobs/content.ts route).
     bodyStatus: linksXArticle(post.text) ? "pending" : "ok",
     xPost: post,

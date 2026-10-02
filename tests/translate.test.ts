@@ -6,10 +6,11 @@ import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { closeDb, sql } from "@aihot/backend/db";
 import { upsertMaterial } from "@aihot/backend/content/materials";
-import { translatePending } from "@aihot/backend/editorial/translate";
+import { translatePending, translateArticle } from "@aihot/backend/editorial/translate";
 import { stopBoss } from "@aihot/backend/jobs/queue";
 import { publishArticle } from "@aihot/backend/publication/publish";
 import { buildApp } from "../apps/api/src/app.ts";
+import { itemFeed } from "@aihot/backend/publication/feeds";
 
 const T = tag();
 const SOURCE = `test-translate-${T}`;
@@ -30,11 +31,11 @@ const provider = await stub(async (_hit, req) => {
     if (s.includes("Neuroglancer")) {
       const n = (asks.get(s) ?? 0) + 1;
       asks.set(s, n);
-      return n === 1 ? "解释 Neuroglancer 的文字 ⟦0⟧。" : '解释 <a id="L0">Neuroglancer</a> 的文字 ⟦0⟧。';
+      return n === 1 ? "Explicação de Neuroglancer ⟦0⟧." : 'Explicação de <a id="L0">Neuroglancer</a> ⟦0⟧.';
     }
-    if (s.includes("never keeps")) return "丢了链接。";
-    if (s.includes("Introducing")) return "隆重推出 Sonnet 5.5。";
-    return s.includes("twenty") ? "价格是二十美元。" : s.includes("ten") ? "价格是十美元。" : "译文";
+    if (s.includes("never keeps")) return "O link foi perdido.";
+    if (s.includes("Introducing")) return "Apresentamos Sonnet 5.5.";
+    return s.includes("twenty") ? "O preço é vinte dólares." : s.includes("ten") ? "O preço é dez dólares." : "Tradução para português.";
   });
   return { id: "stub", choices: [{ message: { content: JSON.stringify({ t }) } }], usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 } };
 });
@@ -58,7 +59,7 @@ async function detail(id: string) {
 
 before(async () => {
   await sql`INSERT INTO sources (id, name, kind, tier, participation_mode, site_fulltext, syndicate_fulltext, next_fetch_at)
-            VALUES (${SOURCE}, 'Test translate', 'rss', 'T1', 'editorial', true, false, '2100-01-01')`;
+            VALUES (${SOURCE}, 'Test translate', 'rss', 'T1', 'editorial', true, true, '2100-01-01')`;
 });
 after(async () => {
   await app.close();
@@ -93,7 +94,7 @@ test("a text corrected while its translation was running is translated again, an
   const [tr] = await sql<{ revision: number }[]>`SELECT revision FROM translations WHERE article_id = ${id}`;
   assert.equal(tr?.revision, 2, "the corrected text is translated on the next run");
   const current = await detail(id);
-  assert.ok(current.body.zh?.includes("二十美元") && current.body.complete, "the page shows the translation of the corrected text");
+  assert.ok(current.body.zh?.includes("vinte dólares") && current.body.complete, "a página mostra a tradução do texto corrigido");
 });
 
 test("links and images inside a paragraph survive the translation, or the paragraph stays in the original", async () => {
@@ -128,11 +129,52 @@ test("the post a selected X post quotes is translated once and shown with the it
   const run = await translatePending({ limit: 1 });
   assert.ok(run.quotes >= 1);
   const [q] = await sql<{ text_zh: string; origin: string }[]>`SELECT text_zh, origin FROM quote_translations WHERE tweet_id = ${tweetId}`;
-  assert.deepEqual({ ...q }, { text_zh: "隆重推出 Sonnet 5.5。", origin: "model" });
+  assert.deepEqual({ ...q }, { text_zh: "Apresentamos Sonnet 5.5.", origin: "model" });
   const res = await app.inject({ method: "GET", url: `/api/site/items/${id}` });
   const item = JSON.parse(res.body) as { x: { quoted: { text: string; translation: string | null } } };
-  assert.deepEqual([item.x.quoted.text, item.x.quoted.translation], [`Introducing Claude Sonnet 5.5 ${T}`, "隆重推出 Sonnet 5.5。"]);
+  assert.deepEqual([item.x.quoted.text, item.x.quoted.translation], [`Introducing Claude Sonnet 5.5 ${T}`, "Apresentamos Sonnet 5.5."]);
   await translatePending({ limit: 1 });
   const receipts = await sql`SELECT 1 FROM receipts WHERE purpose = 'translate_quoted' AND subject = ${`quote:${tweetId}`}`;
   assert.equal(receipts.length, 1, "translated once");
+});
+
+test('artigo inteiramente em chinês ganha tradução pt; artigo pt-BR dispensa modelos', async () => {
+  for (const language of ['zh', 'pt-BR']) {
+    const text = language === 'zh' ? '眼科研究发现新的诊断方法。' : 'Uma pesquisa para melhorar a saúde dos pacientes.';
+    const { articleId: id } = await upsertMaterial({ sourceId: SOURCE, url: `${URL_}-${language}`, title: `Pesquisa ${language} ${T}`,
+      language, bodyText: text, bodyHtml: `<p>${text}</p>`, bodyStatus: 'ok', via: 'fetch', publishedAt: new Date() });
+    await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,category,title_zh,summary_zh,score,selected)
+      VALUES(${id},1,'rule','pass','ai-models','Pesquisa em oftalmologia','Resumo',90,true)`;
+    await publishArticle(id, { releasedAt: new Date(Date.now() - 60_000) });
+    const hits = provider.hits();
+    const result = await translateArticle(id);
+    assert.equal(result.status, language === 'zh' ? 'translated' : 'skipped');
+    if (language === 'zh') {
+      const [tr] = await sql`SELECT lang,body_text FROM translations WHERE article_id=${id}`;
+      assert.equal(tr!.lang, 'pt');
+      assert.equal(tr!.body_text, 'Tradução para português.');
+      const feed = await itemFeed('selected-full', null);
+      assert.ok(feed.includes('<language>pt-BR</language>'));
+      assert.ok(feed.includes('Tradução para português.'));
+    } else assert.equal(provider.hits(), hits, 'texto em português não chama o modelo');
+  }
+});
+
+test('citação chinesa é traduzida para português sem reutilizar tradução antiga zh', async () => {
+  const tweetId = `6${Date.now()}`;
+  const quoted = '研究团队发布了新的眼科诊断方法。';
+  const { articleId: id } = await upsertMaterial({ sourceId: SOURCE, url: `https://x.com/test/status/9${Date.now()}`,
+    title: `Citação ${T}`, language: 'pt-BR', bodyText: 'Hoje publicamos uma pesquisa.', bodyStatus: 'ok', via: 'fetch', publishedAt: new Date(),
+    discoveredAt: new Date(Date.now() + 2_400_000), xPost: { tweetId: `9${Date.now()}`, authorName: 'Pesquisador', handle: 'test', text: 'Hoje publicamos uma pesquisa.', quoted: { authorName: 'Instituto', handle: 'test', text: quoted, url: `https://x.com/test/status/${tweetId}` } } });
+  await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,category,title_zh,summary_zh,score,selected)
+    VALUES(${id},1,'rule','pass','ai-models','Citação de pesquisa','Resumo',90,true)`;
+  await publishArticle(id, { releasedAt: new Date(Date.now() - 60_000) });
+  await sql`INSERT INTO quote_translations(tweet_id,text_hash,text_zh,origin,lang) VALUES(${tweetId},'old','旧译文','model','zh')`;
+  await translatePending({ limit: 1 });
+  const [tr] = await sql`SELECT lang,text_zh FROM quote_translations WHERE tweet_id=${tweetId}`;
+  assert.equal(tr!.lang, 'pt');
+  assert.equal(tr!.text_zh, 'Tradução para português.');
+  const item = (await app.inject({method:'GET',url:`/api/site/items/${id}`})).json();
+  assert.equal(item.x.quoted.text, quoted);
+  assert.equal(item.x.quoted.translation, 'Tradução para português.');
 });

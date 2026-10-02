@@ -20,10 +20,10 @@ const provider = await stub((_hit, req) => {
     requests.push(body);
     return response(body);
   }
-  const answer = { query: "发布", decisions: [{ id: "C1", relation: "SAME_OCCURRENCE", confidence: 0.99, note: "" }] };
+  const answer = { query: "Lançamento", decisions: [{ id: "C1", relation: "SAME_OCCURRENCE", confidence: 0.99, note: "" }] };
   return { id: "stub", choices: [{ message: { content: JSON.stringify(answer) } }], usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 } };
 });
-// 配置必须早于向量模块导入，模型和密钥仅用于当前进程的本地模拟服务。
+// Configuração precede importação de vetores; modelo e chave são apenas para serviço local deste processo.
 process.env.EMBEDDING_DIMS = "4";
 process.env.EMBEDDING_MODEL = T;
 process.env.EMBEDDING_API_KEY = "test-key";
@@ -63,7 +63,7 @@ async function report() {
   await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,category,title_zh,summary_zh,score,selected,output)
     VALUES(${articleId},1,'rule','pass','ai-models',${it.text},'摘要',80,false,${sql.json({ fact: { title: it.text } })})`;
   await publishArticle(articleId);
-  return { id: articleId, text: reportText(it.text, "摘要") };
+  return { id: articleId, text: reportText(it.text, "Resumo") };
 }
 async function existingReport() {
   const reportItem = await report();

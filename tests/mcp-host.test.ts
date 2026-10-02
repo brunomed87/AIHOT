@@ -103,7 +103,7 @@ function rawRequest(address: string, authorityHeaders: string[], method = "POST"
 }
 
 test("MCP rejects an empty Host received over HTTP", async () => {
-  // 注入工具会把空 Host 自动补成 localhost，因此此边界使用真实 HTTP 请求。
+  // Ferramenta de injeção completa Host vazio com localhost; verificar esse limite por HTTP real.
   const server = Fastify();
   registerMcp(server);
   try {
@@ -118,7 +118,7 @@ test("MCP rejects an empty Host received over HTTP", async () => {
 });
 
 test("MCP rejects repeated effective authority headers over HTTP", async () => {
-  // 必须发送原始字段，避免注入工具合并重复 Host 后掩盖 Node 丢弃后续值的行为。
+  // Enviar campos brutos sem mesclar Host repetido, preservando observação do descarte pelo Node.
   const server = Fastify();
   registerMcp(server);
   try {
@@ -198,7 +198,7 @@ test("MCP preserves preflight, unsupported methods, and shared GET/DELETE Host c
 });
 
 function checkConfiguration(siteUrl: string, allowedHosts: string, cases: Array<{ headers: Record<string, string>; status: number }>) {
-  // 独立进程在导入路由前设置配置，避免模块缓存掩盖环境变量行为。
+  // Processo independente configura antes de importar rotas, sem cache esconder variáveis de ambiente.
   execFileSync(process.execPath, ["--input-type=module", "-e", `
     import assert from "node:assert/strict";
     import Fastify from "fastify";

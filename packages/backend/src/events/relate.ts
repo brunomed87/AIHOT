@@ -72,18 +72,18 @@ export const SignalSchema = z.object({
 });
 
 function when(at: Date | null): string {
-  return at ? `${beijingDate(at)} ${beijingTime(at)}` : "未知";
+  return at ? `${beijingDate(at)} ${beijingTime(at)}` : "Desconhecido";
 }
 
 export function describeReport(r: ReportView, label: string, extra = ""): string {
   const f = r.frame;
   return [
-    `【${label}】${extra}`,
-    `标题：${r.title}`,
-    `来源：${r.source}${r.firstParty ? "（当事方/官方）" : ""}｜发布时间：${when(r.at)}`,
-    `摘要：${(r.summary ?? "").slice(0, 360) || "（无）"}`,
+    `[${label}]${extra}`,
+    `Título:${r.title}`,
+    `Fonte:${r.source}${r.firstParty ? "(envolvido / oficial)" : ""} | publicação:${when(r.at)}`,
+    `Resumo:${(r.summary ?? "").slice(0, 360) || "(nenhum)"}`,
     f && (f.subject || f.action || f.object)
-      ? `事实要素：主体=${f.subject || "?"}；动作=${f.action || "?"}；对象=${f.object || "?"}；日期=${f.occurredAt || "未知"}`
+      ? `Elementos do fato: sujeito=${f.subject || "?"}; ação=${f.action || "?"}; objeto=${f.object || "?"}; data=${f.occurredAt || "Desconhecido"}`
       : null,
   ]
     .filter(Boolean)
@@ -92,15 +92,15 @@ export function describeReport(r: ReportView, label: string, extra = ""): string
 
 export const candidateKey = (index: number) => `C${index + 1}`;
 
-export function batchUser(query: ReportView, cands: CandidateView[], queryLabel = "新报道"): string {
+export function batchUser(query: ReportView, cands: CandidateView[], queryLabel = "Nova reportagem"): string {
   const list = cands
-    .map((c, i) => describeReport(c.report, `候选 ${candidateKey(i)}`, `（该事实已有 ${c.members} 篇报道；事实标题：${c.factTitle}）`))
+    .map((c, i) => describeReport(c.report, `Candidato ${candidateKey(i)}`, `(este fato já tem ${c.members} reportagens; título do fato:${c.factTitle})`))
     .join("\n\n");
-  return `${describeReport(query, queryLabel)}\n\n${list}\n\n${queryLabel}与每个候选的关系是什么？`;
+  return `${describeReport(query, queryLabel)}\n\n${list}\n\n${queryLabel}Qual a relação com cada candidato?`;
 }
 
 export function pairUser(a: ReportView, b: ReportView): string {
-  return `${describeReport(a, "报道 A")}\n\n${describeReport(b, "报道 B")}\n\n这两篇报道是什么关系？`;
+  return `${describeReport(a, "Reportagem A")}\n\n${describeReport(b, "Reportagem B")}\n\nQual a relação entre estas duas reportagens?`;
 }
 
 /** Verdicts by fact id; a candidate the model skipped counts as UNRELATED. */
@@ -159,7 +159,7 @@ export const STORY_REVIEW_MIN_CONFIDENCE = 0.75;
 
 /** The text a report is embedded with: title and the start of the summary, the same on both sides of a comparison. */
 export function reportText(title: string, summary: string | null | undefined): string {
-  return `${title}。${(summary ?? "").slice(0, 300)}`;
+  return `${title}.${(summary ?? "").slice(0, 300)}`;
 }
 
 /** Lexical stand-in for cosine when embeddings are off (tests, development without a key): shared character bigrams. */

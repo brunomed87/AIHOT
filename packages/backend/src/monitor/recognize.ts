@@ -25,34 +25,35 @@ export interface OpenEventInput {
   schedule: string | null;
 }
 
-const SYSTEM = `你是 ${SITE.name} 的“Tibo 重置监控”识别器。Tibo（@thsottiaux）是 OpenAI Codex 负责人，常在 X 上宣布 Codex 用量额度重置或发放“重置卡”。你读一条他的帖子（含回复/引用上下文），输出严格 JSON。
+const SYSTEM = `Você é ${SITE.name} e identifica anúncios públicos de Tibo (@thsottiaux) sobre reinício de limites do Codex e distribuição de créditos de reinício. Leia uma publicação com seu contexto de respostas e citações. Retorne JSON estrito.
 
-判断要点：
-- direct_reset（额度重置）：直接把用户的 Codex / ChatGPT Work 用量额度清零恢复满额，如 “we'll reset usage limits”“All reset for everyone”“reset landing at 6pm”。
-- reset_credit（重置卡 / banked reset）：往账户里放一张可自行使用的重置卡，如 “loading a banked reset into all accounts”“credit every user with a BANKED reset”“you will get more manual resets”（用户自己手动触发的重置也是重置卡）。
-- 只说 “a reset”“reset is landing” 而看不出是哪种形式时，kind 仍按最可能的一种填，但 kindExplicit=false。
-- action：announce=承诺将要重置/发卡；progress=正在下发、尚未完成；confirm=已经完成/已到账（“Reset all propagated”“has landed”）；amend=对已宣布事件补充适用范围或时间；withdraw=撤回或取消。
-- 简短回复（如 “Yes”“Soon”“Not so random, but yes”）要结合被回复的问题判断，被回复的内容与重置无关时不产生命题：问“会不会/什么时候重置”→ announce；问“是不是刚刚重置了”→ confirm。
-- count：这一句承诺或确认了几次重置（“reset twice” = 2），默认 1。
-- 同一条帖子里，每次重置只输出一个命题：对已经提到的重置再次提及、解释原因（如 “We're resetting usage twice so people can keep experimenting” 是在解释前面宣布的两次重置）不另起命题。
-- real：这是不是 Tibo 真实作出的承诺或确认。泛泛描述惯例或政策（“that includes the occasional reset”“we reset from time to time”）、谈改进下发速度或机制（“we are working to reduce this to a few minutes”）都不是承诺，real=false。
-- 下发进度（“rolling out”“50% done”“And now 100%”“still propagating”）属于最近那次重置：未完成用 progress，说完成（100%/all done）用 confirm，relatesTo 指向它。宣布（“we will reset…”“reset landing at 6pm”）和完成确认（“All reset for everyone.”“Reset all propagated.”“The banked reset has landed”“Not so random, but yes” 回答“刚刚是不是重置了”）都是 true；玩笑、假设、提问、条件句（“if we…”）、否认或“没有重置”才是 false。
-- relatesTo：只有当这条是在确认、推进、补充或撤回“待关联事件”里某件**尚未完成**的宣布（或同一次重置的补充说明）时，才填那件事的 id。确认一次新的、不同的重置（例如之前那次早已确认完成）时填 null；新的一次宣布也填 null。
-- statedTime：只描述原话，不要自己换算日期时间（代码会按发帖时间计算）。Tibo 说的 PST/PT 一律是太平洋当地时间。
-  · 相对说法填 relativeHours（从发帖时起算的小时数）：“in the next hour” → deadline, relativeHours=1；“in the next few hours” → deadline, 3；“over the next 24 hours” → deadline, 24；“in about an hour” → approximate, 1；“in ~3 hours” → approximate, 3；“shortly/soon” → approximate, 1。
-  · 时段填 period：“this afternoon” → afternoon；“this evening” → evening；“tonight” → tonight；“end of day/by midnight/today” → end_of_day（precision=deadline）。
-  · 钟点填 clock（HH:mm，24 小时制，如 6pm → 18:00），给了起止时 clockThrough；precision=exact（单个钟点）或 window（起止）。
-  · 只给日期（如 “on Tuesday”“tomorrow”）填 dayOffset（相对发帖当天的太平洋日期差，tomorrow=1，下周二按实际相差天数），precision=date；钟点或时段也可以同时带 dayOffset。
-  · 没说时间填 null。
-- expectedLanding：仅对 announce/progress 给出你估计的落地窗口（太平洋时间 "YYYY-MM-DD HH:mm"），参考他以往：宣布后多在数小时内落地，常在太平洋时间 16:30–21:30 按下；不得早于原话时间。note 用一句中文说明依据。
-- scope：audienceSource 保留原文的适用对象（如 "all paid users"，含条件）；plans 为套餐名数组（如 ["Plus","Pro","Business"]），未说明为 null；audienceZh 为中文展示（如 “所有付费用户”），陌生条件保留英文引号；productsZh 如 “Codex、ChatGPT Work”，未说明为 null。
-- outage：帖子承认 Codex 故障填 "outage"，宣布恢复填 "recovery"，否则 null。
-- relevant：帖子（结合上下文）是否与额度重置、重置卡或 Codex 故障有实质关系。无关帖子 propositions 为空、translationZh 可为 null。
-- translationZh：相关帖子给出整条帖子的忠实中文全译（保留换行、@ 与链接，不增删）；contextZh 给每条上下文的中文全译。
-- excerpt 是原帖中表达该命题的原句，excerptZh 是它的中文译文。
-- 不要编造未出现的时间、对象或数量；不确定时 needsReview=true。
+Regras:
+- direct_reset restaura diretamente o limite de uso do Codex ou ChatGPT Work. Exemplos originais: "we'll reset usage limits", "All reset for everyone", "reset landing at 6pm".
+- reset_credit adiciona um crédito que o usuário pode ativar depois. Exemplos originais: "loading a banked reset into all accounts", "credit every user with a BANKED reset", "you will get more manual resets". Reinício ativado manualmente também pertence a esse tipo.
+- Se o original disser somente "a reset" ou "reset is landing", escolha o tipo mais provável com kindExplicit=false.
+- action: announce é compromisso futuro; progress é distribuição ainda incompleta; confirm é conclusão ou recebimento; amend esclarece abrangência ou horário de anúncio anterior; withdraw cancela ou retira.
+- Respostas breves, como "Yes", "Soon" e "Not so random, but yes", dependem da pergunta respondida. Sem contexto relacionado a reinício, não crie proposição. Perguntar quando ocorrerá corresponde a announce; perguntar se acabou de ocorrer corresponde a confirm.
+- count indica quantos reinícios a frase promete ou confirma; "reset twice" significa 2. Padrão 1.
+- Em uma publicação, cada reinício aparece em uma única proposição. Repetição, justificativa ou explicação de um anúncio anterior não cria outro reinício.
+- real indica compromisso ou confirmação efetivos. Descrever costume ou política, como "that includes the occasional reset" e "we reset from time to time", ou melhorar a velocidade de distribuição, como "we are working to reduce this to a few minutes", não cria compromisso: real=false.
+- Andamento como "rolling out", "50% done", "And now 100%" e "still propagating" pertence ao reinício recente. Use progress enquanto incompleto e confirm quando 100% ou concluído, com relatesTo correspondente. Anúncio e confirmação efetivos têm real=true. Piadas, hipóteses, perguntas, condicionais, negativas ou ausência de reinício têm real=false.
+- relatesTo aponta somente para anúncio candidato ainda não concluído que esta publicação confirma, avança, esclarece ou retira, ou para esclarecimento do mesmo reinício. Novo anúncio ou confirmação de outro reinício usa null; não reutilize um acontecimento já concluído para um reinício novo.
+- statedTime conserva o sentido original; não calcule datas ou horários. O código faz a conversão pela publicação. PST/PT refere-se ao horário local do Pacífico.
+  - Expressões relativas usam relativeHours desde a publicação: "in the next hour" = deadline, 1; "in the next few hours" = deadline, 3; "over the next 24 hours" = deadline, 24; "in about an hour" = approximate, 1; "in ~3 hours" = approximate, 3; "shortly/soon" = approximate, 1.
+  - Períodos usam period: "this afternoon" = afternoon; "this evening" = evening; "tonight" = tonight; "end of day/by midnight/today" = end_of_day com precision=deadline.
+  - Horário usa clock em HH:mm de 24 horas, por exemplo 6pm = 18:00. Intervalo também usa clockThrough; precision=exact para um horário ou window para intervalo.
+  - Somente data, como "on Tuesday" ou "tomorrow", usa dayOffset em relação à data local do Pacífico da publicação e precision=date. Amanhã vale 1; próxima terça usa a diferença real. Horário ou período também pode incluir dayOffset.
+  - Sem indicação temporal, use null.
+- expectedLanding só aparece em announce/progress. Estime janela no Pacífico, formato YYYY-MM-DD HH:mm, usando o padrão histórico: normalmente algumas horas após anunciar, frequentemente entre 16h30 e 21h30. Nunca antecipe o horário declarado. note explica a base em português.
+- scope: audienceSource preserva o público original e suas condições; plans lista nomes dos planos, como Plus, Pro e Business, ou null se ausentes. audienceZh contém a descrição em português, apesar do nome técnico legado; condições desconhecidas preservam a citação original. productsZh preserva nomes dos produtos, como Codex e ChatGPT Work, ou null se ausentes.
+- outage: "outage" se reconhecer falha do Codex; "recovery" se anunciar recuperação; caso contrário, null.
+- relevant indica relação substancial com limites, créditos de reinício ou falha do Codex, considerando o contexto. Publicação sem relação tem propositions=[] e pode ter translationZh=null.
+- translationZh deve ser uma tradução integral fiel em português da publicação relacionada, com quebras, @ e links preservados, sem acrescentar ou remover informações. contextZh traduz cada contexto em português. Os nomes técnicos terminados em Zh permanecem por compatibilidade.
+- excerpt conserva a frase original que sustenta a proposição; excerptZh é sua tradução em português.
+- Não invente horário, público ou quantidade. Se houver dúvida, needsReview=true.
 
-只输出 JSON：{"relevant":bool,"translationZh":string|null,"contextZh":[{"id":string,"textZh":string}],"outage":"outage"|"recovery"|null,"needsReview":bool,"propositions":[{"kind":"direct_reset"|"reset_credit","kindExplicit":bool,"action":"announce"|"progress"|"confirm"|"amend"|"withdraw","real":bool,"count":number,"relatesTo":string|null,"excerpt":string,"excerptZh":string,"statedTime":{"precision":"exact"|"approximate"|"deadline"|"date"|"window","relativeHours":number|null,"period":"afternoon"|"evening"|"tonight"|"end_of_day"|null,"clock":string|null,"clockThrough":string|null,"dayOffset":number|null}|null,"timeInferred":bool,"expectedLanding":{"earliestPacific":string,"latestPacific":string,"note":string}|null,"scope":{"audienceSource":string|null,"plans":string[]|null,"audienceZh":string|null,"productsZh":string|null}}]}`;
+Retorne somente JSON:
+{"relevant":bool,"translationZh":string|null,"contextZh":[{"id":string,"textZh":string}],"outage":"outage"|"recovery"|null,"needsReview":bool,"propositions":[{"kind":"direct_reset"|"reset_credit","kindExplicit":bool,"action":"announce"|"progress"|"confirm"|"amend"|"withdraw","real":bool,"count":number,"relatesTo":string|null,"excerpt":string,"excerptZh":string,"statedTime":{"precision":"exact"|"approximate"|"deadline"|"date"|"window","relativeHours":number|null,"period":"afternoon"|"evening"|"tonight"|"end_of_day"|null,"clock":string|null,"clockThrough":string|null,"dayOffset":number|null}|null,"timeInferred":bool,"expectedLanding":{"earliestPacific":string,"latestPacific":string,"note":string}|null,"scope":{"audienceSource":string|null,"plans":string[]|null,"audienceZh":string|null,"productsZh":string|null}}]}`;
 
 const PropositionSchema = z.object({
   kind: z.enum(["direct_reset", "reset_credit"]),
@@ -100,19 +101,19 @@ export type Proposition = z.infer<typeof PropositionSchema>;
 
 function describeTime(iso: string): string {
   const p = pacificParts(new Date(iso));
-  return `${iso}（太平洋时间 ${p.date} ${p.hm}）`;
+  return `${iso}(horário do Pacífico: ${p.date} ${p.hm})`;
 }
 
 export async function recognizePost(input: { id: string; text: string; publishedAt: string; context: ContextInput[]; openEvents: OpenEventInput[] }): Promise<Recognition> {
   const lines = [
-    `帖子 ${input.id}，发布于 ${describeTime(input.publishedAt)}：`,
+    `Publicação ${input.id}; publicado em ${describeTime(input.publishedAt)}: `,
     input.text,
     "",
-    input.context.length ? "上下文（按关系列出）：" : "上下文：无",
-    ...input.context.map((c) => `- [${c.relation === "quote" ? "被引用" : "被回复"}] ${c.id} @${c.author}${c.publishedAt ? `，${describeTime(c.publishedAt)}` : ""}：${c.text}`),
+    input.context.length ? "Contexto por relação:" : "Sem contexto",
+    ...input.context.map((c) => `- [${c.relation === "quote" ? "Citado" : "Respondido"}] ${c.id} @${c.author}${c.publishedAt ? `, ${describeTime(c.publishedAt)}` : ""}: ${c.text}`),
     "",
-    input.openEvents.length ? "待关联事件（最近的已宣布或刚确认的事件）：" : "待关联事件：无",
-    ...input.openEvents.map((e) => `- ${e.id}｜${e.kind}｜${e.status}｜首帖 ${describeTime(e.firstPostAt)}｜${e.schedule ?? "未给时间"}｜“${e.excerpt}”`),
+    input.openEvents.length ? "Acontecimentos candidatos recentes, anunciados ou recém-confirmados:" : "Nenhum acontecimento candidato",
+    ...input.openEvents.map((e) => `- ${e.id}｜${e.kind}｜${e.status} | primeira publicação ${describeTime(e.firstPostAt)}｜${e.schedule ?? "Horário não informado"}｜“${e.excerpt}”`),
   ];
   const res = await chatJson({
     model: await modelFor("monitor"),

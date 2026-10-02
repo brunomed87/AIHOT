@@ -29,7 +29,7 @@ function limited(key: string, perMinute: number): boolean {
 }
 
 function unauthorized(reply: FastifyReply) {
-  return reply.code(401).header("Cache-Control", "no-store").type("text/plain; charset=utf-8").send("Unauthorized");
+  return reply.code(401).header("Cache-Control", "no-store").type("text/plain; charset=utf-8").send("Autenticação necessária");
 }
 
 export function registerIngest(app: FastifyInstance) {

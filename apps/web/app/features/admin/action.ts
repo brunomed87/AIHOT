@@ -52,14 +52,14 @@ export function useAdminAction() {
         }
         const text = await res.text();
         const json = text ? JSON.parse(text) : null;
-        if (!res.ok) throw new AdminError(res.status, json?.detail ?? `请求失败（${res.status}）`);
+        if (!res.ok) throw new AdminError(res.status, json?.detail ?? `Falha na solicitação (${res.status})`);
         keys.current.delete(label);
         if (opts.success) toast(opts.success, "ok");
         if (opts.revalidate !== false) revalidator.revalidate();
         // null means failure to callers; an empty success (204) is an empty object.
         return (json ?? {}) as T;
       } catch (error) {
-        const message = error instanceof AdminError ? error.message : "网络错误，请稍后再试";
+        const message = error instanceof AdminError ? error.message : "Erro de rede. Tente novamente mais tarde";
         toast(error instanceof AdminError && error.status === 409 ? `${message}` : message, "error");
         return null;
       } finally {

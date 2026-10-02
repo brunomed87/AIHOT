@@ -14,7 +14,7 @@ await sql`INSERT INTO sources (id, name, kind, tier) VALUES (${sourceId}, 'Admin
 after(async () => { await stopBoss(); await closeDb(); });
 
 async function article(url = `https://example.com/${tag()}`, title = "审查材料") {
-  return (await upsertMaterial({ sourceId, url, title, bodyText: "正文", bodyStatus: "ok", via: "fetch", publishedAt: new Date() })).articleId;
+  return (await upsertMaterial({ sourceId, url, title, bodyText: "Texto", bodyStatus: "ok", via: "fetch", publishedAt: new Date() })).articleId;
 }
 
 test("diagnostics find URL aliases, unpublished titles and an exact ID even when other titles mention it", async () => {
@@ -152,7 +152,7 @@ test("a rejected SEO correction leaves both the decision and public indexing unc
   assert.ok(indexed!.seo_indexed_at);
   assert.equal(indexed!.seo_excluded_at, null);
   assert.equal(indexed!.indexable, true);
-  await setSeoIndexed(id, { indexed: false, reason: "取消收录" }, "test");
+  await setSeoIndexed(id, { indexed: false, reason: "Remover indexação" }, "test");
   const [excluded] = await sql`SELECT seo_indexed_at, seo_excluded_at, indexable FROM publications WHERE article_id = ${id}`;
   assert.equal(excluded!.seo_indexed_at, null);
   assert.ok(excluded!.seo_excluded_at);

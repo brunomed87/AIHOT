@@ -219,7 +219,7 @@ test("a correction to the second event in a combined card reaches only groups th
   const original = await sql`SELECT subject_id, payload FROM deliveries WHERE target_key = 'main'`;
   assert.equal(original.length, 1, "both events share one card");
   assert.equal(original[0]!.subject_id, eventIds[0]);
-  assert.match(JSON.stringify(original[0]!.payload), /重置卡发放/);
+  assert.match(JSON.stringify(original[0]!.payload), /Distribuição de créditos/);
   await sql`UPDATE deliveries SET status = 'sent' WHERE target_key = 'main'`;
   const correction = await post("No reset credits tonight");
   await applyRecognition(correction, rec({ kind: "reset_credit", action: "withdraw", excerpt: "No reset credits tonight", relatesTo: eventIds[1] }));

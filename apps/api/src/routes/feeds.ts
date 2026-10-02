@@ -41,7 +41,7 @@ export function registerFeeds(app: FastifyInstance) {
     app.get(full ? "/feed/full/category/:file" : "/feed/category/:file", async (req, reply) => {
       const file = (req.params as { file: string }).file;
       const slug = file.replace(/\.xml$/, "");
-      if (!file.endsWith(".xml") || !isFeedCategory(slug)) return reply.code(404).type("text/plain; charset=utf-8").send("Not found");
+      if (!file.endsWith(".xml") || !isFeedCategory(slug)) return reply.code(404).type("text/plain; charset=utf-8").send("Não encontrado");
       try {
         return await sendFeed(req, reply, await itemFeed(full ? "selected-full" : "selected", slug));
       } catch (error) {

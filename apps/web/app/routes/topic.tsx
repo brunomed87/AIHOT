@@ -7,7 +7,7 @@ import { breadcrumbLd, pageMeta, titled } from "../lib/seo";
 import { DayList, Pagination } from "../features/feed/DayList";
 import { EmptyState, MoreLink } from "../components/ui/Page";
 
-// 主题HTML和导航数据使用API同一个绝对截止，不能跨过发布时刻。
+// HTML e navegação dos temas usam o mesmo corte absoluto da API, sem atravessar publicação.
 export function headers({ loaderHeaders }: Route.HeadersArgs) {
   return loaderHeaders;
 }
@@ -22,7 +22,7 @@ interface TopicPageData {
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const page = params.page ? Number(params.page) : 1;
-  if (params.page !== undefined && (!/^\d+$/.test(params.page) || page < 1)) throw new Response("Not found", { status: 404 });
+  if (params.page !== undefined && (!/^\d+$/.test(params.page) || page < 1)) throw new Response("Não encontrado", { status: 404 });
   // Page 1 lives at the topic's own address (308).
   if (params.page === "1") throw redirect(`/topics/${params.slug}`, 308);
   const upstream = new Headers();
@@ -31,16 +31,16 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  if (!loaderData) return [{ title: titled("主题不存在") }, { name: "robots", content: "noindex" }];
+  if (!loaderData) return [{ title: titled("Tema não encontrado") }, { name: "robots", content: "noindex" }];
   const { topic, page } = loaderData.data;
   const path = page > 1 ? `/topics/${topic.slug}/page/${page}` : `/topics/${topic.slug}`;
   return pageMeta({
-    title: page > 1 ? `${topic.name} · 第 ${page} 页` : topic.name,
+    title: page > 1 ? `${topic.name} · página ${page} página` : topic.name,
     description: topic.definition,
     path,
     image: `/og/topics/${topic.slug}.png`,
     noindex: !topic.indexable,
-    jsonLd: breadcrumbLd([{ name: SITE.name, path: "/" }, { name: "主题", path: "/topics" }, { name: topic.name, path: `/topics/${topic.slug}` }]),
+    jsonLd: breadcrumbLd([{ name: SITE.name, path: "/" }, { name: "Temas", path: "/topics" }, { name: topic.name, path: `/topics/${topic.slug}` }]),
   });
 }
 
@@ -56,17 +56,17 @@ export default function TopicPage() {
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-[22px] font-bold leading-[1.35] text-ink">{topic.name}</h1>
           <span className="hidden pt-2 lg:block">
-            <MoreLink to="/topics">全部主题</MoreLink>
+            <MoreLink to="/topics">Todos os temas</MoreLink>
           </span>
         </div>
         <p className="mt-1 max-w-[640px] text-[13px] leading-relaxed text-ink-3">{topic.definition}</p>
         <div className="mt-3 flex flex-wrap items-baseline gap-x-5 gap-y-1">
           <span className="text-[12.5px] text-ink-4">
-            <span className="num mr-1 text-[20px] font-bold text-ink">{topic.total.toLocaleString("zh-CN")}</span>条精选
+            <span className="num mr-1 text-[20px] font-bold text-ink">{topic.total.toLocaleString("pt-BR")}</span> selecionados
           </span>
           {topic.related.length > 0 && (
             <span className="flex flex-wrap items-center gap-1.5 text-[12.5px]">
-              <span className="text-ink-4">相关主题</span>
+              <span className="text-ink-4">Temas relacionados</span>
               {topic.related.map((r) => (
                 <Link key={r.slug} to={`/topics/${r.slug}`} className="chip">
                   {r.name}
@@ -78,16 +78,16 @@ export default function TopicPage() {
       </header>
 
       <div className="mb-1 mt-2 flex items-baseline justify-between">
-        <h2 className="text-[18px] font-bold text-ink">最新精选</h2>
+        <h2 className="text-[18px] font-bold text-ink">Destaques recentes</h2>
         {items.length > 0 && (
           <span className="num text-[12px] text-ink-4">
-            第 {first}–{last} 条 · 共 {topic.total.toLocaleString("zh-CN")} 条
+            nº {first}–{last} itens · total de {topic.total.toLocaleString("pt-BR")} itens
           </span>
         )}
       </div>
       {items.length === 0 ? (
         <div className="lg:card">
-          <EmptyState title="这个主题暂时还没有精选内容" />
+          <EmptyState title="Ainda não há conteúdos selecionados neste tema" />
         </div>
       ) : (
         <DayList items={items} />

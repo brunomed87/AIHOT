@@ -62,7 +62,7 @@ export async function unavailableIds(ids: string[]): Promise<Set<string>> {
 
 /** Directory/feed metadata only: citation summaries and full report prose stay in the detail read. */
 export async function reportIndexRows(kind: ReportKind, limit: number) {
-  // 先按完整的同类现存刊物编号，再裁剪导航；历史补刊和删除会改变后续期号。
+  // Numerar catálogo completo da mesma periodicidade antes de cortar navegação; inclusões históricas e remoções mudam números posteriores.
   return sql<{ key: string; issue_number: number; content: Record<string, any>; generated_at: Date }[]>`
     SELECT key, generated_at, (row_number() OVER (ORDER BY key ASC))::int AS issue_number, jsonb_build_object(
       'lead', content->'lead', 'headline', content->'headline', 'title', content->'title',
@@ -87,7 +87,7 @@ export function reportHeadline(content: Record<string, any>, kind: "daily" | "pe
   return first?.title ?? null;
 }
 
-/** A weekly or monthly's own headline; the composer's "<site> 周报 · 2026-W38" names the issue, not its news. */
+/** Manchete própria semanal ou mensal; título do compositor identifica edição, sem substituir suas notícias. */
 function periodicHeadline(content: Record<string, any>): string | null {
   const text = String(content.headline ?? content.title ?? "");
   return text && !/^.+ [周月]报 · \d{4}-/.test(text) ? text : null;
@@ -233,7 +233,7 @@ export async function loadReport(kind: ReportKind, key: string): Promise<ReportD
   const [{ prev, next }, picture] = await Promise.all([neighbors(kind, key), leadItem?.itemId && leadItem.available ? leadCover(leadItem.itemId) : null]);
   const cover = picture && leadItem ? { ...picture, caption: kind === "daily" ? null : leadItem.title } : null;
   const headline = kind === "daily" ? null : periodicHeadline(c);
-  const title = kind === "daily" ? `${withSubject("日报")} · ${key}` : String(c.title ?? (kind === "weekly" ? `${SITE.name} 周报 · ${key}` : `${SITE.name} 月报 · ${key}`));
+  const title = kind === "daily" ? `${withSubject("Relatório diário")} · ${key}` : String(c.title ?? (kind === "weekly" ? `${SITE.name} Relatório semanal · ${key}` : `${SITE.name} Relatório mensal · ${key}`));
   return {
     kind,
     key,

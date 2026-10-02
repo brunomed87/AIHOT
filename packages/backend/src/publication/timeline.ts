@@ -45,10 +45,7 @@ export function pickRepresentative<T extends RepresentativeRow>(rows: T[]): T {
   })[0]!;
 }
 
-/**
- * Public pool reports linked to the facts of the given stories and standalone facts, under the same
- * filters (non-selected included): the sets "另有 N 家信源报道" expands and the group counts come from.
- */
+/** Relatos públicos dos fatos e acontecimentos pedidos, sob mesmos filtros, incluindo não selecionados; usados nas expansões e contagens. */
 async function groupPool(q: TimelineQuery, now: Date, storyIds: number[], factIds: number[]) {
   if (!storyIds.length && !factIds.length) return [];
   return sql<{ story_id: number | null; fact_id: number; article_id: string; source_id: string; at: Date }[]>`

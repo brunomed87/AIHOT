@@ -41,10 +41,10 @@ export interface Candidate extends ReportEntry {
 }
 
 function roleOf(kind: string, firstParty: boolean): string {
-  if (firstParty) return kind === "x_search" ? "X·官方" : "官方";
+  if (firstParty) return kind === "x_search" ? "X · oficial" : "Oficial";
   if (kind === "x_search") return "X·KOL";
-  if (kind === "mp_account") return "公众号";
-  return "媒体";
+  if (kind === "mp_account") return "Conta WeChat";
+  return "Imprensa";
 }
 
 export async function candidates(start: Date, end: Date): Promise<Candidate[]> {
@@ -138,7 +138,7 @@ async function saveReport(kind: ReportKind, key: string, start: Date, end: Date,
       await completeReceipt(tx, receiptId);
       return;
     }
-    if ((existing?.revision ?? 0) !== expectedRevision) throw new Conflict("报告已有新的修订，请刷新后再纠错");
+    if ((existing?.revision ?? 0) !== expectedRevision) throw new Conflict("O relatório tem uma nova revisão. Atualize antes de corrigir");
     if (existing) {
       await tx`INSERT INTO report_revisions (report_id, revision, content, generated_at, reason)
                VALUES (${existing.id}, ${existing.revision}, ${tx.json(existing.content as never)}, ${existing.generated_at}, ${reason}) ON CONFLICT DO NOTHING`;
@@ -188,7 +188,7 @@ export async function composeDaily(date: string, reason = "scheduled"): Promise<
     metrics: {
       totalEvents: ordered.length,
       sourcesCount: new Set(ordered.map((e) => e.sourceId)).size,
-      modelsReleased: perSection.get("模型发布/更新")?.length ?? 0,
+      modelsReleased: perSection.get("Lançamentos e atualizações de modelos")?.length ?? 0,
       firstPartyEvents: ordered.filter((e) => e.firstParty).length,
     },
     windowStart: start.toISOString(),
@@ -214,8 +214,8 @@ export const PeriodSchema = z.object({
 export function periodPrompt(kind: "weekly" | "monthly", startDate: string, endDateInclusive: string, top: Candidate[]) {
   const list = top.map((e, i) => `${i + 1}. [${SECTION_OF[e.category ?? ""] ?? DEFAULT_SECTION}] ${e.title}｜${e.summary.slice(0, 140)}`).join("\n");
   return {
-    system: promptText("report-period", { kindName: kind === "weekly" ? "周报" : "月报", overviewLength: kind === "weekly" ? "150–300" : "200–400" }),
-    user: `本期：${startDate} 至 ${endDateInclusive}\n${list}`,
+    system: promptText("report-period", { kindName: kind === "weekly" ? "Relatório semanal" : "Relatório mensal", overviewLength: kind === "weekly" ? "150–300" : "200–400" }),
+    user: `Nesta edição:${startDate} até ${endDateInclusive}\n${list}`,
   };
 }
 
@@ -249,7 +249,7 @@ async function composePeriod(kind: "weekly" | "monthly", key: string, startDate:
   }
   const content = {
     kind,
-    title: kind === "weekly" ? `${SITE.name} 周报 · ${key}` : `${SITE.name} 月报 · ${key}`,
+    title: kind === "weekly" ? `${SITE.name} Relatório semanal · ${key}` : `${SITE.name} Relatório mensal · ${key}`,
     ...(kind === "weekly" ? { isoLabel: key } : { monthLabel: key }),
     periodStart: startDate,
     periodEnd: endDateInclusive,

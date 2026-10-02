@@ -78,7 +78,7 @@ export async function refreshFx(): Promise<{ asOf: string; rate: number }> {
   const d = JSON.parse(res.text()) as { date: string; rates: { CNY?: number } };
   const rate = d.rates.CNY;
   if (!rate || !/^\d{4}-\d{2}-\d{2}$/.test(d.date)) throw new Error("frankfurter: unexpected response");
-  await sql`INSERT INTO fx_rates (as_of, pair, rate, source_name, source_url) VALUES (${d.date}, 'USD/CNY', ${rate}, '欧洲央行', ${url}) ON CONFLICT DO NOTHING`;
+  await sql`INSERT INTO fx_rates (as_of, pair, rate, source_name, source_url) VALUES (${d.date}, 'USD/CNY', ${rate}, 'Banco Central Europeu', ${url}) ON CONFLICT DO NOTHING`;
   return { asOf: d.date, rate };
 }
 

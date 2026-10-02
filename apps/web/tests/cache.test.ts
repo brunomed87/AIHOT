@@ -106,7 +106,7 @@ test("HTML and navigation share freshness; cookies do not personalize public res
   const html = await fetch(`${origin}/`);
   assert.equal(html.status, 200);
   assert.equal(html.headers.get("X-Accel-Expires"), `@${deadline}`);
-  assert.match(await html.text(), /精选/);
+  assert.match(await html.text(), /Destaques/);
   const plain = await fetch(`${origin}/about.data`);
   const signedIn = await fetch(`${origin}/about.data?_routes=root`, { headers: { cookie: "admin_session=private; aihot_vid=reader" } });
   assert.match(plain.headers.get("Cache-Control")!, /^public,/);
@@ -228,8 +228,8 @@ test("a visitor cannot name its own address to the api without a trusted proxy i
   assert.deepEqual(await res.json(), { forwarded: "127.0.0.1", real: "127.0.0.1" });
 });
 
-// 主题目录与详情沿用API的绝对截止，HTML和导航数据不额外延长窗口。
-test("主题HTML和导航数据共享发布截止，过期上游不得续期", async () => {
+// Catálogo e detalhe mantêm corte absoluto da API; HTML e navegação não prolongam janela.
+test("HTML e navegação compartilham corte de publicação sem prolongar dados expirados", async () => {
   const savedDeadline = deadline;
   const savedRefresh = refreshAt;
   try {

@@ -1,4 +1,4 @@
-// WeChat official accounts. Dajiala (极致了, a paid service) supplies each account's latest posts and
+// Contas públicas WeChat. Dajiala, serviço pago, fornece publicações recentes e
 // article bodies; every enabled account is checked once per source interval.
 import { sql } from "../db.ts";
 import { upsertMaterial } from "../content/materials.ts";

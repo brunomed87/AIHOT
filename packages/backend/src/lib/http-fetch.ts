@@ -73,7 +73,7 @@ export async function guardedFetch(input: string, opts: GuardedFetchOptions = {}
   for (let hop = 0; ; hop++) {
     const res = await undiciFetch(url, {
       method: opts.method ?? "GET",
-      headers: { "user-agent": DEFAULT_UA, "accept-language": "zh-CN,zh;q=0.9,en;q=0.8", ...(opts.headers ?? {}) },
+      headers: { "user-agent": DEFAULT_UA, "accept-language": "pt-BR,pt;q=0.9,en;q=0.8", ...(opts.headers ?? {}) },
       body: opts.body,
       redirect: "manual",
       dispatcher: dispatcherFor(proxied(url, route)),

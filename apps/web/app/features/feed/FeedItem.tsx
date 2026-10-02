@@ -17,7 +17,7 @@ export interface FeedItemProps {
   filters?: TimelineFilters;
   read?: boolean;
   onOpen?: (id: string) => void;
-  /** Show category and tags under the text (全部动态, topics, search). */
+  /** Exibe categoria e marcadores abaixo do texto nas notícias, temas e busca. */
   showTags?: boolean;
 }
 
@@ -95,7 +95,7 @@ export const FeedItem = memo(function FeedItem({ item, group, filters, read = fa
 
       {item.reason && (
         <div className="mt-2.5 rounded-control bg-bg-sunk px-3 py-2 dark:bg-bg-muted/60 lg:mt-3 lg:rounded-none lg:border-t lg:border-line-soft lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-3 lg:dark:bg-transparent">
-          <p className="line-clamp-2 text-[13px] leading-[1.65] text-ink-3 lg:line-clamp-none lg:leading-[1.75] lg:text-note">推荐理由：{item.reason}</p>
+          <p className="line-clamp-2 text-[13px] leading-[1.65] text-ink-3 lg:line-clamp-none lg:leading-[1.75] lg:text-note">Motivo da recomendação:{item.reason}</p>
         </div>
       )}
     </article>

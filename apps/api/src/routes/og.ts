@@ -16,20 +16,20 @@ import { posterEtag, renderPoster, type Poster } from "../og/poster.ts";
 const S = SITE.subject;
 const PAGES: Record<string, OgCard> = {
   site: { kicker: SITE.name, title: SITE.tagline, subtitle: SITE.description },
-  all: { kicker: `全部${withSubject("动态")}`, title: "所有信源的最新动态，一站看完", subtitle: "按时间汇总各信源的最新动态，可按类别与标签筛选。" },
-  hot: { kicker: "热点榜", title: `过去 48 小时，大家在讨论什么`, subtitle: "热度指数、趋势与组成热度的公开来源。", accent: "hot" },
-  daily: { kicker: withSubject("日报"), title: `每天 8 点，一份读得完的${withSubject("日报")}`, subtitle: `前一天值得关注的${S}动态。` },
-  weekly: { kicker: withSubject("周报"), title: "一周大事，一次看清", subtitle: "本周的主线、重要发布与值得回看的讨论。" },
-  monthly: { kicker: withSubject("月报"), title: "一个月的变化", subtitle: "月度主线与关键事件回顾。" },
-  topics: { kicker: "主题", title: "长期追踪的方向", subtitle: "公司与机构、专题方向、内容形态。" },
-  leaderboard: { kicker: "AI 模型排行榜", title: "多家公开评测的共识排名", subtitle: "综合、编程、推理、知识、专业办公；缺测不补零，价格不影响排名。" },
-  "codex-reset": { kicker: "Tibo 重置监控", title: "Codex 额度重置什么时候生效", subtitle: "推算的北京时间窗口、适用范围与 Tibo 原话。", accent: "amber" },
-  about: { kicker: "关于", title: `关于 ${SITE.name}`, subtitle: SITE.description },
-  terms: { kicker: "使用规则", title: `${SITE.name} 使用规则`, subtitle: "网站、API、RSS 与 MCP 的使用范围。" },
-  privacy: { kicker: "隐私说明", title: `${SITE.name} 隐私说明`, subtitle: "访问日志、浏览器本地数据与反馈资料的处理方式。" },
-  changelog: { kicker: "更新日志", title: `${SITE.name} 更新日志`, subtitle: "功能更新、优化、公告与下线记录。" },
-  feedback: { kicker: "反馈", title: "告诉我们哪里可以更好", subtitle: "内容、功能、接入，或来源方的更正与下架请求。" },
-  agent: { kicker: "Agent 接入", title: `让 Agent 直接使用 ${SITE.name}`, subtitle: "MCP、RSS 与 REST API v1，匿名只读。" },
+  all: { kicker: `Todos${withSubject("notícias")}`, title: "Notícias recentes de todas as fontes em um só lugar", subtitle: "Notícias recentes por horário, com filtros por categoria e marcadores." },
+  hot: { kicker: "Mais discutidos", title: `O que está sendo discutido nas últimas 48 horas`, subtitle: "Índice de repercussão, tendência e fontes públicas participantes.", accent: "hot" },
+  daily: { kicker: withSubject("Relatório diário"), title: `Todos os dias às 08h, uma edição para acompanhar${withSubject("Relatório diário")}`, subtitle: `Destaques do dia anterior sobre${S}.` },
+  weekly: { kicker: withSubject("Relatório semanal"), title: "Acontecimentos da semana em uma visão", subtitle: "Temas centrais, lançamentos importantes e discussões da semana." },
+  monthly: { kicker: withSubject("Relatório mensal"), title: "Mudanças do mês", subtitle: "Retrospectiva dos principais temas e acontecimentos mensais." },
+  topics: { kicker: "Temas", title: "Temas acompanhados continuamente", subtitle: "Empresas, instituições, áreas temáticas e tipos de conteúdo." },
+  leaderboard: { kicker: "Ranking de modelos de IA", title: "Ranking de consenso de avaliações públicas", subtitle: "Geral, programação, raciocínio, conhecimento e trabalho profissional; ausências não valem zero e preços não alteram posições." },
+  "codex-reset": { kicker: "Monitor de reinícios de Tibo", title: "Quando o reinício de limites do Codex entra em vigor", subtitle: "Janela estimada em Pequim, abrangência e declarações de Tibo.", accent: "amber" },
+  about: { kicker: "Sobre", title: `Sobre ${SITE.name}`, subtitle: SITE.description },
+  terms: { kicker: "Regras de uso", title: `${SITE.name} Regras de uso`, subtitle: "Regras de uso do site, API, RSS e MCP." },
+  privacy: { kicker: "Privacidade", title: `${SITE.name} Privacidade`, subtitle: "Tratamento de registros de acesso, dados locais do navegador e feedback." },
+  changelog: { kicker: "Histórico de mudanças", title: `${SITE.name} Histórico de mudanças`, subtitle: "Histórico de funções, melhorias, avisos e descontinuações." },
+  feedback: { kicker: "Feedback", title: "Informe o que podemos melhorar", subtitle: "Conteúdo, funções, integração ou pedidos de correção e retirada das fontes." },
+  agent: { kicker: "Integração com agentes", title: `Permita que agentes consultem ${SITE.name}`, subtitle: "MCP, RSS e API REST v1, com leitura anônima." },
 };
 
 /**
@@ -47,10 +47,10 @@ async function send(req: FastifyRequest, reply: FastifyReply, card: OgCard, maxA
 }
 
 function notFound(reply: FastifyReply) {
-  return reply.code(404).header("Cache-Control", "public, max-age=300").type("text/plain; charset=utf-8").send("Not found");
+  return reply.code(404).header("Cache-Control", "public, max-age=300").type("text/plain; charset=utf-8").send("Não encontrado");
 }
 
-const REPORT_NAMES: Record<ReportKind, string> = { daily: withSubject("日报"), weekly: withSubject("周报"), monthly: withSubject("月报") };
+const REPORT_NAMES: Record<ReportKind, string> = { daily: withSubject("Relatório diário"), weekly: withSubject("Relatório semanal"), monthly: withSubject("Relatório mensal") };
 
 export function registerOg(app: FastifyInstance) {
   app.get("/og/site.png", (req, reply) => send(req, reply, PAGES.site!, 86400));
@@ -70,11 +70,11 @@ export function registerOg(app: FastifyInstance) {
     if (!d) return notFound(reply);
     reply.header("X-Accel-Expires", ARTICLE_IMAGE_ORIGIN_SECONDS);
     return send(req, reply, {
-      kicker: d.category ? CATEGORY_LABELS[d.category] : withSubject("动态"),
+      kicker: d.category ? CATEGORY_LABELS[d.category] : withSubject("notícias"),
       title: d.title,
       subtitle: d.summary,
       meta: `${d.source.name.replace(/（[^）]*）\s*$/, "")} · ${beijingDate(d.timelineAt)}`,
-      badge: d.selected && d.score !== null ? { value: String(Math.round(d.score)), label: "精选评分" } : null,
+      badge: d.selected && d.score !== null ? { value: String(Math.round(d.score)), label: "Pontuação de seleção" } : null,
     }, 3600, ARTICLE_IMAGE_CACHE);
   });
 
@@ -86,7 +86,7 @@ export function registerOg(app: FastifyInstance) {
     if (!d) return notFound(reply);
     const poster: Poster = {
       url: `${config.siteUrl}/items/${d.id}`,
-      kicker: d.category ? CATEGORY_LABELS[d.category] : withSubject("动态"),
+      kicker: d.category ? CATEGORY_LABELS[d.category] : withSubject("notícias"),
       title: d.title,
       summary: d.summary,
       source: d.source.name.replace(/（[^）]*）\s*$/, ""),
@@ -108,7 +108,7 @@ export function registerOg(app: FastifyInstance) {
       kicker: `${REPORT_NAMES[r.kind]} · ${r.key}`,
       title: r.lead?.title ?? r.title,
       subtitle: r.lead?.leadParagraph ?? r.overview,
-      meta: `${r.stories.length} 条核心新闻 · 约 ${r.readingMinutes} 分钟读完`,
+      meta: `${r.stories.length} notícias principais · cerca de ${r.readingMinutes} minutos de leitura`,
     }, 86400);
   });
 
@@ -116,7 +116,7 @@ export function registerOg(app: FastifyInstance) {
     const file = (req.params as { file: string }).file;
     const t = file.endsWith(".png") ? await loadTopic(file.slice(0, -4)) : null;
     if (!t) return notFound(reply);
-    return send(req, reply, { kicker: "主题", title: t.name, subtitle: t.definition }, 86400);
+    return send(req, reply, { kicker: "Temas", title: t.name, subtitle: t.definition }, 86400);
   });
 
   app.get("/og/stories/:file", async (req, reply) => {
@@ -128,10 +128,10 @@ export function registerOg(app: FastifyInstance) {
     if (!s) return notFound(reply);
     reply.header("X-Accel-Expires", ARTICLE_IMAGE_ORIGIN_SECONDS);
     return send(req, reply, {
-      kicker: s.whyHot.rank ? `热点第 ${s.whyHot.rank} · 事件` : "事件",
+      kicker: s.whyHot.rank ? `Posição por repercussão: ${s.whyHot.rank} · acontecimento` : "Acontecimento",
       title: s.title,
       subtitle: s.latest ?? s.digest,
-      meta: `${s.sourceCount} 个来源 · ${s.reportCount} 篇报道`,
+      meta: `${s.sourceCount} fontes · ${s.reportCount} reportagens`,
       accent: s.whyHot.rank ? "hot" : "teal",
     }, 3600, ARTICLE_IMAGE_CACHE);
   });

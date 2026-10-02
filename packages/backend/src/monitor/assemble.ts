@@ -17,8 +17,8 @@ const ANOTHER = /\b(another|again|second|one more|twice|2nd)\b/i;
 const STATED_COUNT = /\b(twice|thrice)\b|\b(two|three|four|five|[2-5])\s+(?:(?:banked|manual)\s+)?(?:times|resets?)\b|\b[2-5]\s*x\b/i;
 
 const STAGE: Record<Proposition["kind"], Record<Proposition["action"], string>> = {
-  direct_reset: { announce: "预告", progress: "进展", confirm: "确认完成", amend: "补充说明", withdraw: "撤回" },
-  reset_credit: { announce: "发卡预告", progress: "进展", confirm: "确认发卡", amend: "补充说明", withdraw: "撤回" },
+  direct_reset: { announce: "Anúncio", progress: "Andamento", confirm: "Conclusão confirmada", amend: "Esclarecimento", withdraw: "Retirar" },
+  reset_credit: { announce: "Anúncio de créditos", progress: "Andamento", confirm: "Distribuição confirmada", amend: "Esclarecimento", withdraw: "Retirar" },
 };
 
 interface EventRow {
@@ -57,7 +57,7 @@ function isOpen(e: EventRow, postAt: Date, grace: number): boolean {
 
 function legacyScope(p: Proposition): string {
   if (p.scope.plans?.length) return p.scope.plans.join("、");
-  if (p.scope.audienceSource && /paid/i.test(p.scope.audienceSource)) return "所有付费订阅";
+  if (p.scope.audienceSource && /paid/i.test(p.scope.audienceSource)) return "Todas as assinaturas pagas";
   return "";
 }
 
@@ -127,8 +127,8 @@ async function createEvent(tx: Tx, p: Proposition, postId: string, index: number
   const estimate = status === "confirmed" ? null : estimateFor({ schedule, announcedAt: postAt, model: p.expectedLanding });
   await tx`
     INSERT INTO monitor_events (id, type, status, title, scope, label, display_label, schedule, estimate, presentation, confirmed_at, confirmation_basis, created_at, updated_at)
-    VALUES (${id}, ${p.kind}, ${status}, '', ${legacyScope(p)}, ${p.kind === "reset_credit" ? "发重置卡" : "全员重置"},
-            ${p.kindExplicit ? (p.kind === "reset_credit" ? "重置卡发放" : "额度重置") : "重置（形式未明确）"},
+    VALUES (${id}, ${p.kind}, ${status}, '', ${legacyScope(p)}, ${p.kind === "reset_credit" ? "Distribuir créditos de reinício" : "Reinício para todos"},
+            ${p.kindExplicit ? (p.kind === "reset_credit" ? "Distribuição de créditos de reinício" : "Reinício de limites") : "Reinício com formato não informado"},
             ${schedule ? tx.json(schedule as never) : null}, ${estimate ? tx.json(estimate as never) : null}, ${tx.json(presentationOf(p, extra) as never)},
             ${status === "confirmed" ? postAt : null}, ${status === "confirmed" ? "source_post" : null}, ${postAt}, ${postAt})
     ON CONFLICT (id) DO NOTHING`;

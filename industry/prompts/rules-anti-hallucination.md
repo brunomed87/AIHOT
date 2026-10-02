@@ -1,12 +1,11 @@
+REGRAS CONTRA INVENÇÃO — cumprimento obrigatório
 
-【防幻觉规则 — 严格遵守】
-
-1. 严禁添加原文未明确提到的功能 / 工具 / 数字 / 版本 / 默认值 / 限制
-2. 不确定的细节宁可省略，也不要"听起来合理地补全"
-3. 原文里某要点你不理解，原文照抄关键词，不要"翻译性发挥"
-4. 摘要里出现的每一个产品名 / 功能名 / 数字 / 版本号必须在原文里能找到对应
-5. 原文太短或缺关键信息时，宁可返回更短的摘要，不要靠"行业常识"扩写
-6. 不要复述你"知道"的同类产品功能 — 只翻译这一篇原文实际写的东西
-7. 时间锚定：原文用相对时间（本周 / 上月 / 5 月 / 昨天 / 近日 / 今年）就照抄那个说法，绝不补全成具体年份；原文没明确写出年份，摘要里就不许出现年份。即便下方提供了【时间锚点】，那只供你理解时序，不要据此把相对时间换算成绝对年份写进摘要。
-8. 不得强化原文语气或范围："多项研究未发现"不能改成"没有研究"，"正在探索"不能改成"已经采用"。
-9. "独立"、"完全"、"首次"、"唯一"等排他性表述只有原文明确写出时才能保留。
+1. Não acrescente funções, ferramentas, números, versões, padrões ou limites ausentes do original.
+2. Omita detalhes incertos em vez de completar com algo apenas plausível.
+3. Quando não compreender um ponto, preserve termos originais sem interpretação inventada.
+4. Cada produto, função, número e versão do resumo deve ter correspondência no original.
+5. Original curto ou incompleto exige resumo curto, sem expansão por conhecimentos gerais do setor.
+6. Não acrescente funções conhecidas de produtos semelhantes; traduza somente o que este original apresenta.
+7. Preserve referências relativas de tempo, como esta semana, mês passado, maio, ontem, recentemente e este ano. Não deduza ano ausente. Um ponto temporal fornecido serve apenas para compreender a sequência, sem converter referências relativas em anos absolutos.
+8. Não fortaleça tom ou abrangência: vários estudos não encontraram não significa nenhum estudo; está explorando não significa já adotou.
+9. Independente, completamente, primeiro, único e outras exclusividades só permanecem quando explícitas no original.

@@ -1,6 +1,6 @@
 import { selectedCondition, listedCondition } from "./scope.ts";
-// Reading-group expansions: the reports behind "另有 N 家信源报道" and the developments behind
-// "展开 N 条进展". Members must pass the same visibility, pool eligibility and parent-page filters.
+// Expansões de leitura: outros relatos do fato e progressos
+// do acontecimento. Membros passam pelos mesmos filtros de visibilidade, elegibilidade e página ancestral.
 import type { CategoryKey, ChannelKey } from "@aihot/contracts/taxonomy";
 import type { DevelopmentsResponse, GroupReportsResponse } from "@aihot/contracts/site";
 import { sql } from "../db.ts";

@@ -53,7 +53,7 @@ export const deepswe: Fetcher = {
       sourceKey: "deepswe-v1-1",
       sourceName: "DeepSWE v1.1",
       sourceUrl: URL_,
-      license: "官方公开结构化结果；仅管理员私有观察，公开前复核许可",
+      license: "Resultados oficiais estruturados; somente observação privada do administrador até revisão da licença",
       attributionUrl: "https://deepswe.datacurve.ai/",
       publishedAt: d.generated_at,
       rows,

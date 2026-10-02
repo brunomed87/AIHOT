@@ -1,99 +1,96 @@
-// 这个行业的分类体系：类别、标签词表、公司（主体）名录，以及防止张冠李戴的身份词典。
-// 模型按这里的词表打标签，主题页（topics.json）按标签归类，筛选栏按类别分组。
-// 换行业时：类别的 key 会出现在网址里（/all?category=…），上线后就不要再改；标签和名录可以随时增减。
+// Classificação do setor: categorias, marcadores, instituições e vocabulário de identidade.
+// Modelos usam este vocabulário; temas classificam por marcadores e filtros agrupam categorias.
+// Preserve key de categoria após publicação, pois aparece no endereço. Marcadores e catálogo podem mudar.
 
-/**
- * 网页上的类别（筛选栏、卡片角标、RSS 分类订阅）。key 是网址和接口里的身份，上线后不要改。
- * section 是日报里的分节标题（几个类别可以共用一节，按这里的顺序排）；guide 告诉模型怎么归类。
- * 没归上类的资料在日报里放进第一个 key 为 industry 的类别所在的节（没有就放最后一节）。
- */
+/** Categorias visíveis em filtros, cartões e RSS. key é estável; section agrupa seções de relatórios na ordem definida; guide orienta modelo. Sem categoria, usa seção industry ou a última. */
 export const CATEGORIES = [
   { key: "science", label: "Ciência", section: "Ciência", guide: "Estudos, ensaios, revisões, congresso e ciência pré-clínica; conservar estágio de evidência" },
   { key: "regulation", label: "Regulação", section: "Regulação e segurança", guide: "ANVISA, Conitec, FDA, EMA, CFM, alertas, aprovações e recomendações oficiais" },
   { key: "public-health", label: "Saúde pública", section: "Saúde pública", guide: "Acesso, SUS, campanhas, epidemias, acidentes, perda visual e ações regionais" },
   { key: "innovation", label: "Inovação", section: "Inovação", guide: "Medicamentos, dispositivos, IA ocular e novas tecnologias" },
   { key: "patient-interest", label: "Pacientes", section: "Interesse público", guide: "Comportamento, celebridades, estética, esportes e ângulos de saúde ocular" },
-  { key: "fact-check", label: "Fact-check", section: "Checagem", guide: "Afirmações médicas problemáticas, percentuais, causalidade e sensacionalismo" },
-  { key: "ai-models", label: "模型", section: "模型发布/更新", guide: "新模型、模型版本、权重开放、模型能力与价格变化的发布与评测结果" },
-  { key: "ai-products", label: "产品", section: "产品发布/更新", guide: "AI 产品、功能、应用、工具、API 与平台的发布和更新" },
-  { key: "industry", label: "行业", section: "行业动态", guide: "公司经营、融资并购、人事、合作、诉讼、监管与政策、市场与基础设施" },
-  { key: "paper", label: "论文", section: "论文研究", guide: "研究论文、技术报告、基准与数据集" },
-  { key: "tip", label: "教程", section: "技巧与观点", guide: "教程、实践经验、使用技巧、提示词与工具用法、深度技术讲解" },
-  { key: "opinion", label: "观点", section: "技巧与观点", guide: "人物观点、评论、分析、访谈、现象与趋势讨论" },
+  { key: "fact-check", label: "Checagem de fatos", section: "Checagem", guide: "Afirmações médicas problemáticas, percentuais, causalidade e sensacionalismo" },
+  { key: "ai-models", label: "Modelo", section: "Lançamentos e atualizações de modelos", guide: "Lançamentos e resultados de avaliações de modelos, versões, pesos abertos, capacidades e preços" },
+  { key: "ai-products", label: "Produto", section: "Lançamentos e atualizações de produtos", guide: "Lançamentos e atualizações de produtos, funções, aplicações, ferramentas, APIs e plataformas de IA" },
+  { key: "industry", label: "Setor", section: "Notícias do setor", guide: "Operação de empresas, investimentos, aquisições, pessoas, parcerias, processos judiciais, regulação, políticas, mercado e infraestrutura" },
+  { key: "paper", label: "Pesquisa", section: "Pesquisas científicas", guide: "Artigos científicos, relatórios técnicos, avaliações e conjuntos de dados" },
+  { key: "tip", label: "Tutoriais", section: "Práticas e opiniões", guide: "Tutoriais, experiências, técnicas de uso, prompts, ferramentas e explicações técnicas" },
+  { key: "opinion", label: "Opiniões", section: "Práticas e opiniões", guide: "Opiniões, comentários, análises, entrevistas e discussões de tendências" },
 ] as const;
 
-/**
- * 内容理解一步给每篇资料判的“内容类型”（写在 prompts/content-understanding.md 里，改了类型要同步改那份提示词）。
- * 评分提示词（prompts/selection-score.md）按类型给五个维度不同的权重。
- */
+/** Tipos de conteúdo devem corresponder a prompts/content-understanding.md e aos pesos das cinco dimensões em selection-score.md. */
 export const ITEM_TYPES = ["model_release", "product_launch", "tool_or_prompt", "research_paper", "industry_event", "opinion_analysis", "tutorial_explainer"] as const;
 
-// ── 标签词表 ────────────────────────────────────────────────────────────────────────────
+// Vocabulário de marcadores
 
-/** 每篇资料的第一个标签必须是这些“分类标签”之一。 */
+/** Primeiro marcador obrigatoriamente pertence às categorias. */
 export const CATEGORY_TAGS = [
-  "Ciência", "Regulação", "Saúde pública", "Inovação", "Interesse público", "Fact-check",
-  "产品更新", "模型发布", "论文/研究", "开源/仓库", "教程/实践", "现象/趋势", "大佬观点", "评测/基准", "安全/对齐", "行业动态", "政策/监管",
-  "非AI/通用工具", "其他",
+  "Ciência", "Regulação", "Saúde pública", "Inovação", "Interesse público", "Checagem de fatos",
+  "Atualização de produtos", "Lançamento de modelos", "Artigos/Pesquisa", "Código aberto/Repositórios", "Tutoriais/Prática", "Fenômenos/Tendências", "Opiniões de especialistas", "Avaliações/Referências", "Segurança/Alinhamento", "Notícias do setor", "Políticas/Regulação",
+  "Ferramentas gerais/Sem IA", "Outros",
 ] as const;
 
-/** 可选的主题标签。 */
+/** Marcadores temáticos opcionais. */
 export const TOPIC_TAGS = [
   "Retina", "Catarata", "Refrativa", "Glaucoma", "Córnea", "Miopia infantil", "Neuro-oftalmologia", "Trauma", "Lentes de contato", "Estética", "Diabetes", "Brasil",
-  "Agent", "编码", "推理", "多模态", "语音", "视频", "图像生成", "RAG", "端侧", "数据/训练", "搜索", "部署/工程", "开源生态", "具身智能", "MCP/工具调用",
+  "Agentes", "Programação", "Raciocínio", "Multimodalidade", "Voz", "Vídeo", "Geração de imagens", "RAG", "Dispositivos locais", "Dados/Treinamento", "Buscar", "Implantação/Engenharia", "Ecossistema aberto", "Inteligência incorporada", "MCP/Chamadas de ferramentas",
 ] as const;
 
-/** 可选的实体标签（公司、机构、平台）。 */
+/** Marcadores opcionais de empresas, instituições e plataformas. */
 export const ENTITY_TAGS = [
   "ANVISA", "CBO", "CFM", "Conitec", "Ministério da Saúde", "FDA", "EMA", "NEI","OpenAI", "Anthropic", "DeepSeek", "DeepMind", "Google", "Meta", "Microsoft", "xAI", "Hugging Face", "GitHub", "arXiv"] as const;
 
-/** 模型常写的近义词，统一成词表里的写法。 */
+/** Normaliza sinônimos usados pelos modelos para o vocabulário canônico. */
 export const TAG_SYNONYMS: Readonly<Record<string, string>> = {
-  "教程/玩法": "教程/实践", "技巧/最佳实践": "教程/实践", "合作/生态": "行业动态", "融资/收购": "行业动态", "公司动态": "行业动态",
-  合作: "行业动态", 生态: "行业动态", 融资: "行业动态", 收购: "行业动态", 投资: "行业动态", 并购: "行业动态",
-  政策: "政策/监管", 监管: "政策/监管", 法规: "政策/监管", 安全: "安全/对齐", 对齐: "安全/对齐",
-  论文: "论文/研究", 研究: "论文/研究", paper: "论文/研究", papers: "论文/研究",
-  "open-source": "开源/仓库", 开源: "开源/仓库", 仓库: "开源/仓库", repo: "开源/仓库",
-  教程: "教程/实践", 玩法: "教程/实践", 指南: "教程/实践", 技巧: "教程/实践", 最佳实践: "教程/实践", 实践: "教程/实践",
-  产品: "产品更新", 更新: "产品更新", 发布: "模型发布", 模型: "模型发布", 趋势: "现象/趋势", 现象: "现象/趋势", 观点: "大佬观点",
-  视频生成: "视频", 非ai: "非AI/通用工具", "non-ai": "非AI/通用工具", 通用工具: "非AI/通用工具", 工程工具: "非AI/通用工具",
-  安全扫描: "非AI/通用工具", devops: "非AI/通用工具", 行业: "行业动态", 动态: "行业动态",
+"产品更新":"Atualização de produtos",
+"模型发布":"Lançamento de modelos",
+"开源/仓库":"Código aberto/Repositórios",
+"推理":"Raciocínio",
+"多模态":"Multimodalidade",
+"语音":"Voz",
+"视频":"Vídeo",
+  "\u6559\u7a0b/\u73a9\u6cd5": "Tutoriais/Prática", "\u6280\u5de7/\u6700\u4f73\u5b9e\u8df5": "Tutoriais/Prática", "\u5408\u4f5c/\u751f\u6001": "Notícias do setor", "\u878d\u8d44/\u6536\u8d2d": "Notícias do setor", "\u516c\u53f8\u52a8\u6001": "Notícias do setor",
+  合作: "Notícias do setor", 生态: "Notícias do setor", 融资: "Notícias do setor", 收购: "Notícias do setor", 投资: "Notícias do setor", 并购: "Notícias do setor",
+  政策: "Políticas/Regulação", 监管: "Políticas/Regulação", 法规: "Políticas/Regulação", 安全: "Segurança/Alinhamento", 对齐: "Segurança/Alinhamento",
+  论文: "Artigos/Pesquisa", 研究: "Artigos/Pesquisa", paper: "Artigos/Pesquisa", papers: "Artigos/Pesquisa",
+  "open-source": "Código aberto/Repositórios", 开源: "Código aberto/Repositórios", 仓库: "Código aberto/Repositórios", repo: "Código aberto/Repositórios",
+  教程: "Tutoriais/Prática", 玩法: "Tutoriais/Prática", 指南: "Tutoriais/Prática", 技巧: "Tutoriais/Prática", 最佳实践: "Tutoriais/Prática", 实践: "Tutoriais/Prática",
+  产品: "Atualização de produtos", 更新: "Atualização de produtos", 发布: "Lançamento de modelos", 模型: "Lançamento de modelos", 趋势: "Fenômenos/Tendências", 现象: "Fenômenos/Tendências", 观点: "Opiniões de especialistas",
+  视频生成: "Vídeo", 非ai: "Ferramentas gerais/Sem IA", "non-ai": "Ferramentas gerais/Sem IA", 通用工具: "Ferramentas gerais/Sem IA", 工程工具: "Ferramentas gerais/Sem IA",
+  安全扫描: "Ferramentas gerais/Sem IA", devops: "Ferramentas gerais/Sem IA", 行业: "Notícias do setor", 动态: "Notícias do setor",
 };
 
-/** 模型漏了分类标签时，按内容类型补一个。 */
+/** Completa categoria ausente conforme tipo de conteúdo. */
 export const CATEGORY_BY_ITEM_TYPE: Readonly<Record<string, string>> = {
-  model_release: "模型发布", product_launch: "产品更新", tool_or_prompt: "教程/实践", research_paper: "论文/研究",
-  industry_event: "行业动态", opinion_analysis: "大佬观点", tutorial_explainer: "教程/实践",
+  model_release: "Lançamento de modelos", product_launch: "Atualização de produtos", tool_or_prompt: "Tutoriais/Prática", research_paper: "Artigos/Pesquisa",
+  industry_event: "Notícias do setor", opinion_analysis: "Opiniões de especialistas", tutorial_explainer: "Tutoriais/Prática",
 };
 
-// ── 公司与主体 ──────────────────────────────────────────────────────────────────────────
+// Empresas e instituições
 
-/** 公司主题：id → 显示名、卡片上显示的标签（null 表示只用 entity:<id> 归类）、别名。 */
+/** Instituições por id: nome, marcador e aliases. null classifica apenas por entity:<id>. */
 export const ENTITIES: Record<string, { name: string; displayTag: string | null; aliases: string[] }> = {
   anvisa: { name: "ANVISA", displayTag: "ANVISA", aliases: ["ANVISA", "Agência Nacional de Vigilância Sanitária"] },
   cbo: { name: "CBO", displayTag: "CBO", aliases: ["CBO", "Conselho Brasileiro de Oftalmologia"] },
   fda: { name: "FDA", displayTag: "FDA", aliases: ["FDA", "Food and Drug Administration"] },
   openai: { name: "OpenAI", displayTag: "OpenAI", aliases: ["OpenAI", "ChatGPT", "Sora", "Codex", "GPT"] },
   anthropic: { name: "Anthropic", displayTag: "Anthropic", aliases: ["Anthropic", "Claude"] },
-  google: { name: "Google", displayTag: "Google", aliases: ["Google", "DeepMind", "Gemini", "谷歌"] },
-  deepseek: { name: "DeepSeek", displayTag: "DeepSeek", aliases: ["DeepSeek", "深度求索"] },
-  qwen: { name: "千问 Qwen", displayTag: null, aliases: ["Qwen", "通义", "阿里"] },
-  kimi: { name: "Kimi / 月之暗面", displayTag: null, aliases: ["Kimi", "月之暗面", "Moonshot"] },
-  minimax: { name: "MiniMax", displayTag: null, aliases: ["MiniMax", "海螺"] },
-  zhipu: { name: "智谱 GLM", displayTag: null, aliases: ["智谱", "GLM", "Z.ai"] },
+  google: { name: "Google", displayTag: "Google", aliases: ["Google", "DeepMind", "Gemini", "\u8c37\u6b4c"] },
+  deepseek: { name: "DeepSeek", displayTag: "DeepSeek", aliases: ["DeepSeek", "\u6df1\u5ea6\u6c42\u7d22"] },
+  qwen: { name: "Qwen", displayTag: null, aliases: ["Qwen", "\u901a\u4e49", "\u963f\u91cc"] },
+  kimi: { name: "Kimi / Moonshot", displayTag: null, aliases: ["Kimi", "\u6708\u4e4b\u6697\u9762", "Moonshot"] },
+  minimax: { name: "MiniMax", displayTag: null, aliases: ["MiniMax", "\u6d77\u87ba"] },
+  zhipu: { name: "Zhipu GLM", displayTag: null, aliases: ["\u667a\u8c31", "GLM", "Z.ai"] },
   xai: { name: "xAI", displayTag: "xAI", aliases: ["xAI", "Grok"] },
   meta: { name: "Meta", displayTag: "Meta", aliases: ["Meta", "Llama"] },
-  microsoft: { name: "Microsoft", displayTag: "Microsoft", aliases: ["Microsoft", "微软", "Copilot"] },
-  nvidia: { name: "NVIDIA", displayTag: null, aliases: ["NVIDIA", "英伟达"] },
+  microsoft: { name: "Microsoft", displayTag: "Microsoft", aliases: ["Microsoft", "\u5fae\u8f6f", "Copilot"] },
+  nvidia: { name: "NVIDIA", displayTag: null, aliases: ["NVIDIA", "\u82f1\u4f1f\u8fbe"] },
   "hugging-face": { name: "Hugging Face", displayTag: "Hugging Face", aliases: ["Hugging Face"] },
   cursor: { name: "Cursor", displayTag: null, aliases: ["Cursor", "Anysphere"] },
   openrouter: { name: "OpenRouter", displayTag: null, aliases: ["OpenRouter"] },
 };
 
-/**
- * 身份词典：摘要和标题里出现的公司，必须在原文里也出现过，否则退回原标题、丢掉摘要（防止模型张冠李戴）。
- * 行业没有这个问题时可以留空数组。
- */
+/** Instituição no título ou resumo deve existir no original; caso contrário, retorna título original ou vazio e remove resumo. Pode ficar vazio em setores sem esse problema. */
 export const IDENTITY_LEXICON: ReadonlyArray<{ id: string; name: string; patterns: RegExp[] }> = [
   { id: "anvisa", name: "ANVISA", patterns: [/anvisa|agência nacional de vigilância sanitária/i] },
   { id: "cbo", name: "CBO", patterns: [/\bcbo\b|conselho brasileiro de oftalmologia/i] },
@@ -106,15 +103,15 @@ export const IDENTITY_LEXICON: ReadonlyArray<{ id: string; name: string; pattern
   { id: "meta", name: "Meta / Llama", patterns: [/\bMeta\b/, /\bmeta\s?ai\b|\bllama\b/i] },
   { id: "microsoft", name: "Microsoft / Copilot", patterns: [/microsoft|copilot|微软/i] },
   { id: "nvidia", name: "NVIDIA", patterns: [/nvidia|英伟达|\bnemotron\b|\bnemo\b|\bblackwell\b|\brubin(?:\s+ultra)?\b|\bcuda\b/i] },
-  { id: "qwen", name: "千问 Qwen", patterns: [/\bqwen|通义|千问/i] },
+  { id: "qwen", name: "Qwen", patterns: [/\bqwen|通义|千问/i] },
   { id: "hugging-face", name: "Hugging Face", patterns: [/hugging\s?face/i] },
   { id: "cursor", name: "Cursor", patterns: [/\bCursor\b/] },
-  { id: "kimi", name: "Kimi / 月之暗面", patterns: [/\bkimi\b|月之暗面|\bmoonshot\s?ai\b/i] },
+  { id: "kimi", name: "Kimi / Moonshot", patterns: [/\bkimi\b|月之暗面|\bmoonshot\s?ai\b/i] },
   { id: "openrouter", name: "OpenRouter", patterns: [/openrouter/i] },
   { id: "minimax", name: "MiniMax", patterns: [/minimax/i] },
-  { id: "zhipu", name: "智谱 GLM", patterns: [/智谱|\bglm-?[4-9]/i] },
-  { id: "hunyuan", name: "腾讯混元", patterns: [/混元|hunyuan/i] },
-  { id: "doubao", name: "字节豆包", patterns: [/豆包|doubao|字节跳动|bytedance/i] },
+  { id: "zhipu", name: "Zhipu GLM", patterns: [/智谱|\bglm-?[4-9]/i] },
+  { id: "hunyuan", name: "Tencent Hunyuan", patterns: [/混元|hunyuan/i] },
+  { id: "doubao", name: "ByteDance Doubao", patterns: [/豆包|doubao|字节跳动|bytedance/i] },
   { id: "mistral", name: "Mistral", patterns: [/mistral/i] },
   { id: "perplexity", name: "Perplexity", patterns: [/\bPerplexity\b/] },
   { id: "runway", name: "Runway", patterns: [/\brunway\b/i] },
@@ -129,10 +126,10 @@ export const IDENTITY_LEXICON: ReadonlyArray<{ id: string; name: string; pattern
   { id: "manus", name: "Manus", patterns: [/\bmanus\b/i] },
   { id: "apple", name: "Apple AI", patterns: [/\bapple\s?(intelligence|silicon|ai)\b|苹果(智能|\s?AI)/i] },
   { id: "amazon", name: "Amazon / AWS", patterns: [/amazon|\baws\b|亚马逊/i] },
-  { id: "baidu", name: "百度文心", patterns: [/百度|baidu|文心|\bernie\s?bot\b/i] },
+  { id: "baidu", name: "Baidu ERNIE", patterns: [/百度|baidu|文心|\bernie\s?bot\b/i] },
 ];
 
-/** 这些域名上的文章，发布方就是对应的公司（托管平台如 GitHub、arXiv 不算）。 */
+/** Domínios de publicadores próprios; plataformas GitHub e arXiv não implicam autoria institucional. */
 export const PUBLISHER_DOMAINS: ReadonlyArray<{ entityId: string; domains: readonly string[] }> = [
   { entityId: "openai", domains: ["openai.com"] },
   { entityId: "anthropic", domains: ["anthropic.com", "claude.com"] },
@@ -147,7 +144,7 @@ export const PUBLISHER_DOMAINS: ReadonlyArray<{ entityId: string; domains: reado
   { entityId: "openrouter", domains: ["openrouter.ai"] },
 ];
 
-/** 原文里的这些写法也算提到了对应公司。 */
+/** Grafias no original que também identificam a instituição. */
 export const IDENTITY_CONTEXT_ALIASES: ReadonlyArray<{ entityId: string; pattern: RegExp }> = [
   { entityId: "meta", pattern: /@AIatMeta\b/i },
   { entityId: "zhipu", pattern: /\bZhipu(?:\s+AI\b|['’]s\b)/i },

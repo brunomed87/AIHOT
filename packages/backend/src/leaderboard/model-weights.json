@@ -1,6 +1,6 @@
 {
   "verifiedOn": "2026-09-30",
-  "note": "官方模型仓库及权重文件已核验；只按明确模型身份登记，不把同厂商、蒸馏版或 RL/MOPD 等另一个检查点推定为同一型号。开放权重不等于无条件商用。",
+  "note": "Repositórios oficiais e pesos verificados. Registre somente identidades confirmadas; modelos da mesma empresa, destilados ou checkpoints RL/MOPD não são presumidos equivalentes. Pesos abertos não garantem uso comercial irrestrito.",
   "models": {
     "deepseek-v-3-2": "deepseek-ai/DeepSeek-V3.2",
     "deepseek-v-4-1-flash": "deepseek-ai/DeepSeek-V4.1-Flash",

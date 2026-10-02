@@ -330,7 +330,7 @@ export async function publishArticleTx(tx: Tx, articleId: string, options: Publi
       (previous!.visibility === "public" && visibility !== "public") ||
       (previous!.selected && !selected) ||
       (previous!.body_mode === "full" && bodyMode !== "full"));
-  // 全文许可和精选排序不是摘要撤回；只在事件输入的权限或文字变化时同步失效。
+  // Permissão integral e posição de seleção não retiram resumo. Invalidar somente quando permissão ou texto da entrada do acontecimento mudar.
   if (previous && (previous.visibility === "public" || visibility === "public") &&
       (previous.visibility !== visibility || previous.eligible !== eligible || previous.title !== next.title || previous.summary !== summary)) {
     await invalidateStoryInputs(tx, [articleId], now);

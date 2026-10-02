@@ -19,7 +19,7 @@ const CHIP: Record<CodexCalendarMark["state"], string> = {
 };
 const STRENGTH: Record<CodexCalendarMark["state"], number> = { confirmed: 3, pending: 2, likely: 1 };
 
-const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
+const WEEKDAYS = ["1", "2", "3", "4", "5", "6", "dia"];
 
 function monthOf(date: string) {
   return date.slice(0, 7);
@@ -43,14 +43,14 @@ function gridDays(month: string): string[] {
 
 function statusChip(e: CodexResetEvent, now: number) {
   const s = e.presentation?.status ?? (e.status === "confirmed" ? "confirmed" : "announced");
-  if (s === "confirmed") return { text: e.confirmationBasis === "receipt_review" ? "已核实到账" : "Tibo 已确认", tone: "text-ok-ink" };
-  if (s === "likely_completed") return { text: "应已生效 · 未见确认帖", tone: "text-ok-ink" };
+  if (s === "confirmed") return { text: e.confirmationBasis === "receipt_review" ? "Recebimento verificado" : "Confirmado por Tibo", tone: "text-ok-ink" };
+  if (s === "likely_completed") return { text: "Vigência estimada · sem confirmação pública", tone: "text-ok-ink" };
   if (s === "expired_unconfirmed") {
     const through = (e.estimate ?? e.schedule)?.through;
-    return { text: through ? `晚于预计 ${durationText(now - Date.parse(through))} · 等待确认` : "晚于预计 · 等待确认", tone: "text-amber-ink" };
+    return { text: through ? `Após a previsão ${durationText(now - Date.parse(through))} · aguardando confirmação` : "Após a previsão · aguardando confirmação", tone: "text-amber-ink" };
   }
-  if (s === "in_progress") return { text: "正在发放", tone: "text-amber-ink" };
-  return { text: "已宣布 · 等待生效", tone: "text-amber-ink" };
+  if (s === "in_progress") return { text: "Em distribuição", tone: "text-amber-ink" };
+  return { text: "Anunciado · aguardando vigência", tone: "text-amber-ink" };
 }
 
 export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, selectedDate, version }: { selectedDate: string; version: string; marks: CodexCalendarMark[]; events: CodexResetEvent[]; today: string; historyFrom: string | null; now: number; avatar: string | null }) {
@@ -79,11 +79,11 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
     if (daysLoaded[selected] || !marks.some((m) => m.date === selected)) return;
     const controller = new AbortController();
     fetch(`/api/site/codex-reset/days/${selected}`, { signal: controller.signal, cache: "no-store" })
-      .then((r) => { if (!r.ok) throw new Error("day unavailable"); return r.json(); })
+      .then((r) => { if (!r.ok) throw new Error("Data indisponível"); return r.json(); })
       .then((data: CodexResetDay) => {
         // The page or this day may predate the latest monitor update. Do not cache either mismatch;
         // the existing date link reloads both through SSR, without an automatic retry loop.
-        if (data.version !== version) throw new Error("monitor version changed");
+        if (data.version !== version) throw new Error("Versão do monitor alterada");
         if (!controller.signal.aborted) setDaysLoaded((old) => ({ ...old, [selected]: data.events }));
       })
       .catch(() => { if (!controller.signal.aborted) setFailed(true); });
@@ -91,9 +91,9 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
   }, [selected, version, marks, daysLoaded]);
   const inMonth = marks.filter((m) => monthOf(m.date) === month);
   const summary = [
-    [inMonth.filter((m) => m.type === "direct_reset" && m.state !== "pending").length, "次额度重置"],
-    [inMonth.filter((m) => m.type === "reset_credit" && m.state !== "pending").length, "次发重置卡"],
-    [inMonth.filter((m) => m.state === "pending").length, "次等待生效"],
+    [inMonth.filter((m) => m.type === "direct_reset" && m.state !== "pending").length, "reinícios de limite"],
+    [inMonth.filter((m) => m.type === "reset_credit" && m.state !== "pending").length, "distribuições de créditos"],
+    [inMonth.filter((m) => m.state === "pending").length, "aguardando vigência"],
   ].filter(([n]) => (n as number) > 0);
   const days = gridDays(month);
   const selectedMarks = byDay.get(selected) ?? [];
@@ -115,27 +115,27 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
   return (
     <section className="mt-8" aria-labelledby="calendar-title">
       <h2 id="calendar-title" className="text-[18px] font-bold text-ink">
-        重置日历
+        Calendário de reinícios
       </h2>
-      <p className="mt-1 text-[12.5px] text-ink-3">点日期查看当天的重置、发卡和 Tibo 原帖。</p>
+      <p className="mt-1 text-[12.5px] text-ink-3">Selecione uma data para consultar reinícios, créditos e publicações originais de Tibo.</p>
 
-      <noscript><nav aria-label="历史重置记录">{[...new Set(marks.map((m) => m.date))].sort().reverse().map((d) => <a key={d} href={`/codex-reset/history/${d}`} className="mr-3 inline-block">{d}</a>)}</nav></noscript>
+      <noscript><nav aria-label="Histórico de reinícios">{[...new Set(marks.map((m) => m.date))].sort().reverse().map((d) => <a key={d} href={`/codex-reset/history/${d}`} className="mr-3 inline-block">{d}</a>)}</nav></noscript>
       <div className="mt-4 overflow-hidden rounded-card border border-line-strong bg-surface lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,1fr)] xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,1fr)]">
         <div className="px-3 py-[18px] sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <span className="num text-[18px] font-[650] text-ink">
-              {month.slice(0, 4)} 年 {Number(month.slice(5))} 月
+              {month.slice(0, 4)} ano {Number(month.slice(5))} mês
             </span>
             <div className="flex items-center gap-0.5">
               {month !== monthOf(latest) && (
                 <button type="button" onClick={() => select(latest)} className="mr-1 h-8 rounded-full px-3 text-[12px] text-ink-3 transition-colors hover:bg-bg-sunk hover:text-ink">
-                  回到最近
+                  Voltar aos recentes
                 </button>
               )}
-              <button type="button" onClick={() => setMonth(shiftMonth(month, -1))} disabled={month <= minMonth} aria-label="上个月" className="grid size-8 place-items-center rounded-full text-ink-3 transition-colors hover:bg-bg-sunk hover:text-ink disabled:opacity-35">
+              <button type="button" onClick={() => setMonth(shiftMonth(month, -1))} disabled={month <= minMonth} aria-label="Mês anterior" className="grid size-8 place-items-center rounded-full text-ink-3 transition-colors hover:bg-bg-sunk hover:text-ink disabled:opacity-35">
                 <IconChevronRight size={15} className="rotate-180" />
               </button>
-              <button type="button" onClick={() => setMonth(shiftMonth(month, 1))} disabled={month >= maxMonth} aria-label="下个月" className="grid size-8 place-items-center rounded-full text-ink-3 transition-colors hover:bg-bg-sunk hover:text-ink disabled:opacity-35">
+              <button type="button" onClick={() => setMonth(shiftMonth(month, 1))} disabled={month >= maxMonth} aria-label="Próximo mês" className="grid size-8 place-items-center rounded-full text-ink-3 transition-colors hover:bg-bg-sunk hover:text-ink disabled:opacity-35">
                 <IconChevronRight size={15} />
               </button>
             </div>
@@ -143,7 +143,7 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
           <p className="num mb-4 mt-3 text-[12px] text-ink-4">
             {summary.length ? (
               <>
-                本月{" "}
+                Neste mês {" "}
                 {summary.map(([n, t], i) => (
                   <span key={t as string}>
                     {i > 0 && " · "}
@@ -152,11 +152,11 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
                 ))}
               </>
             ) : (
-              "本月没有记录"
+              "Sem registros neste mês"
             )}
           </p>
 
-          <div ref={gridRef} role="grid" aria-label={`${month.slice(0, 4)} 年 ${Number(month.slice(5))} 月重置记录，方向键可切换日期`} onKeyDown={onKey}>
+          <div ref={gridRef} role="grid" aria-label={`${month.slice(0, 4)} ano ${Number(month.slice(5))} e seus registros de reinício; navegue pelas datas com as setas`} onKeyDown={onKey}>
             <div className="grid h-[26px] grid-cols-7 items-center gap-[3px] text-center text-[12px] text-ink-4 sm:gap-1" role="row">
               {WEEKDAYS.map((w) => (
                 <span key={w} role="columnheader">
@@ -179,7 +179,7 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
                     data-day={d}
                     tabIndex={isSel ? 0 : -1}
                     aria-selected={isSel}
-                    aria-label={`${d}${d === today ? "，今天" : ""}${ms.length ? `，${ms.map((m) => m.label).join("、")}` : ""}`}
+                    aria-label={`${d}${d === today ? ", hoje" : ""}${ms.length ? `, ${ms.map((m) => m.label).join("、")}` : ""}`}
                     onClick={(e) => { if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) { e.preventDefault(); select(d); } }}
                     className={`relative flex min-h-[62px] flex-col items-center justify-start gap-1.5 rounded-control border px-0 pb-1.5 pt-2.5 transition-[background-color,border-color] duration-150 sm:min-h-[70px] sm:rounded-tile sm:px-0.5 ${
                       top ? CELL[top.state] : "border-transparent bg-cal-plain hover:border-line-strong hover:bg-bg-sunk"
@@ -202,15 +202,15 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
             <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[12px] text-ink-4">
               <li className="inline-flex items-center gap-1.5">
                 <span className="size-3 rounded-mark bg-cal-key-confirmed" aria-hidden="true" />
-                已生效（官方确认或到账核实）
+                Vigente: confirmação oficial ou recebimento verificado
               </li>
               <li className="inline-flex items-center gap-1.5">
                 <span className="size-3 rounded-mark border border-dashed border-ok-ink" aria-hidden="true" />
-                应已生效（按预计时间，未见确认帖）
+                Vigência estimada: horário previsto, sem confirmação pública
               </li>
               <li className="inline-flex items-center gap-1.5">
                 <span className="size-3 rounded-mark bg-cal-key-announced" aria-hidden="true" />
-                已宣布，等待生效
+                Anunciado, aguardando vigência
               </li>
             </ul>
           </div>
@@ -219,15 +219,15 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
         <aside className="border-t border-line-strong bg-panel-quiet px-4 py-5 lg:border-l lg:border-t-0 lg:border-line lg:p-6" aria-live="polite">
           <div className="mb-4 flex items-baseline justify-between gap-3 border-b border-line pb-4">
             <h3 className="text-[15px] font-[650] text-ink">
-              {Number(selected.slice(5, 7))} 月 {Number(selected.slice(8))} 日
+              {selected.slice(8)}/{selected.slice(5,7)}
               {dayWord(selected, today) !== monthDay(selected) && <span className="ml-2 text-[12px] font-normal text-ink-4">{dayWord(selected, today)}</span>}
             </h3>
             <span className="num text-[12px] text-ink-4">{selected.slice(0, 4)}</span>
           </div>
           <p className="sr-only">
-            已选择 {selected}，{selectedMarks.length} 条记录。
+            Selecionado {selected}, {selectedMarks.length} registros.
           </p>
-          {selectedMarks.length > 0 && !daysLoaded[selected] && <p className="text-[13px] text-ink-3">{failed ? <a href={`/codex-reset/history/${selected}`} className="text-accent">重新读取当天记录</a> : "正在读取当天记录…"}</p>}
+          {selectedMarks.length > 0 && !daysLoaded[selected] && <p className="text-[13px] text-ink-3">{failed ? <a href={`/codex-reset/history/${selected}`} className="text-accent">Recarregar registros do dia</a> : "Carregando registros do dia…"}</p>}
           {selectedMarks.map((m, i) => {
             const e = eventById.get(m.eventId);
             if (!e) return null;
@@ -241,23 +241,23 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
                   {chip.text}
                 </span>
                 <h4 className="mb-1 mt-2 text-[15px] font-bold leading-[1.6] text-ink">
-                  {e.type === "reset_credit" ? "重置卡发放" : e.displayLabel === "额度重置" ? "Codex 额度重置" : e.displayLabel}
+                  {e.type === "reset_credit" ? "Distribuição de créditos de reinício" : e.displayLabel === "Reinício de limites" ? "Reinício de limites do Codex" : e.displayLabel}
                 </h4>
                 {e.confirmedAt && (
                   <p className="num mb-1 text-[13px] font-medium text-ink">
-                    确认帖 {stamp(e.confirmedAt)}
-                    <span className="ml-1 font-normal text-ink-4">（不是精确到账时间）</span>
+                    Publicação de confirmação {stamp(e.confirmedAt)}
+                    <span className="ml-1 font-normal text-ink-4">(não é o horário exato de recebimento)</span>
                   </p>
                 )}
-                {!e.confirmedAt && e.occurredOn && <p className="num mb-1 text-[13px] font-medium text-ink">核实到账 {monthDay(e.occurredOn)}</p>}
+                {!e.confirmedAt && e.occurredOn && <p className="num mb-1 text-[13px] font-medium text-ink">Recebimento verificado {monthDay(e.occurredOn)}</p>}
                 {window && e.status !== "confirmed" && (
                   <p className="mb-1 text-[13px] font-medium leading-[1.5] text-ink">
-                    <span className="num">预计 {windowText(window.from, window.through, today)}</span>
+                    <span className="num">Previsão {windowText(window.from, window.through, today)}</span>
                     {e.estimate?.reason && <span className="mt-0.5 block text-[12.5px] font-normal leading-[1.6] text-ink-3">{e.estimate.reason}</span>}
                   </p>
                 )}
                 <p className="text-[12px] leading-[1.7] text-ink-4">
-                  适用范围：{e.presentation?.audienceZh ?? e.presentation?.scopeLabel ?? "原帖未说明适用人群"}
+                  Abrangência:{e.presentation?.audienceZh ?? e.presentation?.scopeLabel ?? "A publicação original não informa o público abrangido"}
                   {e.presentation?.productsZh ? ` · ${e.presentation.productsZh}` : ""}
                 </p>
                 {post && (
@@ -267,7 +267,7 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
                 )}
                 {e.posts.length > 1 && (
                   <p className="text-[12px] text-ink-4">
-                    这件事共有 {e.posts.length} 条相关原帖{bjDate(e.posts.at(-1)!.publishedAt ?? "") ? `，最早 ${stamp(e.posts.at(-1)!.publishedAt)}` : ""}。
+                    Este acontecimento reúne {e.posts.length} publicações originais relacionadas {bjDate(e.posts.at(-1)!.publishedAt ?? "") ? `; a primeira em ${stamp(e.posts.at(-1)!.publishedAt)}` : ""}.
                   </p>
                 )}
               </article>
@@ -279,8 +279,8 @@ export function ResetCalendar({ marks, events, today, historyFrom, now, avatar, 
                 <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
                 <path d="M3.5 9.5h17M8 3v4M16 3v4" />
               </svg>
-              <h4 className="mt-4 text-[15px] font-semibold text-ink">这一天没有记录</h4>
-              <p className="mb-5 mt-3 max-w-[280px] text-[12px] leading-[1.8] text-ink-4">这天没有 Tibo 宣布或确认的重置，也没有发放重置卡。点日历上带标签的日期查看记录。</p>
+              <h4 className="mt-4 text-[15px] font-semibold text-ink">Sem registros nesta data</h4>
+              <p className="mb-5 mt-3 max-w-[280px] text-[12px] leading-[1.8] text-ink-4">Não há anúncio ou confirmação de reinício nem distribuição de créditos nesta data. Selecione uma data marcada para consultar registros.</p>
             </div>
           )}
         </aside>

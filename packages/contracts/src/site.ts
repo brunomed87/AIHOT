@@ -32,7 +32,7 @@ export interface XPostView {
   avatarSrcSet?: string;
   text: string;
   translation: string | null;
-  /** translation: Chinese translation of the quoted post, when it is in another language. */
+  /** translation: tradução em português da publicação citada em outro idioma. */
   quoted: { authorName: string; handle: string; text: string; url: string; translation: string | null } | null;
   media: MediaView[];
 }
@@ -141,7 +141,7 @@ export interface ItemDetail extends ItemSummary {
   readingMode: "full" | "summary-only";
   author: string | null;
   language: string | null;
-  /** Chinese body (translation or Chinese original) and original body, whitelisted HTML. */
+  /** Corpo em português e original com HTML permitido. zh é o nome histórico do campo. */
   body: { zh: string | null; original: string | null; zhKind: "translation" | "original" | null; complete: boolean } | null;
   outline: OutlineEntry[];
   relatedStories: StoryRef[];
@@ -321,7 +321,7 @@ export interface ReportCitation {
 export interface ReportDetail {
   kind: ReportKind;
   key: string;
-  /** 同类现存刊物的时间顺序号；补入或删除更早刊物时会重算。 */
+  /** Edição na sequência temporal completa da periodicidade; inserção ou remoção antiga recalcula posteriores. */
   issueNumber: number;
   title: string;
   windowStart: string;
@@ -361,17 +361,17 @@ export interface SiteStats {
   sources: number;
   /** Enabled sources by kind: x_search, rss, web_list, mp_account, json_list. */
   sourceKinds: Record<string, number>;
-  /** Of them, sources that only count toward heat (their items never reach 精选). */
+  /** Fontes que contribuem somente para repercussão; seus itens não entram na seleção. */
   heatOnlySources: number;
   /** Everything collected and not withdrawn, heat-only sources included. */
   items: number;
   selected: number;
   dailies: number;
-  /** The last 24 hours: items found (heat-only sources included), and items that made 精选 (by their place on the timeline). */
+  /** Últimas 24 horas: descobertos incluindo sinais, e selecionados conforme posição na linha do tempo. */
   day: { collected: number; selected: number };
   /** Enabled sources in a daily shuffle, for the about page's river: one line per source. */
   sampleSources: Array<{ name: string; kind: string; heatOnly: boolean }>;
-  /** The latest 精选, newest first. */
+  /** Selecionados recentes, em ordem decrescente de data. */
   latest: Array<{ id: string; title: string; source: string }>;
 }
 
@@ -388,5 +388,5 @@ export interface StoryFollowup {
 }
 export interface StoryFollowupsResponse { items: StoryFollowup[]; more: boolean }
 
-/** 最近期刊导航携带完整序列中的期号；关闭的日报月份省略标题。 */
+/** Navegação recente preserva edição da sequência completa; meses diários fechados omitem título. */
 export interface ReportNavigationEntry { key: string; issueNumber?: number; title?: string | null; count?: number }

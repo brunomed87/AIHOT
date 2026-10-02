@@ -84,7 +84,7 @@ export async function runsOverview(): Promise<Runs> {
 
 /** Failed articles (one failure group, or all of the last 30 days) back into processing. */
 export async function requeueFailedArticles(input: { group: string | null; reason: string }, actor: string) {
-  if (!input.reason?.trim()) throw new Error("reason is required");
+  if (!input.reason?.trim()) throw new Error("Informe um motivo");
   const result = await requeueFailed(input.group);
   await audit(actor, "processing.requeue", input.group ? `failure:${input.group.slice(0, 80)}` : "failure:all", input.reason, null, result);
   return result;

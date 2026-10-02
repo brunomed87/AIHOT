@@ -46,7 +46,7 @@ export interface ItemRow {
   story_public_id: string | null;
   story_title: string | null;
   zh_text: string | null;
-  /** Chinese translation of the post an X post quotes. */
+  /** Tradução em português da publicação citada no X. */
   quoted_zh: string | null;
 }
 
@@ -73,8 +73,8 @@ export const ITEM_FROM = sql`
   JOIN sources s ON s.id = p.source_id
   JOIN articles a ON a.id = p.article_id
   LEFT JOIN stories st ON st.id = p.story_id AND st.merged_into IS NULL
-  LEFT JOIN translations tr ON tr.article_id = p.article_id AND tr.lang = 'zh' AND tr.revision >= a.revision
-  LEFT JOIN quote_translations qt ON p.channel = 'x' AND qt.tweet_id = substring(a.x_post->'quoted'->>'url' from '/status/([0-9]+)')`;
+  LEFT JOIN translations tr ON tr.article_id = p.article_id AND tr.lang = 'pt' AND tr.revision >= a.revision
+  LEFT JOIN quote_translations qt ON p.channel = 'x' AND qt.lang = 'pt' AND qt.tweet_id = substring(a.x_post->'quoted'->>'url' from '/status/([0-9]+)')`;
 
 export function channelCondition(channel: ChannelKey | null | undefined) {
   if (!channel || channel === "all") return sql``;

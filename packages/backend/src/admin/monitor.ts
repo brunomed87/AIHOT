@@ -47,8 +47,8 @@ export async function listMonitorPosts(opts: { filter?: "relevant" | "review" | 
  * were dealt with (the event edited or confirmed, or nothing to do), so it leaves the review list.
  */
 export async function resolveMonitorPost(id: string, input: { action: "skip" | "reviewed"; reason: string }, actor: string) {
-  if (!input.reason?.trim()) throw new Error("reason is required");
-  if (input.action !== "skip" && input.action !== "reviewed") throw new Error("action must be skip or reviewed");
+  if (!input.reason?.trim()) throw new Error("Informe um motivo");
+  if (input.action !== "skip" && input.action !== "reviewed") throw new Error("action deve ser skip ou reviewed");
   const [post] = await sql<{ processed_at: Date | null; recognition: Record<string, unknown> | null }[]>`SELECT processed_at, recognition FROM monitor_posts WHERE id = ${id}`;
   if (!post) return null;
   if (input.action === "skip") {
@@ -56,7 +56,7 @@ export async function resolveMonitorPost(id: string, input: { action: "skip" | "
       UPDATE monitor_posts SET processed_at = now(),
         recognition = ${sql.json({ skipped: true, relevant: false, needsReview: false, propositions: [], reason: input.reason, by: actor } as never)}
       WHERE id = ${id} AND processed_at IS NULL`;
-    if (!skipped.count) throw new Conflict("这条帖子已经识别过了，请刷新");
+    if (!skipped.count) throw new Conflict("Publicação já identificada. Atualize a página");
     await sql`DELETE FROM monitor_state WHERE key = ${`failures:${id}`}`;
   } else {
     await sql`UPDATE monitor_posts SET recognition = coalesce(recognition, '{}'::jsonb) || ${sql.json({ reviewed: true, reviewedBy: actor, reviewReason: input.reason } as never)} WHERE id = ${id}`;
@@ -86,12 +86,12 @@ const Patch = z
 async function lockEvent(tx: Tx, id: string, version: string) {
   const [e] = await tx`SELECT * FROM monitor_events WHERE id = ${id} FOR UPDATE`;
   if (!e) return null;
-  if (new Date(e.updated_at as Date).toISOString() !== version) throw new Conflict("这个事件已被修改（可能是新帖子刚到），请刷新后再改");
+  if (new Date(e.updated_at as Date).toISOString() !== version) throw new Conflict("Acontecimento alterado, possivelmente por nova publicação. Atualize antes de editar");
   return e;
 }
 
 export async function updateMonitorEvent(id: string, input: { patch: unknown; reason: string; version: string }, actor: string) {
-  if (!input.reason?.trim()) throw new Error("reason is required");
+  if (!input.reason?.trim()) throw new Error("Informe um motivo");
   const patch = Patch.parse(input.patch);
   return sql.begin(async (tx) => {
     const before = await lockEvent(tx, id, input.version);
@@ -111,8 +111,8 @@ export async function updateMonitorEvent(id: string, input: { patch: unknown; re
     const [after] = await tx`
       UPDATE monitor_events SET
         type = coalesce(${patch.type ?? null}, type),
-        label = CASE WHEN ${patch.type ?? null}::text IS NULL THEN label WHEN ${patch.type ?? null} = 'reset_credit' THEN '发重置卡' ELSE '全员重置' END,
-        display_label = CASE WHEN ${patch.type ?? null}::text IS NULL THEN display_label WHEN ${patch.type ?? null} = 'reset_credit' THEN '重置卡发放' ELSE '额度重置' END,
+        label = CASE WHEN ${patch.type ?? null}::text IS NULL THEN label WHEN ${patch.type ?? null} = 'reset_credit' THEN 'Distribuição de créditos' ELSE 'Reinício para todos' END,
+        display_label = CASE WHEN ${patch.type ?? null}::text IS NULL THEN display_label WHEN ${patch.type ?? null} = 'reset_credit' THEN 'Créditos de reinício' ELSE 'Reinício de limites' END,
         status = coalesce(${patch.status ?? null}, status),
         confirmed_at = CASE WHEN ${patch.confirmedAt !== undefined} THEN ${patch.confirmedAt ?? null}::timestamptz ELSE confirmed_at END,
         occurred_on = CASE WHEN ${patch.occurredOn !== undefined} THEN ${patch.occurredOn ?? null}::date ELSE occurred_on END,
@@ -142,7 +142,7 @@ function pick(row: Record<string, unknown>, patch: Record<string, unknown>) {
  */
 export async function reviewReceipt(id: string, input: { occurredOn?: string | null; reason: string; version: string }, actor: string) {
   const day = input.occurredOn || null;
-  if (day && !/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error("occurredOn must be YYYY-MM-DD");
+  if (day && !/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error("occurredOn deve seguir YYYY-MM-DD");
   // The version check below also covers this read: an account check never downgrades official evidence.
   const [event] = await sql`SELECT confirmation_basis FROM monitor_events WHERE id = ${id}`;
   const patch = { status: "confirmed", confirmationBasis: event?.confirmation_basis === "source_post" ? "source_post" : "receipt_review",
@@ -151,7 +151,7 @@ export async function reviewReceipt(id: string, input: { occurredOn?: string | n
 }
 
 export async function setWithdrawn(id: string, input: { withdrawn: boolean; reason: string; version: string }, actor: string) {
-  if (!input.reason?.trim()) throw new Error("reason is required");
+  if (!input.reason?.trim()) throw new Error("Informe um motivo");
   return sql.begin(async (tx) => {
     const before = await lockEvent(tx, id, input.version);
     if (!before) return null;
@@ -163,10 +163,10 @@ export async function setWithdrawn(id: string, input: { withdrawn: boolean; reas
 
 /** Moves (or removes) one post's link; both events' versions change. */
 export async function relinkPost(input: { postId: string; fromEventId: string; toEventId: string | null; reason: string }, actor: string) {
-  if (!input.reason?.trim()) throw new Error("reason is required");
+  if (!input.reason?.trim()) throw new Error("Informe um motivo");
   return sql.begin(async (tx) => {
     const [link] = await tx`SELECT * FROM monitor_event_posts WHERE event_id = ${input.fromEventId} AND post_id = ${input.postId} FOR UPDATE`;
-    if (!link) throw new Conflict("这条帖子不在原事件里");
+    if (!link) throw new Conflict("Esta publicação não pertence ao acontecimento original");
     if (input.fromEventId === input.toEventId) return { moved: false };
     if (input.toEventId) {
       const [to] = await tx`SELECT id FROM monitor_events WHERE id = ${input.toEventId}`;

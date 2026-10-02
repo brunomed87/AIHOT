@@ -54,43 +54,43 @@ export interface BoardCopy {
   howToRead: string;
 }
 
-const GENERAL_READING = "综合多家公开评测，不同模型的参评覆盖不同。";
+const GENERAL_READING = "Reúne avaliações públicas; cada modelo tem cobertura diferente.";
 
 export const BOARD_COPY: Record<LeaderboardBoardKey, BoardCopy> = {
   overall: {
     key: "overall",
-    name: "综合",
-    title: `${SITE.name} 大模型排行榜`,
-    description: "汇集多种能力的真实评测，找到综合表现更强的模型。",
+    name: "síntese",
+    title: `${SITE.name} Ranking de modelos de linguagem`,
+    description: "Avaliações reais de diferentes capacidades para comparar o desempenho geral.",
     howToRead: GENERAL_READING,
   },
   coding: {
     key: "coding",
-    name: "编程",
-    title: `编程模型排行榜 · ${SITE.name}`,
-    description: "从写代码到改仓库，看模型能不能把软件做出来。",
+    name: "Programação",
+    title: `Ranking de modelos de programação · ${SITE.name}`,
+    description: "Da escrita de código à alteração de repositórios: capacidade de produzir software.",
     howToRead: GENERAL_READING,
   },
   reasoning: {
     key: "reasoning",
-    name: "推理",
-    title: `推理模型排行榜 · ${SITE.name}`,
-    description: "数学、逻辑与陌生规则，看模型能不能想明白新问题。",
+    name: "Raciocínio",
+    title: `Ranking de modelos de raciocínio · ${SITE.name}`,
+    description: "Matemática, lógica e regras desconhecidas para avaliar problemas novos.",
     howToRead: GENERAL_READING,
   },
   knowledge: {
     key: "knowledge",
-    name: "知识",
-    title: `知识模型排行榜 · ${SITE.name}`,
-    description: "事实问答与研究生级科学知识，看知识掌握与回答准确性。",
-    howToRead: "当前知识榜采用 Epoch 的两项评测，来自同一家机构。",
+    name: "Conhecimento",
+    title: `Ranking de modelos de conhecimento · ${SITE.name}`,
+    description: "Perguntas factuais e conhecimento científico de pós-graduação para avaliar domínio e precisão.",
+    howToRead: "O ranking de conhecimento utiliza duas avaliações do Epoch, da mesma instituição.",
   },
   professional: {
     key: "professional",
-    name: "专业办公",
-    title: `专业办公模型排行榜 · ${SITE.name}`,
-    description: "金融分析、法律咨询与银行业务，看专业任务能否完成。",
-    howToRead: "当前覆盖金融分析、专业咨询与银行业务，尚不能代表所有文档、表格和演示文稿任务。",
+    name: "Trabalho profissional",
+    title: `Ranking de modelos de trabalho profissional · ${SITE.name}`,
+    description: "Análise financeira, consultoria jurídica e operações bancárias para avaliar tarefas profissionais.",
+    howToRead: "A cobertura atual inclui análise financeira, consultoria e operações bancárias; não representa todas as tarefas com documentos, planilhas ou apresentações.",
   },
 };
 
@@ -140,7 +140,7 @@ const PROVIDER_MARKS: Record<string, string> = {
 export function modelBrand(slug: string, providerSlug: string | null, provider: string | null, name: string): LbBrand {
   const family = FAMILY_MARKS.find(([re]) => re.test(slug))?.[1];
   const file = family ?? (providerSlug ? PROVIDER_MARKS[providerSlug] : undefined);
-  const label = (provider && provider !== "其他" ? provider : name).replace(/[^\p{L}\p{N}]/gu, "");
+  const label = (provider && provider !== "Outros" ? provider : name).replace(/[^\p{L}\p{N}]/gu, "");
   return { src: file ? `/model-providers/${file}` : null, monogram: label.slice(0, 1).toUpperCase() || "?", raster: false };
 }
 

@@ -174,12 +174,12 @@ async function openEvents(before: Date): Promise<OpenEventInput[]> {
 
 type NotifyAction = "announce" | "confirm" | "amend" | "withdraw";
 
-const KIND_NAME = (type: string) => (type === "reset_credit" ? "重置卡发放" : "Codex 额度重置");
+const KIND_NAME = (type: string) => (type === "reset_credit" ? "Distribuição de créditos de reinício" : "Reinício de limites do Codex");
 const HEADLINE: Record<NotifyAction, (kind: string) => string> = {
-  announce: (k) => `${k}：Tibo 已宣布`,
-  confirm: (k) => `${k}已完成（Tibo 确认）`,
-  amend: (k) => `${k}：安排有更新`,
-  withdraw: (k) => `${k}：Tibo 撤回了预告`,
+  announce: (k) => `${k}: Tibo anunciou`,
+  confirm: (k) => `${k}Concluído: confirmado por Tibo`,
+  amend: (k) => `${k}: programação atualizada`,
+  withdraw: (k) => `${k}: Tibo retirou o anúncio`,
 };
 const bjStamp = (iso: string) => `${iso.slice(5, 16).replace("T", " ")}`;
 interface PushPost {
@@ -192,9 +192,8 @@ interface PushPost {
 }
 
 /**
- * One card per post, however many resets it speaks of (the legacy notification): the conclusion
- * first, each reset's expected time (or confirmation time, or withdrawal), the audience, the outage it
- * follows, the question a short reply answers, Tibo's words in Chinese and the links.
+ * Um cartão por publicação, mesmo com vários reinícios: conclusão, estimativas ou confirmações,
+ * público, falha anterior, contexto de respostas, tradução em português e links originais.
  */
 function resetPostCard(post: PushPost, entries: Array<{ eventId: string; action: NotifyAction }>, snapshot: Awaited<ReturnType<typeof codexResetsSnapshot>>, withdrawn: Map<string, { type: string }>) {
   type Event = (typeof snapshot.events)[number];
@@ -210,14 +209,14 @@ function resetPostCard(post: PushPost, entries: Array<{ eventId: string; action:
   for (const [i, d] of described.entries()) {
     if (i > 0) lines.push(`**${HEADLINE[d.action](KIND_NAME(d.type))}**`);
     const window = d.e?.estimate ?? d.e?.schedule;
-    if ((d.action === "announce" || d.action === "amend") && window) lines.push(`**预计生效**：${window.label}${d.e?.estimate ? `（${SITE.name} 推算）` : ""}`);
-    if (d.action === "confirm" && d.e?.confirmedAt) lines.push(`**确认时间**：北京时间 ${bjStamp(d.e.confirmedAt)}（确认帖时间，不是精确到账时间）`);
-    if (d.action === "withdraw") lines.push("此前宣布的这次安排已撤回，以 Codex 内显示为准。");
+    if ((d.action === "announce" || d.action === "amend") && window) lines.push(`**Vigência estimada**:${window.label}${d.e?.estimate ? `(${SITE.name} ; estimativa)` : ""}`);
+    if (d.action === "confirm" && d.e?.confirmedAt) lines.push(`**Confirmação**, horário de Pequim: ${bjStamp(d.e.confirmedAt)}(horário da confirmação, sem representar recebimento exato)`);
+    if (d.action === "withdraw") lines.push("O anúncio foi retirado. Confira o estado no Codex.");
   }
   const scoped = described.find((d) => d.e)?.e;
-  if (scoped) lines.push(`**适用范围**：${scoped.presentation?.audienceZh ?? scoped.presentation?.scopeLabel ?? "未说明"}${scoped.presentation?.productsZh ? ` · ${scoped.presentation.productsZh}` : ""}`);
+  if (scoped) lines.push(`**Abrangência**:${scoped.presentation?.audienceZh ?? scoped.presentation?.scopeLabel ?? "Não informado"}${scoped.presentation?.productsZh ? ` · ${scoped.presentation.productsZh}` : ""}`);
   const outage = snapshot.outage && described.some((d) => d.eventId === snapshot.outage!.resetEventId) ? snapshot.outage : null;
-  if (outage?.publishedAt) lines.push(`**起因**：${bjStamp(outage.publishedAt)} Tibo 确认 Codex 故障${outage.recoveredAt ? `，${bjStamp(outage.recoveredAt).slice(6)} 恢复` : ""}`);
+  if (outage?.publishedAt) lines.push(`**Motivo**:${bjStamp(outage.publishedAt)} Tibo confirmou uma falha no Codex${outage.recoveredAt ? `, ${bjStamp(outage.recoveredAt).slice(6)} Restabelecido` : ""}`);
   const words = post.text;
   // A short reply needs the question it answers.
   const parent = post.originalText.length <= 120 ? post.context.find((c) => (c.text ?? c.originalText).replace(/[^\p{L}\p{N}]/gu, "").length >= 8) : undefined;
@@ -227,13 +226,13 @@ function resetPostCard(post: PushPost, entries: Array<{ eventId: string; action:
     header: { title: { tag: "plain_text", content: title }, template: tone },
     elements: [
       { tag: "div", text: { tag: "lark_md", content: lines.join("\n") } },
-      parent ? { tag: "div", text: { tag: "lark_md", content: `${parent.relation === "quote" ? "引用" : "回复"} @${parent.author}：${(parent.text ?? parent.originalText).slice(0, 160)}` } } : null,
+      parent ? { tag: "div", text: { tag: "lark_md", content: `${parent.relation === "quote" ? "Citação" : "Resposta"} @${parent.author}: ${(parent.text ?? parent.originalText).slice(0, 160)}` } } : null,
       words ? { tag: "div", text: { tag: "lark_md", content: `> ${words.replace(/\n/g, "\n> ")}` } } : null,
       {
         tag: "action",
         actions: [
-          { tag: "button", text: { tag: "plain_text", content: "查看原帖" }, url: `https://x.com/${AUTHOR}/status/${post.post_id}`, type: "default" },
-          { tag: "button", text: { tag: "plain_text", content: "打开重置监控" }, url: MONITOR_PAGE_URL, type: "primary" },
+          { tag: "button", text: { tag: "plain_text", content: "Ver publicação original" }, url: `https://x.com/${AUTHOR}/status/${post.post_id}`, type: "default" },
+          { tag: "button", text: { tag: "plain_text", content: "Abrir monitor de reinícios" }, url: MONITOR_PAGE_URL, type: "primary" },
         ],
       },
     ].filter(Boolean),

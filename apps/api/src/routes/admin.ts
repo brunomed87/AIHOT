@@ -26,13 +26,13 @@ type Q = Record<string, string | undefined>;
 const q = (req: FastifyRequest) => req.query as Q;
 const body = <T = Record<string, unknown>>(req: FastifyRequest) => (req.body ?? {}) as T;
 const param = (req: FastifyRequest, name: string) => (req.params as Record<string, string>)[name]!;
-const notFound = (req: FastifyRequest, reply: FastifyReply) => sendProblem(req, reply, { status: 404, code: "not_found", detail: "Not found." });
+const notFound = (req: FastifyRequest, reply: FastifyReply) => sendProblem(req, reply, { status: 404, code: "not_found", detail: "Não encontrado." });
 const orNotFound = <T>(req: FastifyRequest, reply: FastifyReply, value: T | null) => (value === null || value === undefined ? notFound(req, reply) : value);
 const page = (req: FastifyRequest) => Math.max(1, Number(q(req).page) || 1);
 
 function decodeImage(dataUrl: unknown): Buffer {
   const m = /^data:image\/(png|jpeg|webp);base64,(.+)$/s.exec(String(dataUrl ?? ""));
-  if (!m) throw Object.assign(new Error("image must be a PNG, JPEG or WebP data URL"), { statusCode: 400 });
+  if (!m) throw Object.assign(new Error("A imagem deve ser uma URL de dados PNG, JPEG ou WebP"), { statusCode: 400 });
   return Buffer.from(m[2]!, "base64");
 }
 
@@ -139,7 +139,7 @@ export function registerAdmin(app: FastifyInstance) {
   }));
   app.post("/api/admin/selectbench/import", adminHandler(async (req, _reply, admin) => {
     const b = body<{ label: string; report: unknown }>(req);
-    return importSelectBenchRun(b.report, String(b.label || "导入的对比运行"), actorOf(admin));
+    return importSelectBenchRun(b.report, String(b.label || "Comparação importada"), actorOf(admin));
   }));
 
   app.get("/api/admin/nav-counts", adminHandler(async () => navCounts()));

@@ -1,4 +1,4 @@
-// 期号按完整的现存同类刊物计算，导航只保留最近 400 期。
+// Edição calculada pelo catálogo completo; navegação limitada às quatrocentas mais recentes.
 import { tag } from "./setup.ts";
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";

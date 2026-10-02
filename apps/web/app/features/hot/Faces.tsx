@@ -4,12 +4,7 @@ import type { HotParticipant } from "@aihot/contracts/site";
 import { shortSourceName } from "../../lib/format";
 import { SourceAvatar } from "../../components/ui/SourceAvatar";
 
-/**
- * Who is talking about a hot story: overlapping faces of the 精选组 sources in the order the server
- * gives (T1, T1.5, T2), then a count for everyone else, 氛围组 included. Hover lists every name; where
- * the faces are their own control (not inside a link), a tap or Enter opens the list, as the legacy
- * list's <details> did, so phones and keyboards reach it too.
- */
+/** Fontes que discutem o acontecimento: avatares sobrepostos na ordem T1, T1.5 e T2, depois contagem das demais, incluindo sinais. Ponteiro lista nomes; quando controle independente, toque ou Enter abre lista, garantindo celular e teclado. */
 export function Faces({ participants, total, size = 24, max = 6, interactive = true }: { participants: HotParticipant[]; total: number; size?: number; max?: number; interactive?: boolean }) {
   const shown = participants.filter((p) => p.kind === "editorial").slice(0, max);
   const rest = total - shown.length;
@@ -73,7 +68,7 @@ function FacesButton({ participants, total, names, children }: { participants: H
         title={names}
         aria-expanded={open}
         aria-controls={id}
-        aria-label={`${total} 位参与者，查看名单`}
+        aria-label={`${total} participantes; ver lista`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -87,20 +82,20 @@ function FacesButton({ participants, total, names, children }: { participants: H
         {children}
       </button>
       {open && createPortal(
-        <span ref={popup} id={id} role="dialog" aria-label="参与讨论的来源" style={at} className="fixed z-50 max-h-[240px] w-[240px] overflow-y-auto rounded-control border border-line bg-raised p-3 text-[12.5px] leading-relaxed text-ink-2 shadow-[var(--shadow-pop)]">
+        <span ref={popup} id={id} role="dialog" aria-label="Fontes participantes da discussão" style={at} className="fixed z-50 max-h-[240px] w-[240px] overflow-y-auto rounded-control border border-line bg-raised p-3 text-[12.5px] leading-relaxed text-ink-2 shadow-[var(--shadow-pop)]">
           {editorial.length > 0 && (
             <>
-              <span className="block text-[11.5px] font-semibold text-ink-4">精选组</span>
+              <span className="block text-[11.5px] font-semibold text-ink-4">Grupo editorial</span>
               <span className="mt-0.5 block">{editorial.map((p) => shortSourceName(p.name)).join("、")}</span>
             </>
           )}
           {signal.length > 0 && (
             <>
-              <span className={`block text-[11.5px] font-semibold text-ink-4 ${editorial.length ? "mt-2" : ""}`}>氛围组</span>
+              <span className={`block text-[11.5px] font-semibold text-ink-4 ${editorial.length ? "mt-2" : ""}`}>Grupo de sinais</span>
               <span className="mt-0.5 block">{signal.map((p) => shortSourceName(p.name)).join("、")}</span>
             </>
           )}
-          {more > 0 && <span className="mt-2 block text-[11.5px] text-ink-4">另有 {more} 位未列出</span>}
+          {more > 0 && <span className="mt-2 block text-[11.5px] text-ink-4">Outras {more} participantes não listados</span>}
         </span>, document.body
       )}
     </span>

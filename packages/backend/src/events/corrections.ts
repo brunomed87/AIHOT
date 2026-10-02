@@ -47,7 +47,7 @@ export async function mergeStories(fromId: number, intoId: number, reason: strin
   if (done) return done;
   const found = await sql<{ id: number }[]>`SELECT id FROM stories WHERE id IN (${fromId}, ${intoId})`;
   if (found.length < 2) throw new Error("story not found");
-  throw new Conflict("两个事件都必须是未合并的事件");
+  throw new Conflict("Os dois acontecimentos precisam estar sem fusão anterior");
 }
 
 /**

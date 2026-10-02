@@ -1,5 +1,5 @@
 // The judging and writing steps (editorial/analyze.ts): the prefilter decides relevance, two scores
-// against the tier threshold decide 精选, selected and near-selected items are written by the content
+// comparadas ao limite da fonte decidem seleção; selecionados e próximos recebem redação completa
 // understanding and the rest by the title/summary prompts, a structure step gives the category, subjects
 // and fact. Material with only a feed summary has its page fetched first. The steps run on the models
 // AIHOT assigns them (set through the environment here); every prompt in the pack renders.
@@ -23,8 +23,8 @@ const X_SOURCE = `test-analyze-x-${T}`;
 type Step = "prefilter" | "score" | "understand" | "summarize" | "structure";
 interface Req { step: Step; marker: string; system: string; user: string; body: Record<string, any> }
 const requests: Req[] = [];
-const MARKERS = ["CLEAR", "RESCUE", "LOW", "OFFTOPIC", "BARE", "VAGUE", "THIN", "SENSITIVE", "推文"];
-const scoreAnswers: Record<string, number[]> = { CLEAR: [78, 72], RESCUE: [56, 50], LOW: [45, 40], THIN: [70, 70], SENSITIVE: [80, 80], 推文: [40, 40], BARE: [30, 34], VAGUE: [60, 62] };
+const MARKERS = ["CLEAR", "RESCUE", "LOW", "OFFTOPIC", "BARE", "VAGUE", "THIN", "SENSITIVE", "Publicação"];
+const scoreAnswers: Record<string, number[]> = { CLEAR: [78, 72], RESCUE: [56, 50], LOW: [45, 40], THIN: [70, 70], SENSITIVE: [80, 80], "Publicação": [40, 40], BARE: [30, 34], VAGUE: [60, 62] };
 
 const stepOf = (system: string, user: string): Step =>
   system.includes("pré-filtro amplo de relevância oftalmológica") ? "prefilter" : system.includes("avaliador de atenção geral") ? "score"
@@ -45,9 +45,9 @@ const provider = await stub((_hit, req) => {
   if (step === "score") return answer({ attentionScore: scoreAnswers[marker]!.shift() });
   if (step === "understand") {
     if (marker === "SENSITIVE") return new Reply(400, { contentFilter: [{ level: 1, role: "user" }], error: { code: "1301", message: "系统检测到输入或生成内容可能包含不安全或敏感内容" } });
-    return answer({ itemType: "model_release", authorRole: "principal", tags: ["模型发布", "开源", "Agent", "不存在的标签"], editorialJudgment: `理由 ${marker}`, titleZh: `理解标题 ${marker}`, summaryZh: `理解摘要 ${marker}。第二句补充一个关键数字。` });
+    return answer({ itemType: "model_release", authorRole: "principal", tags: ["Lançamento de modelos", "开源", "Agentes", "不存在的标签"], editorialJudgment: `理由 ${marker}`, titleZh: `理解标题 ${marker}`, summaryZh: `理解摘要 ${marker}。第二句补充一个关键数字。` });
   }
-  if (step === "structure") return answer({ category: "ai-models", tags: ["模型发布", "推理"], subjects: ["anthropic", "unknown-co"], fact: { title: `事实 ${marker}`, subject: "某公司", action: "发布", object: "模型", occurredAt: null } });
+  if (step === "structure") return answer({ category: "ai-models", tags: ["Lançamento de modelos", "Raciocínio"], subjects: ["anthropic", "unknown-co"], fact: { title: `事实 ${marker}`, subject: "某公司", action: "Lançamento", object: "Modelo", occurredAt: null } });
   return answer(`title_zh: 翻译标题 ${marker}\nsummary_zh: 翻译摘要 ${marker}。第二句补充影响。`);
 });
 for (const env of ["DASHSCOPE_BASE_URL", "ZHIPU_BASE_URL", "DEEPSEEK_BASE_URL"]) process.env[env] = `${provider.url}/v1`;
@@ -99,17 +99,17 @@ test("a selected item: prefilter, two scores, the content understanding and the 
   assert.deepEqual(calls("CLEAR").sort(), ["prefilter", "score", "score", "structure", "understand"]);
   const r = await row(id);
   assert.deepEqual([r.title_zh, r.reason_zh, r.category, r.receipt_ids.length], ["理解标题 CLEAR", "理由 CLEAR", "ai-models", 5]);
-  assert.deepEqual(r.tags, ["模型发布", "开源/仓库", "Agent", "Anthropic"], "vocabulary tags (synonyms mapped, unknown dropped) and the subject's tag");
+  assert.deepEqual(r.tags, ["Lançamento de modelos", "Código aberto/Repositórios", "Agentes", "Anthropic"], "vocabulary tags (synonyms mapped, unknown dropped) and the subject's tag");
   assert.deepEqual(r.subjects, ["anthropic"]);
   assert.deepEqual([r.output.writer, r.output.itemType, r.output.prefilter.label, r.output.fact.title], ["understand", "model_release", "PASS", "事实 CLEAR"]);
   const score = requests.find((q) => q.marker === "CLEAR" && q.step === "score")!;
-  assert.match(score.user, /【标题】\nCLEAR model release/, "the score reads the original title, before any writing");
+  assert.match(score.user, /\[TÍTULO\]\nCLEAR model release/, "a pontuação lê o título original antes da redação");
   assert.deepEqual([score.body.temperature, score.body.reasoning_effort, score.body.max_tokens], [1, "high", 65536]);
   const understand = requests.find((q) => q.marker === "CLEAR" && q.step === "understand")!;
-  assert.ok(understand.user.startsWith("请按系统规则理解以下单篇材料，一次返回全部六个字段。"));
+  assert.ok(understand.user.startsWith("Compreenda o material abaixo conforme as regras do sistema e retorne os seis campos em uma resposta."));
   assert.ok(understand.system.includes("Responda o acontecimento") && understand.system.includes("Título claro"));
   const prefilter = requests.find((q) => q.marker === "CLEAR" && q.step === "prefilter")!;
-  assert.ok(JSON.parse(prefilter.user).includes("【材料质量】"), "the material context, sent as a JSON string");
+  assert.ok(JSON.parse(prefilter.user).includes("[QUALIDADE DO MATERIAL]"), "the material context, sent as a JSON string");
 });
 
 test("a near-selected item is written like a selected one; below the floor it is translated", async () => {
@@ -122,14 +122,14 @@ test("a near-selected item is written like a selected one; below the floor it is
   const summarize = requests.find((q) => q.marker === "LOW" && q.step === "summarize")!;
   assert.equal(summarize.body.messages.length, 1, "the title/summary prompt is one user message");
   assert.equal(summarize.body.response_format, undefined, "answered in its own text format");
-  assert.deepEqual((await row(lowId)).tags, ["模型发布", "推理", "Anthropic"], "structure tags");
+  assert.deepEqual((await row(lowId)).tags, ["Lançamento de modelos", "Raciocínio", "Anthropic"], "structure tags");
 });
 
 test("the prefilter's BLOCK stops everything; UNKNOWN goes on like PASS", async () => {
   const off = await analyzeArticle(await article("OFFTOPIC"));
   assert.deepEqual([off!.output!.relevance, off!.output!.selected], ["block", false]);
   assert.deepEqual(calls("OFFTOPIC"), ["prefilter"]);
-  // An UNKNOWN with material is judged and written like a PASS, up to 精选 (60 + 62 ≥ 2 × 60).
+  // UNKNOWN com material segue julgamento e escrita de PASS, podendo selecionar quando soma alcança limite.
   const vagueId = await article("VAGUE");
   const vague = await analyzeArticle(vagueId);
   assert.deepEqual([vague!.output!.relevance, vague!.output!.selected, vague!.output!.titleZh], ["pass", true, "理解标题 VAGUE"]);
@@ -158,16 +158,16 @@ test("a feed summary alone: the article page is fetched first, then the whole ar
   assert.deepEqual([second!.needsBody ?? false, second!.output!.selected], [false, true]);
 });
 
-test("a short post in Chinese is its own copy; a content-filter refusal is translated instead", async () => {
+test("uma publicação curta em português preserva seu texto; a content-filter refusal is translated instead", async () => {
   // The tag rides as a hashtag, which the language check strips.
-  const text = `推文：今天把智能体接进了工作流，效果不错。#t${T}`;
+  const text = `Publicação: hoje integrei um agente ao fluxo, com bons resultados.#t${T}`;
   const { articleId } = await upsertMaterial({
     sourceId: X_SOURCE, url: `https://x.com/test/status/1${Date.now()}`, title: text, via: "fetch", publishedAt: new Date(),
     xPost: { tweetId: `1${Date.now()}`, authorName: "测试", handle: "test", text },
   });
   const post = await analyzeArticle(articleId);
   assert.deepEqual([post!.output!.titleZh, post!.output!.summaryZh], [text, text]);
-  assert.ok(!calls("推文").includes("summarize"), "no translation call");
+  assert.ok(!calls("Publicação").includes("summarize"), "no translation call");
   const sensitive = await analyzeArticle(await article("SENSITIVE"));
   assert.deepEqual([sensitive!.output!.selected, sensitive!.output!.titleZh], [true, "翻译标题 SENSITIVE"]);
   assert.deepEqual(calls("SENSITIVE").filter((s) => s === "understand" || s === "summarize"), ["understand", "summarize"]);

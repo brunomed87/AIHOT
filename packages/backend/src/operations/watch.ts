@@ -19,10 +19,10 @@ const WORKER_STALE_MS = 30 * 60_000;
 const WORKER_DOWN: Finding = {
   key: "worker",
   level: "now",
-  title: "后台处理服务停了，网站不会出现新内容",
-  impact: "新内容的采集、处理、推送和日报全部暂停，网站停在旧内容上",
-  heals: "系统自动重启没有成功",
-  action: "转给 AI 立即处理",
+  title: "O processamento em segundo plano parou; novas notícias não aparecerão",
+  impact: "Coleta, processamento, envios e relatórios de novos conteúdos estão suspensos; o site mantém o conteúdo anterior",
+  heals: "Reinício automático do sistema falhou",
+  action: "Encaminhar para tratamento pela IA",
 };
 
 /**
@@ -49,7 +49,7 @@ export async function checkWorkerHeartbeat(): Promise<void> {
     RETURNING key`;
   if (!claimed.length) return;
   const msg = stale
-    ? formatAlert({ ...WORKER_DOWN, detail: `worker 心跳停在 ${beijingStamp(hb.updated_at)}；看 worker 的日志（docker compose logs worker）` }, hb.updated_at, Date.now())
+    ? formatAlert({ ...WORKER_DOWN, detail: `Último sinal do worker em ${beijingStamp(hb.updated_at)}; consulte os logs do worker: docker compose logs worker` }, hb.updated_at, Date.now())
     : formatRecovery(WORKER_DOWN.title, new Date(prior?.state === "down" ? prior.since : hb.updated_at), Date.now());
   await sendAlert(msg.title, msg.lines);
 }

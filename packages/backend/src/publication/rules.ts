@@ -15,7 +15,7 @@ export function channelOf(sourceKind: string, hasXPost: boolean): "x" | "news" {
   return sourceKind === "x_search" || hasXPost ? "x" : "news";
 }
 
-/** Public pool (/all): editorial sources, AI relevant, with a Chinese title and summary. */
+/** Lista pública: fonte editorial, relevância aprovada, título e resumo válidos. */
 export function isPoolEligible(input: {
   participationMode: string;
   relevance: string | null;
@@ -26,9 +26,9 @@ export function isPoolEligible(input: {
 }
 
 /**
- * Item detail page (and its Markdown export): every unwithdrawn item from an editorial source has one,
- * with or without a Chinese summary (noindex unless indexable). hot_signal material is heat evidence
- * only and has none. A paused source keeps its pages.
+ * Página e Markdown de itens editoriais não retirados, mesmo sem resumo em português.
+ * Páginas não indexáveis recebem noindex. hot_signal só fornece sinais de repercussão;
+ * fontes pausadas conservam suas páginas.
  */
 export function hasItemPage(p: { visibility: string; sourceMode: string }): boolean {
   return p.visibility !== "withdrawn" && p.sourceMode === "editorial";

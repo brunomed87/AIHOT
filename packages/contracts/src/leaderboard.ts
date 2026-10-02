@@ -1,22 +1,22 @@
 // First-party leaderboard DTOs (/api/site/leaderboard*). Not a public API.
 import type { LeaderboardBoardKey } from "./taxonomy.ts";
 
-/** HIGH 较充分 · MEDIUM 持续积累 · LOW 证据敏感. */
+/** HIGH: evidência ampla; MEDIUM: em formação; LOW: sensível à evidência. */
 export type LbConfidence = "HIGH" | "MEDIUM" | "LOW";
 export type LbSourceStatus = "ranked" | "cross_reference" | "observing" | "reference_only" | "awaiting";
 
 export const LB_SOURCE_STATUS_LABELS: Record<LbSourceStatus, string> = {
-  ranked: "参与排名",
-  cross_reference: "交叉参考",
-  observing: "观察中",
-  reference_only: "仅供参考",
-  awaiting: "等待成绩",
+  ranked: "Participa do ranking",
+  cross_reference: "Referência cruzada",
+  observing: "Em observação",
+  reference_only: "Somente referência",
+  awaiting: "Aguardando resultados",
 };
 
 export const LB_CONFIDENCE_LABELS: Record<LbConfidence, string> = {
-  HIGH: "较充分",
-  MEDIUM: "持续积累",
-  LOW: "证据敏感",
+  HIGH: "Evidência ampla",
+  MEDIUM: "Evidência em formação",
+  LOW: "Sensível à evidência",
 };
 
 export interface LbBrand {
@@ -125,7 +125,7 @@ export interface LbEvidenceItem {
   officialUrl: string | null;
   usage: string;
   display: string;
-  /** e.g. "两项均分" for LiveBench pairs. */
+  /** Média de duas tarefas para pares LiveBench. */
   displayNote: string | null;
   sourceRank: number | null;
   sourceModelName: string | null;

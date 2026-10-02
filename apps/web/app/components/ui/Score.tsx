@@ -8,20 +8,20 @@ const TIERS = [
   { min: 0, className: "text-ink-4 ring-line-soft" },
 ];
 
-/** "AI 评分 · 88" on desktop cards; `compact` keeps only the number (phones). */
+/** Nota da IA nos cartões; compact exibe somente número no celular. */
 export function ScoreLabel({ score, compact = false }: { score: number | null; compact?: boolean }) {
   if (score === null) return null;
   const value = Math.round(score);
   const tier = TIERS.find((t) => value >= t.min)!;
   return (
     <span
-      title={`AI 评分 ${value}/100`}
-      aria-label={`AI 评分 ${value} 分`}
+      title={`Pontuação por IA ${value}/100`}
+      aria-label={`Pontuação por IA ${value} minutos`}
       className={`inline-flex h-[20px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 ring-1 ring-inset ${tier.className}`}
     >
       {!compact && (
         <>
-          <span className="text-[11px] font-medium leading-none opacity-80">AI 评分</span>
+          <span className="text-[11px] font-medium leading-none opacity-80">Pontuação por IA</span>
           <span className="h-2.5 w-px bg-current opacity-25" aria-hidden="true" />
         </>
       )}

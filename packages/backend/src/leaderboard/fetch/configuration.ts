@@ -17,15 +17,15 @@ export interface Configuration {
 }
 
 export const REASONS = {
-  firstParty: "按预先固定的规则，采用该来源可用的最高第一方推理档位；选择不参考跑分高低。",
-  sourceDefault: "该来源没有区分推理档位，采用其官方默认配置。",
-  lowerPriority: "该配置已保留供核对，但固定优先级低于本指标的代表配置。",
-  scaffoldedSelected: "该来源对所有模型使用同一受控系统；按预先固定的推理档位优先级选择，配置明细保留，成绩归到基础模型。",
-  scaffoldedLower: "该配置已保留供核对，但固定优先级低于本指标选中的系统配置。",
-  hybrid: "混合模型或回退配置，不能代表单个模型的能力。",
-  preRelease: "来源明确标为发布前版本，不能代表可使用的正式模型。",
-  special: "来源为专用系统或尚未核实的运行配置，无法归到单个公开模型。",
-  cloaked: "匿名测试时期的型号，尚不能把该次评测对应到已公开的固定版本。",
+  firstParty: "Usa o maior nível oficial de raciocínio disponível segundo uma regra prévia fixa, sem considerar a nota obtida.",
+  sourceDefault: "A fonte não distingue níveis de raciocínio; usa sua configuração oficial padrão.",
+  lowerPriority: "Configuração preservada para revisão, mas com prioridade fixa menor que a representativa deste indicador.",
+  scaffoldedSelected: "A fonte usa o mesmo sistema controlado para todos os modelos. A seleção segue prioridade prévia de raciocínio; detalhes são preservados e o resultado atribuído ao modelo-base.",
+  scaffoldedLower: "Configuração preservada para revisão, com prioridade menor que o sistema escolhido para este indicador.",
+  hybrid: "Configuração mistura modelos ou usa redirecionamento e não representa um único modelo.",
+  preRelease: "A fonte identifica uma versão anterior ao lançamento, sem representar o modelo oficialmente disponível.",
+  special: "Sistema específico ou execução não verificada, sem atribuição segura a um único modelo público.",
+  cloaked: "Identificador de teste anônimo, sem correspondência a uma versão pública fixa.",
 } as const;
 
 const slug = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -34,12 +34,12 @@ const slug = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").r
 const CONFIG_TOKEN = /^(reasoning|non-reasoning|thinking|non-thinking|adaptive-reasoning|(x?high|medium|low|max|minimal)(-effort)?|thinking-(\d+k|minimal)|high-\d+k|default-fallback|.+-fallback|\d+|\d+-\d+)$/;
 
 const TIERS: Array<[RegExp, number, string]> = [
-  [/^max(-effort)?$/, 600, "Max 推理"],
-  [/^xhigh(-effort)?$/, 550, "xHigh 推理"],
-  [/^high(-effort|-\d+k)?$/, 500, "High 推理"],
-  [/^medium(-effort)?$/, 300, "Medium 推理"],
-  [/^low(-effort)?$/, 200, "Low 推理"],
-  [/^minimal$/, 100, "Minimal 推理"],
+  [/^max(-effort)?$/, 600, "Raciocínio máximo"],
+  [/^xhigh(-effort)?$/, 550, "Raciocínio muito alto"],
+  [/^high(-effort|-\d+k)?$/, 500, "Raciocínio alto"],
+  [/^medium(-effort)?$/, 300, "Raciocínio médio"],
+  [/^low(-effort)?$/, 200, "Raciocínio baixo"],
+  [/^minimal$/, 100, "Raciocínio mínimo"],
 ];
 
 /**
@@ -69,13 +69,13 @@ export function configurationOf(descriptors: string[], opts: { defaultKind?: Con
     }
   }
   if (!tokens.size) {
-    return { key: "source_default:default", label: "来源默认配置", kind: opts.defaultKind ?? "SOURCE_DEFAULT", priority: 400, rank: 400, ineligible: null };
+    return { key: "source_default:default", label: "Configuração padrão da fonte", kind: opts.defaultKind ?? "SOURCE_DEFAULT", priority: 400, rank: 400, ineligible: null };
   }
   const list = [...tokens].sort();
   const adaptive = tokens.has("adaptive-reasoning");
   const fallback = list.some((t) => t.endsWith("-fallback"));
   let priority = 400;
-  let label = "来源默认配置";
+  let label = "Configuração padrão da fonte";
   for (const [re, p, l] of TIERS) {
     if (list.some((t) => re.test(t))) {
       priority = p;
@@ -85,17 +85,17 @@ export function configurationOf(descriptors: string[], opts: { defaultKind?: Con
   }
   if (priority === 400 && tokens.has("non-reasoning") && list.length === 1) {
     priority = 50;
-    label = "非推理配置";
+    label = "Sem raciocínio";
   }
   // Adaptive low/medium runs sit just above the default tier; other adaptive tiers just above their own.
   const adaptiveLow = adaptive && (priority === 300 || priority === 200);
   if (adaptiveLow) priority = 450;
   if (adaptive) priority += 2;
   if (fallback) priority -= 1;
-  if (adaptive) label = adaptiveLow ? "自适应推理" : `${label} · 自适应`;
+  if (adaptive) label = adaptiveLow ? "Raciocínio adaptativo" : `${label} · adaptativo`;
   const budget = list.map((t) => /^(?:thinking|high)-(\d+k)$/.exec(t)?.[1]).find(Boolean);
   if (budget) label = `${label} · ${budget}`;
-  if (fallback) label = `${label} · 含来源回退`;
+  if (fallback) label = `${label} · inclui redirecionamento da fonte`;
   return {
     key: `first_party:${list.join("+")}`,
     label,
@@ -106,14 +106,11 @@ export function configurationOf(descriptors: string[], opts: { defaultKind?: Con
   };
 }
 
-/**
- * A run through a fixed harness or agent system (e.g. "codex-harness"): represents a model only without a
- * first-party row. The label names the tier (or "完整系统") and then the system, as the source names it.
- */
+/** Execução em sistema fixo, como codex-harness, representa modelo somente sem linha própria oficial. Rótulo identifica raciocínio ou sistema completo e ambiente informado pela fonte. */
 export function scaffolded(base: Configuration, systemTokens: string[], systemLabels: string[]): Configuration {
   const tier = base.key.startsWith("first_party:") ? base.key.slice("first_party:".length).split("+") : [];
   const list = [...tier, ...systemTokens].sort();
-  const label = [base.kind === "SOURCE_DEFAULT" ? "完整系统" : base.label, ...systemLabels].join(" · ");
+  const label = [base.kind === "SOURCE_DEFAULT" ? "Sistema completo" : base.label, ...systemLabels].join(" · ");
   // Keys are capped at 108 characters (system ids can be long); ranked by tier, just below first-party.
   return { key: `scaffolded:${list.join("+")}`.slice(0, 108), label, kind: "SCAFFOLDED", priority: 0, rank: base.priority - 1, ineligible: base.ineligible };
 }

@@ -1,6 +1,6 @@
-Most marks are sourced from Lobe Icons 1.94.0 (MIT): https://github.com/lobehub/lobe-icons
-The Qianwen mark follows the current official mark displayed at https://create.qianwen.com/ (retrieved 2026-08-10).
+A maioria das marcas vem de Lobe Icons 1.94.0 (MIT): https://github.com/lobehub/lobe-icons
+A marca Qianwen segue a marca oficial exibida em https://create.qianwen.com/ (consultada em 10/08/2026 pelo projeto original).
 
-The filenames do not define product semantics. The mapping is in `packages/backend/src/leaderboard/registry.ts`: a model-family mark is resolved first and a genuine provider mark is used only as a fallback. In particular, Grok, Hunyuan, Qianwen, Claude, Gemini, and Kimi marks identify those model families rather than xAI, Tencent, Alibaba, Anthropic, Google, or Moonshot AI as companies.
+Os nomes dos arquivos não definem os produtos. O mapeamento está em `packages/backend/src/leaderboard/registry.ts`: primeiro busca a marca da família de modelos; a marca do provedor serve como alternativa. Grok, Hunyuan, Qianwen, Claude, Gemini e Kimi identificam famílias de modelos, enquanto xAI, Tencent, Alibaba, Anthropic, Google e Moonshot AI identificam empresas.
 
-The marks remain trademarks of their respective owners and are used only for identification.
+As marcas pertencem aos respectivos titulares e são usadas somente para identificação.

@@ -43,10 +43,10 @@ const provider = await stub(async (_hit, req) => {
   await hold.promise;
   const body = JSON.parse(req.body) as { messages: Array<{ content: string }> };
   const user = body.messages[1]!.content;
-  const pair = user.includes("报道 A");
-  const ids = answerAll ? [...user.matchAll(/【候选 (C\d+)】/g)].map((m) => m[1]!) : ["C1"];
+  const pair = user.includes("Reportagem A");
+  const ids = answerAll ? [...user.matchAll(/[CANDIDATO (C\d+)]/g)].map((m) => m[1]!) : ["C1"];
   const answer = pair
-    ? { a: "发布", b: "发布", relation: pairRelation ?? relation, difference: "", confidence: 0.95 }
+    ? { a: "Lançamento", b: "Lançamento", relation: pairRelation ?? relation, difference: "", confidence: 0.95 }
     : { query: "发布新模型", decisions: ids.map((id) => ({ id, relation, confidence: 0.95, note: "" })) };
   return { id: "stub", choices: [{ message: { content: JSON.stringify(answer) } }], usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 } };
 });
@@ -75,12 +75,12 @@ function randomText() {
   return String.fromCharCode(...chars);
 }
 
-async function report(suffix: string, title = FACT_TITLE, summary = "摘要", publishedAt = new Date()) {
+async function report(suffix: string, title = FACT_TITLE, summary = "Resumo", publishedAt = new Date()) {
   const { articleId } = await upsertMaterial({
     sourceId: SOURCE, url: `https://example.com/events-${T}-${suffix}`, title: `Model launch ${T} ${suffix}`, bodyText: "A new model.", bodyStatus: "ok", via: "fetch", publishedAt,
   });
   await sql`INSERT INTO analyses (article_id, input_revision, origin, relevance, category, title_zh, summary_zh, score, selected, output)
-            VALUES (${articleId}, 1, 'rule', 'pass', 'ai-models', ${title}, ${summary}, 80, false, ${sql.json({ fact: { title, subject: "测试", action: "发布", object: "模型" } })})`;
+            VALUES (${articleId}, 1, 'rule', 'pass', 'ai-models', ${title}, ${summary}, 80, false, ${sql.json({ fact: { title, subject: "测试", action: "Lançamento", object: "Modelo" } })})`;
   await publishArticle(articleId);
   return articleId;
 }

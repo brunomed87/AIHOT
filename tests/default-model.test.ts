@@ -22,8 +22,8 @@ const provider = await stub((_hit, req) => {
   const content =
     system.includes("pré-filtro amplo") ? { label: "PASS", reason: "测试" }
     : system.includes("avaliador de atenção geral") ? { attentionScore: 80 }
-    : system.includes("escreve conteúdo de") ? { itemType: "product_launch", authorRole: "principal", tags: ["产品更新"], editorialJudgment: "理由", titleZh: "一个模型的标题", summaryZh: "一个模型写的摘要。第二句。" }
-    : system.includes("extrai estrutura de material oftalmológico") ? { category: "ai-products", tags: ["产品更新"], subjects: [], fact: null }
+    : system.includes("escreve conteúdo de") ? { itemType: "product_launch", authorRole: "principal", tags: ["Atualização de produtos"], editorialJudgment: "理由", titleZh: "一个模型的标题", summaryZh: "一个模型写的摘要。第二句。" }
+    : system.includes("extrai estrutura de material oftalmológico") ? { category: "ai-products", tags: ["Atualização de produtos"], subjects: [], fact: null }
     : user.includes("title_zh") ? "title_zh: 标题\nsummary_zh: 摘要。"
     : null;
   if (content === null) throw new Error("unexpected request");

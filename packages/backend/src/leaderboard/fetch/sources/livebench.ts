@@ -7,9 +7,9 @@ import type { FetchResult, Fetcher, ParsedRow } from "../types.ts";
 
 const BOARDS = [
   { key: "livebench-general", name: "LiveBench Global Average", categories: null as string[] | null, url: "https://livebench.ai/" },
-  { key: "livebench-writing", name: "LiveBench · 语言与指令", categories: ["Language", "IF"], url: "https://livebench.ai/#/?cats=Language%2CIF&ft=1" },
-  { key: "livebench-coding", name: "LiveBench · 编程综合", categories: ["Coding", "Agentic Coding"], url: "https://livebench.ai/#/?cats=Coding%2CAgentic+Coding&ft=1" },
-  { key: "livebench-reasoning", name: "LiveBench · 推理与数学", categories: ["Reasoning", "Mathematics"], url: "https://livebench.ai/#/?cats=Reasoning%2CMathematics&ft=1" },
+  { key: "livebench-writing", name: "LiveBench · linguagem e instruções", categories: ["Language", "IF"], url: "https://livebench.ai/#/?cats=Language%2CIF&ft=1" },
+  { key: "livebench-coding", name: "LiveBench · programação geral", categories: ["Coding", "Agentic Coding"], url: "https://livebench.ai/#/?cats=Coding%2CAgentic+Coding&ft=1" },
+  { key: "livebench-reasoning", name: "LiveBench · raciocínio e matemática", categories: ["Reasoning", "Mathematics"], url: "https://livebench.ai/#/?cats=Reasoning%2CMathematics&ft=1" },
 ];
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

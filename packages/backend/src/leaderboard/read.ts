@@ -275,7 +275,7 @@ function modelRef(view: RunView, m: ModelRow): LbModelRef {
   return {
     slug: m.slug,
     name: m.name,
-    provider: m.provider === "其他" ? null : m.provider,
+    provider: m.provider === "Outros" ? null : m.provider,
     releasedAt: m.released_at ? m.released_at.toISOString().slice(0, 10) : null,
     brand: modelBrand(m.slug, m.provider_slug, m.provider, m.name),
   };
@@ -352,9 +352,9 @@ interface ScoreDetailRow {
 }
 
 function usageLabel(status: string | undefined) {
-  if (status === "ranked") return "已计入综合排名";
-  if (status === "cross_reference") return "交叉参考";
-  return "仅供参考";
+  if (status === "ranked") return "Incluído no ranking geral";
+  if (status === "cross_reference") return "Referência cruzada";
+  return "Somente referência";
 }
 
 export async function loadModel(slug: string): Promise<LbModelDetail | null> {
@@ -451,7 +451,7 @@ export async function loadModel(slug: string): Promise<LbModelDetail | null> {
         WHERE model_id = ${m.id} AND snapshot_id = ANY(${view.snapshotIds}) AND NOT selected_for_product
         ORDER BY metric_key, configuration_priority DESC`
     : [];
-  const reasons = new Map(excludedRows.map((r) => [sourceKeyOfUnit(r.metric_key), r.selection_reason ?? "该配置不能代表单个公开模型。"]));
+  const reasons = new Map(excludedRows.map((r) => [sourceKeyOfUnit(r.metric_key), r.selection_reason ?? "Esta configuração não representa um único modelo público."]));
   const nameOf = (k: string) => registrySource(k)?.source.name ?? k;
 
   return {
@@ -584,11 +584,11 @@ export async function loadSource(key: string): Promise<LbSourceDetail | null> {
     rows = shownRows.map((r) => ({
       sourceRank: r.source_rank,
       sourceModelName: r.source_model_name ?? r.name,
-      provider: r.provider === "其他" ? null : r.provider,
+      provider: r.provider === "Outros" ? null : r.provider,
       display: formatScore(r.raw_score, format),
       configurationLabel: r.configuration_label,
       modelSlug: view.pageSlugs.has(r.slug) ? r.slug : null,
-      excluded: s.allRows || r.selected_for_product ? null : r.selection_reason ?? "该配置不能代表单个公开模型。",
+      excluded: s.allRows || r.selected_for_product ? null : r.selection_reason ?? "Esta configuração não representa um único modelo público.",
     }));
   }
   const lastSeen = typeof snapshot?.metadata.lastSeenAt === "string" ? snapshot.metadata.lastSeenAt : null;
@@ -604,7 +604,7 @@ export async function loadSource(key: string): Promise<LbSourceDetail | null> {
       usage: s.usage,
       limits: s.limits,
       license: s.license,
-      attribution: s.attribution ?? `成绩由 ${s.operator} 发布，原始分数与 ${SITE.name} 共识分使用不同尺度，不能直接相加。`,
+      attribution: s.attribution ?? `Resultado publicado por ${s.operator} ; o resultado original e o ${SITE.name} índice de consenso têm escalas distintas e não devem ser somados.`,
     },
     upstreamAt: showRows ? snapshot.published_at?.toISOString() ?? null : null,
     syncedAt: showRows ? lastSeen ?? snapshot.fetched_at.toISOString() : null,
@@ -613,8 +613,8 @@ export async function loadSource(key: string): Promise<LbSourceDetail | null> {
     systemRows: !!s.allRows,
     rowsNote: showRows
       ? s.allRows
-        ? "下列为模型搭配不同 Agent 的系统成绩，运行条件不同，仅供参考。每项最多展示 30 条配置，匿名测试型号不展示。"
-        : "按固定规则，每个公开模型采用一套代表配置；没有可采用配置的模型标为未计入并写明原因。匿名测试型号不展示，保留原榜名次，每项最多 30 个。"
+        ? "Resultados de sistemas com diferentes agentes e condições de execução, somente para referência. Exibe até 30 configurações por avaliação; modelos anônimos ficam ocultos."
+        : "Uma configuração representativa por modelo público é escolhida por regra fixa. Sem configuração elegível, o motivo de exclusão fica explícito. Modelos anônimos ficam ocultos; posições originais são mantidas, com até 30 modelos por avaliação."
       : null,
   };
 }

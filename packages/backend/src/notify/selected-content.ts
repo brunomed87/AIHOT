@@ -27,7 +27,7 @@ interface Row {
 
 function card(r: Row) {
   const category = r.category ? CATEGORY_LABELS[r.category] : null;
-  const lines = [r.summary, r.reason ? `**推荐理由**：${r.reason}` : null, `来源：${r.source_name}`].filter(Boolean);
+  const lines = [r.summary, r.reason ? `**Motivo da recomendação**:${r.reason}` : null, `Fonte:${r.source_name}`].filter(Boolean);
   return {
     header: { title: { tag: "plain_text", content: r.title }, template: "turquoise" },
     elements: [
@@ -36,8 +36,8 @@ function card(r: Row) {
       {
         tag: "action",
         actions: [
-          { tag: "button", text: { tag: "plain_text", content: `${SITE.name} 查看` }, url: itemUrl(r.article_id), type: "primary" },
-          { tag: "button", text: { tag: "plain_text", content: "原文" }, url: r.url, type: "default" },
+          { tag: "button", text: { tag: "plain_text", content: `${SITE.name} Ver` }, url: itemUrl(r.article_id), type: "primary" },
+          { tag: "button", text: { tag: "plain_text", content: "Original" }, url: r.url, type: "default" },
         ],
       },
     ],

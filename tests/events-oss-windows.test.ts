@@ -60,7 +60,7 @@ async function fixture(evidence: Evidence[], firstReport = ago(72)) {
     await sql`INSERT INTO story_signals(story_id,article_id,participant_key,source_id,kind,observed_at)
       VALUES(${storyId},${articleId},${e.participant},${sourceId},${e.kind ?? "signal"},${ago(e.hours)})`;
   }
-  // 公开代表报道不额外产生热度信号，避免把测试种子混入参与者计数。
+  // Representante público não gera sinal extra de repercussão, evitando contaminar contagem de participantes.
   const representativeSource = await source("representative");
   const representative = await article("report", representativeSource, ago(10));
   const [fact] = await sql<{ id: number }[]>`INSERT INTO facts(public_id,story_id,title)
@@ -79,7 +79,7 @@ async function entry(storyId: number) {
   return row.entries.find((e) => e.storyId === storyId);
 }
 
-// 独立按距各窗口终点的小时数计算；百分比沿用展示值的一位小数舍入规则。
+// Calcula independentemente horas até cada fim de janela; porcentagens seguem uma casa da exibição.
 function expectedHeat(ages: number[]) {
   return Math.round(ages.reduce((sum, age) => sum + 2 ** (-age / 24), 0) * 100) / 10;
 }

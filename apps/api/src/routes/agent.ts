@@ -39,7 +39,7 @@ export function registerAgent(app: FastifyInstance) {
   app.get("/api/v1/agent/search", publicHandler(async (req, reply) => {
     const q = strictQuery(req, ["q", "window", "category", "limit"]);
     const text = (q.q ?? "").trim();
-    if ([...text].length < 2 || [...text].length > 200) throw new QueryError("q must contain 2 to 200 characters.");
+    if ([...text].length < 2 || [...text].length > 200) throw new QueryError("q deve conter de 2 a 200 caracteres.");
     const p = { ...listParams(q), window: enumParam(q.window, "window", ["24h", "7d"] as const, "7d") };
     const found = await searchItems(text, p.window, p.category, p.limit);
     return markdown(req, reply, searchAnswer(found, { q: text, window: p.window, category: p.category }), "agent-search", V1_CACHE_CONTROL.items);
@@ -54,27 +54,27 @@ export function registerAgent(app: FastifyInstance) {
     const q = strictQuery(req, ["limit"]);
     const limit = intParam(q.limit, "limit", 1, 50, 20);
     const publicId = (req.params as { publicId: string }).publicId;
-    if (publicId.length > 128) throw new QueryError("publicId must be a short opaque id.");
+    if (publicId.length > 128) throw new QueryError("publicId deve ser um identificador curto e opaco.");
     let found = await resolveStory(publicId);
     if (found.kind === "merged") found = await resolveStory(found.target);
     const body = found.kind === "found" ? await v1Story(found.storyId) : null;
-    if (!body) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "没有这个公开事件。只使用热点结果里给出的「来龙去脉」地址，不要猜。", cacheControl: "public, max-age=60" });
+    if (!body) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Acontecimento público não encontrado. Use somente o endereço retornado pelo ranking de repercussão; não invente IDs.", cacheControl: "public, max-age=60" });
     return markdown(req, reply, storyAnswer(body.story, limit, "http"), "agent-story", V1_CACHE_CONTROL.storyByPublicId);
   }));
 
   app.get("/api/v1/agent/daily", publicHandler(async (req, reply) => {
     strictQuery(req, []);
     const res = await v1Daily("latest");
-    if (!res) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "还没有发布过日报。" });
+    if (!res) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "Nenhum relatório diário publicado." });
     return markdown(req, reply, dailyAnswer(res.report, "http"), "agent-daily", V1_CACHE_CONTROL.latestDaily);
   }));
 
   app.get("/api/v1/agent/daily/:date", publicHandler(async (req, reply) => {
     strictQuery(req, []);
     const date = (req.params as { date: string }).date;
-    if (!isValidDate(date)) throw new QueryError("date must be a real YYYY-MM-DD calendar date.");
+    if (!isValidDate(date)) throw new QueryError("date deve ser uma data real no formato YYYY-MM-DD.");
     const res = await v1Daily(date);
-    if (!res) return sendProblem(req, reply, { status: 404, code: "not_found", detail: `没有 ${date} 的日报；不要换一天冒充。`, cacheControl: "public, max-age=60" });
+    if (!res) return sendProblem(req, reply, { status: 404, code: "not_found", detail: `Não existe ${date} nessa data; não substitua por outra edição.`, cacheControl: "public, max-age=60" });
     return markdown(req, reply, dailyAnswer(res.report, "http"), "agent-daily", V1_CACHE_CONTROL.dailyByDate);
   }));
 

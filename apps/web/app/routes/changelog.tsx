@@ -16,7 +16,7 @@ export function headers() {
 interface Release {
   date: string;
   time: string;
-  kind: "更新" | "优化" | "公告" | "下线";
+  kind: "Atualizado" | "Melhoria" | "Aviso" | "Descontinuado";
   title: string;
   body: string[];
 }
@@ -26,14 +26,14 @@ export async function loader({ request }: { request: Request }) {
 }
 
 export function meta() {
-  return pageMeta({ title: "更新日志", description: `${SITE.name} 的功能更新、优化、公告与下线记录。`, path: "/changelog", image: "/og/pages/changelog.png" });
+  return pageMeta({ title: "Histórico de mudanças", description: `${SITE.name} e seu histórico de funções, melhorias, avisos e descontinuações.`, path: "/changelog", image: "/og/pages/changelog.png" });
 }
 
 const KIND_DOT: Record<Release["kind"], string> = {
-  更新: "bg-accent",
-  优化: "bg-ok",
-  公告: "bg-amber",
-  下线: "bg-ink-4",
+  Atualizado: "bg-accent",
+  Melhoria: "bg-ok",
+  Aviso: "bg-amber",
+  Descontinuado: "bg-ink-4",
 };
 
 const KINDS = Object.keys(KIND_DOT) as Release["kind"][];
@@ -83,7 +83,7 @@ export default function ChangelogPage() {
 
   const aside = (
     <>
-      <AsideCard title="按类型看" className="hidden lg:block">
+      <AsideCard title="Filtrar por tipo" className="hidden lg:block">
         <div className="-mx-2 -mb-1">
           {[null, ...KINDS].map((k) => (
             <button
@@ -94,28 +94,28 @@ export default function ChangelogPage() {
               className={`flex w-full items-center gap-2.5 rounded-control px-2 py-2 text-left text-[13.5px] transition-colors ${kind === k ? "bg-bg-sunk font-medium text-ink dark:bg-bg-muted/60" : "text-ink-2 hover:bg-bg-sunk hover:text-ink"}`}
             >
               <span className={`size-1.5 rounded-full ${k ? KIND_DOT[k] : "bg-ink-2"}`} aria-hidden="true" />
-              <span className="flex-1">{k ?? "全部"}</span>
+              <span className="flex-1">{k ?? "Todos"}</span>
               <span className="num text-[12px] text-ink-4">{k ? data.releases.filter((r) => r.kind === k).length : data.releases.length}</span>
             </button>
           ))}
         </div>
       </AsideCard>
-      <AsideCard title="按月份" className="hidden lg:block">
-        <nav aria-label="按月份" className="-mx-2 -mb-1">
+      <AsideCard title="Por mês" className="hidden lg:block">
+        <nav aria-label="Por mês" className="-mx-2 -mb-1">
           {[...months.entries()].map(([month, m]) => {
             const [y, mo] = month.split("-").map(Number) as [number, number];
             return (
               <a key={month} href={`#d-${m.first}`} className="flex items-center justify-between rounded-control px-2 py-2 text-[13.5px] text-ink-2 transition-colors hover:bg-bg-sunk hover:text-ink">
-                {y} 年 {mo} 月<span className="num text-[12px] text-ink-4">{m.count} 条</span>
+                {y} ano {mo} mês <span className="num text-[12px] text-ink-4">{m.count} itens</span>
               </a>
             );
           })}
         </nav>
       </AsideCard>
-      <AsideCard title="有想法或遇到问题">
-        <p className="text-[13px] leading-[1.75] text-ink-3">想要的功能、用着不顺的地方，都可以在反馈页告诉我们。</p>
+      <AsideCard title="Sugestões ou problemas">
+        <p className="text-[13px] leading-[1.75] text-ink-3">Informe funções desejadas ou dificuldades pela página de feedback.</p>
         <Link to="/feedback" prefetch="intent" className="mt-3 inline-flex items-center gap-1 text-[13px] font-medium text-accent hover:underline">
-          去反馈 <IconChevronRight size={14} />
+          Enviar feedback <IconChevronRight size={14} />
         </Link>
       </AsideCard>
     </>
@@ -124,8 +124,8 @@ export default function ChangelogPage() {
   return (
     <ReadingLayout aside={aside}>
       <header className="pb-6">
-        <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">更新日志</h1>
-        <p className="mt-1.5 text-[13px] text-ink-3">新功能、调整、下线，都写在这里。</p>
+        <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">Histórico de mudanças</h1>
+        <p className="mt-1.5 text-[13px] text-ink-3">Novas funções, ajustes e descontinuações aparecem aqui.</p>
       </header>
       <div className="space-y-4">
         {[...groups.entries()].map(([date, releases]) => {

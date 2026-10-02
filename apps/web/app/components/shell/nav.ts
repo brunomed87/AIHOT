@@ -24,15 +24,15 @@ export const SIDEBAR: Array<{ title: string; items: NavItem[] }> = [
     {to:"/radar/20",label:"Radar 20h",icon:IconDoc},
     {to:"/ophthalmology/science",label:"Ciência",icon:IconGrid},
     {to:"/ophthalmology/regulation",label:"Regulação",icon:IconList},
-    {to:"/ophthalmology/fact-check",label:"Fact-check",icon:IconMessage},
+    {to:"/ophthalmology/fact-check",label:"Checagem de fatos",icon:IconMessage},
     {to:"/ophthalmology/early-signals",label:"Sinais precoces",icon:IconChart},
   ]},
   {
     title: "Conteúdo",
     items: [
       { to: "/", label: "Destaques", icon: IconBolt, end: true },
-      { to: "/all", label: `全部${withSubject("Notícias")}`, icon: IconList },
-      { to: "/hot", label: "Hot", icon: IconFlame },
+      { to: "/all", label: "Todas as notícias", icon: IconList },
+      { to: "/hot", label: "Mais discutidos", icon: IconFlame },
       { to: "/daily", label: withSubject("Relatórios"), icon: IconDoc },
       { to: "/topics", label: "Temas", icon: IconGrid },
       { to: "/starred", label: "Favoritos", icon: IconBookmark },
@@ -44,7 +44,7 @@ export const SIDEBAR: Array<{ title: string; items: NavItem[] }> = [
         {
           title: "Modelos e monitores",
           items: [
-            ...(FEATURES.leaderboard ? [{ to: "/leaderboard", label: "Leaderboard", icon: IconChart }] : []),
+            ...(FEATURES.leaderboard ? [{ to: "/leaderboard", label: "Ranking de modelos", icon: IconChart }] : []),
             ...(FEATURES.codexResetMonitor ? [{ to: "/codex-reset", label: "Monitor Codex", icon: IconHistory }] : []),
           ],
         },
@@ -56,7 +56,7 @@ export const SIDEBAR: Array<{ title: string; items: NavItem[] }> = [
       { to: "/agent", label: "Integrações", icon: IconPlug },
       { to: "/about", label: "Sobre", icon: IconHeart },
       { to: "/changelog", label: "Atualizações", icon: IconHistory, changelog: true },
-      { to: "/feedback", label: "Feedback", icon: IconMessage },
+      { to: "/feedback", label: "Sugestões", icon: IconMessage },
     ],
   },
 ];

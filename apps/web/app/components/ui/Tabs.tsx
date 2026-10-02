@@ -124,7 +124,7 @@ export function PillTabs({
  * leading "all" option is chosen while none is on and clears them.
  */
 export function PillToggles({
-  items, selected, onChange, allLabel = "全部", label, size = "sm", className = "",
+  items, selected, onChange, allLabel = "Todos", label, size = "sm", className = "",
 }: {
   items: Array<{ key: string; label: ReactNode }>;
   selected: string[];

@@ -76,7 +76,7 @@ test("simultaneous first reports of one URL create one article", async () => {
 });
 
 test("another source listing the same article records a discovery, not a revision", async () => {
-  // Hacker News：AI 热帖 lists the English title, the buzzing.cc mirror a Chinese translation.
+  // Hacker News lista título inglês; espelho buzzing.cc oferece versão chinesa.
   const url = `https://example.com/listed-twice-${tag()}`;
   const own = await upsertMaterial({ sourceId: SOURCE, url, title: "One month without AI", excerpt: "own summary", via: "fetch" });
   for (let i = 0; i < 3; i++) {
@@ -149,7 +149,7 @@ test("an imported article that returns to its baseline is not revised again", as
 });
 
 test("characters lost in transit are no revision, lost or restored", async () => {
-  // A feed that garbles a few characters at random on every load: the 盖 of 覆盖 arrives as two U+FFFD, a ， as three.
+  // Feed altera caracteres aleatoriamente: um ideograma chega como dois caracteres de substituição e uma vírgula como três.
   const url = `https://example.com/garbled-${tag()}`;
   const excerpt = "新旗舰店覆盖的产品范围更广，包括内衣、家居服、运动服饰、香水及身体护理。";
   const clean = { sourceId: SOURCE, url, title: "维密重回上海淮海路，中国市场进入扩店阶段", excerpt, via: "fetch" as const };

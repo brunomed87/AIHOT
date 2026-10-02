@@ -20,14 +20,14 @@ export function Podium({ entries, board }: { entries: LbBoardEntry[]; board: str
   const top = entries.filter((e) => e.rank <= 3).slice(0, 3);
   if (top.length < 3) return null;
   return (
-    <ol className="mt-3 hidden gap-3 md:grid md:grid-cols-3" aria-label="前三名">
+    <ol className="mt-3 hidden gap-3 md:grid md:grid-cols-3" aria-label="Três primeiros">
       {top.map((e, i) => (
         <li key={e.model.slug}>
           <Link to={modelHref(e.model.slug, board)} prefetch="intent" className={`card card-hover group flex h-full flex-col px-4 py-3.5 ${WASH[i]}`}>
             <span className="flex items-center justify-between gap-3">
               <span className={`mono text-[11px] font-bold tracking-[0.16em] ${RANK_TEXT[i]}`}>NO.{String(e.rank).padStart(2, "0")}</span>
               <span className="flex items-center gap-2 text-[11.5px] text-ink-4">
-                <span className="num">{e.sourceCount} 项评测</span>
+                <span className="num">{e.sourceCount} avaliações</span>
                 <EvidenceBadge confidence={e.confidence} stability={e.stability} rank={e.rank} />
               </span>
             </span>
@@ -38,7 +38,7 @@ export function Podium({ entries, board }: { entries: LbBoardEntry[]; board: str
                 <span className="block truncate text-[12px] text-ink-4">{e.model.provider ?? "—"}</span>
               </span>
               <span className="shrink-0 text-right">
-                <span className="block text-[11px] leading-none text-ink-4">共识指数</span>
+                <span className="block text-[11px] leading-none text-ink-4">Índice de consenso</span>
                 <span className="mono mt-1 block text-[26px] font-semibold leading-none tracking-[-0.03em] text-ink">{e.score.toFixed(1)}</span>
               </span>
             </span>

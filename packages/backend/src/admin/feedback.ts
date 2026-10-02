@@ -28,11 +28,11 @@ export async function listFeedback(f: { status?: string; q?: string; page?: numb
 }
 
 export async function updateFeedback(id: number, input: { status?: string; note?: string | null; version: string }, actor: string) {
-  if (input.status && !FEEDBACK_STATUSES.includes(input.status as FeedbackStatus)) throw new Error(`unknown status ${input.status}`);
+  if (input.status && !FEEDBACK_STATUSES.includes(input.status as FeedbackStatus)) throw new Error(`Estado desconhecido ${input.status}`);
   return sql.begin(async (tx) => {
     const [before] = await tx`SELECT id, status, note, updated_at FROM feedback WHERE id = ${id} FOR UPDATE`;
     if (!before) return null;
-    if (new Date(before.updated_at as Date).toISOString() !== input.version) throw new Conflict("这条反馈已被修改，请刷新后再操作");
+    if (new Date(before.updated_at as Date).toISOString() !== input.version) throw new Conflict("Feedback alterado. Atualize antes de continuar");
     const [after] = await tx`
       UPDATE feedback SET status = coalesce(${input.status ?? null}, status), note = ${input.note === undefined ? before.note : input.note}, updated_at = now()
       WHERE id = ${id} RETURNING id, status, note, updated_at`;
@@ -43,7 +43,7 @@ export async function updateFeedback(id: number, input: { status?: string; note?
 
 /** Refuses further feedback from one source (an unreadable hash of IP and browser family). */
 export async function banSource(sourceHash: string, reason: string, actor: string) {
-  if (!reason.trim()) throw new Error("reason is required");
+  if (!reason.trim()) throw new Error("Informe um motivo");
   await sql`INSERT INTO feedback_bans (source_hash, reason, created_by) VALUES (${sourceHash}, ${reason}, ${actor}) ON CONFLICT (source_hash) DO NOTHING`;
   await audit(actor, "feedback.ban", `feedback-source:${sourceHash}`, reason, null, null);
 }
@@ -66,12 +66,12 @@ export async function feedbackScreenshot(id: number): Promise<string | null> {
 
 /** Removes the sender's material (text, email, page, screenshot) and keeps only the handling record. */
 export async function eraseFeedback(id: number, reason: string, actor: string) {
-  if (!reason.trim()) throw new Error("reason is required");
+  if (!reason.trim()) throw new Error("Informe um motivo");
   const [row] = await sql<{ screenshot_key: string | null }[]>`SELECT screenshot_key FROM feedback WHERE id = ${id}`;
   if (!row) return null;
   const file = screenshotPath(row.screenshot_key);
   if (file) await unlink(file).catch(() => {});
-  await sql`UPDATE feedback SET content = '（已按要求删除）', email = NULL, page_url = NULL, screenshot_key = NULL, updated_at = now() WHERE id = ${id}`;
+  await sql`UPDATE feedback SET content = '(excluído conforme solicitado)', email = NULL, page_url = NULL, screenshot_key = NULL, updated_at = now() WHERE id = ${id}`;
   await audit(actor, "feedback.erase", `feedback:${id}`, reason, null, null);
   return { erased: true };
 }

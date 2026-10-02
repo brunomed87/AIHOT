@@ -45,8 +45,8 @@ async function loadRow(id: string): Promise<DetailRow | null> {
 }
 
 /**
- * Public detail (rules.hasItemPage): items the lists leave out (low relevance, merged duplicates, no
- * Chinese summary yet) keep a noindex page; withdrawn and hot_signal items are a 404.
+ * Itens fora das listas por baixa relevância, duplicação ou ausência de resumo mantêm
+ * página noindex. Itens retirados ou hot_signal retornam 404.
  */
 export async function loadItemDetail(id: string, now = new Date()): Promise<DetailResult> {
   const row = await loadRow(id);
@@ -90,7 +90,7 @@ export async function loadItemDetail(id: string, now = new Date()): Promise<Deta
       complete: true,
     };
   } else if (row.body_mode === "full" && row.body_html) {
-    const isZh = row.language === "zh" || (/[一-鿿]/.test(row.body_text?.slice(0, 400) ?? "") && row.language !== "en");
+    const isZh = row.language === "pt" || row.language === "pt-BR";
     const original = proxyBodyImages(row.body_html);
     const zh = isZh ? original : row.tr_html ? proxyBodyImages(row.tr_html) : null;
     const primary = withOutline(zh ?? original);
@@ -159,23 +159,23 @@ export async function exportMarkdown(id: string): Promise<{ filename: string; bo
   if (!row || !markdownAvailable(row)) return null;
   const lines: string[] = [];
   lines.push(`# ${row.title}`, "");
-  if (row.original_title) lines.push(`> 原标题：${row.original_title}`, "");
-  lines.push(`- 来源：${row.source_name}`);
-  lines.push(`- 发布时间：${(row.published_at ?? row.discovered_at).toISOString()}`);
-  lines.push(`- ${SITE.name}：${itemUrl(row.id)}`);
-  lines.push(`- 原文：${row.url}`, "");
-  if (row.summary) lines.push("## 摘要", "", row.summary, "");
-  if (row.selected && row.reason) lines.push("## 推荐理由", "", row.reason, "");
+  if (row.original_title) lines.push(`> Título original:${row.original_title}`, "");
+  lines.push(`- Fonte:${row.source_name}`);
+  lines.push(`- Publicação:${(row.published_at ?? row.discovered_at).toISOString()}`);
+  lines.push(`- ${SITE.name}: ${itemUrl(row.id)}`);
+  lines.push(`- Original:${row.url}`, "");
+  if (row.summary) lines.push("## Resumo", "", row.summary, "");
+  if (row.selected && row.reason) lines.push("## Motivo da recomendação", "", row.reason, "");
   if (row.channel === "x" && row.body_mode === "full" && row.x_post?.text) {
-    lines.push("## 正文", "", String(row.x_post.text), "");
-    if (row.zh_text) lines.push("## 中文译文", "", row.zh_text, "");
+    lines.push("## Texto", "", String(row.x_post.text), "");
+    if (row.zh_text) lines.push("## Tradução em português", "", row.zh_text, "");
     const q = row.x_post.quoted as { handle?: string; text?: string; url?: string } | null | undefined;
-    if (q?.text) lines.push(`## 引用 @${q.handle ?? ""}`, "", ...String(q.text).split("\n").map((l) => `> ${l}`), "", ...(q.url ? [q.url, ""] : []));
-    if (q?.text && row.quoted_zh) lines.push("### 引用中文译文", "", ...row.quoted_zh.split("\n").map((l) => `> ${l}`), "");
+    if (q?.text) lines.push(`## Citação de @${q.handle ?? ""}`, "", ...String(q.text).split("\n").map((l) => `> ${l}`), "", ...(q.url ? [q.url, ""] : []));
+    if (q?.text && row.quoted_zh) lines.push("### Tradução da citação em português", "", ...row.quoted_zh.split("\n").map((l) => `> ${l}`), "");
   } else if (row.body_mode === "full" && row.body_html) {
-    const isZh = row.language === "zh";
-    if (!isZh && row.tr_html && row.tr_complete) lines.push("## 正文 · 中文译文", "", turndown.turndown(row.tr_html), "");
-    lines.push(isZh ? "## 正文" : "## 正文 · 原文", "", turndown.turndown(row.body_html), "");
+    const isZh = row.language === "pt" || row.language === "pt-BR";
+    if (!isZh && row.tr_html && row.tr_complete) lines.push("## Texto · tradução em português", "", turndown.turndown(row.tr_html), "");
+    lines.push(isZh ? "## Texto" : "## Texto · original", "", turndown.turndown(row.body_html), "");
   }
   return { filename: `${SITE.mcpPrefix}-${row.id}.md`, body: lines.join("\n").replace(/\n{3,}/g, "\n\n") };
 }

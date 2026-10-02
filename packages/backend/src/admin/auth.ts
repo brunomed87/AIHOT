@@ -27,7 +27,7 @@ export interface AdminPrincipal {
 
 function secret(): string {
   const s = credential("auth", "SESSION_SECRET");
-  if (!s) throw new Error("SESSION_SECRET is not configured");
+  if (!s) throw new Error("SESSION_SECRET não está configurado");
   return s;
 }
 
@@ -61,7 +61,7 @@ export function cookie(name: string, value: string, maxAgeSeconds: number, secur
 /** Where to send the browser to sign in; the signed state also carries where to return. */
 export function loginRedirect(returnTo: string): { url: string; stateCookie: string } {
   const appId = credential("integrations", "FEISHU_LOGIN_APP_ID");
-  if (!appId) throw new Error("FEISHU_LOGIN_APP_ID is not configured");
+  if (!appId) throw new Error("FEISHU_LOGIN_APP_ID não está configurado");
   const state = `${randomBytes(16).toString("base64url")}|${safeReturn(returnTo)}`;
   const url = `https://passport.feishu.cn/suite/passport/oauth/authorize?${new URLSearchParams({ client_id: appId, redirect_uri: CALLBACK_URL, response_type: "code", state: sign(state) })}`;
   return { url, stateCookie: sign(state) };
@@ -92,7 +92,7 @@ interface FeishuUser {
 async function feishuUser(code: string): Promise<FeishuUser> {
   const appId = credential("integrations", "FEISHU_LOGIN_APP_ID");
   const appSecret = credential("integrations", "FEISHU_LOGIN_APP_SECRET");
-  if (!appId || !appSecret) throw new Error("Feishu login app is not configured");
+  if (!appId || !appSecret) throw new Error("O aplicativo de login Feishu não está configurado");
   const tokenRes = await fetch("https://passport.feishu.cn/suite/passport/oauth/token", {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -100,7 +100,7 @@ async function feishuUser(code: string): Promise<FeishuUser> {
     signal: AbortSignal.timeout(15_000),
   });
   const token = (await tokenRes.json()) as { access_token?: string; error?: string };
-  if (!token.access_token) throw new Error(`Feishu token exchange failed: ${token.error ?? tokenRes.status}`);
+  if (!token.access_token) throw new Error(`Falha na troca de token Feishu: ${token.error ?? tokenRes.status}`);
   const userRes = await fetch("https://passport.feishu.cn/suite/passport/oauth/userinfo", {
     headers: { authorization: `Bearer ${token.access_token}` },
     signal: AbortSignal.timeout(15_000),
@@ -121,12 +121,12 @@ async function createSession(userId: number, userAgent: string | undefined): Pro
 export async function completeLogin(code: string, state: string, stateCookie: string | undefined, userAgent: string | undefined) {
   const expected = unsign(stateCookie);
   const given = unsign(state);
-  if (!expected || !given || expected !== given) throw new LoginRejected("登录状态已失效，请重新登录");
+  if (!expected || !given || expected !== given) throw new LoginRejected("Sessão expirada. Entre novamente");
   const returnTo = given.split("|")[1] ?? "/admin";
   const u = await feishuUser(code);
   const email = (u.enterprise_email ?? u.email ?? "").toLowerCase() || null;
   const allowed = (u.union_id && config.adminUnionIds.includes(u.union_id)) || (email && config.adminEmails.includes(email));
-  if (!allowed) throw new LoginRejected("这个飞书账号没有后台权限");
+  if (!allowed) throw new LoginRejected("Esta conta Feishu não tem acesso administrativo");
   const [existing] = await sql<{ id: number }[]>`
     SELECT id FROM admin_users WHERE (${u.union_id ?? null}::text IS NOT NULL AND feishu_union_id = ${u.union_id ?? null}) OR (${email}::text IS NOT NULL AND email = ${email}) LIMIT 1`;
   const [user] = existing
@@ -144,12 +144,12 @@ const PASSWORD_ADMIN = "admin@local";
 /** Password sign-in: a constant-time comparison of digests, so the length leaks nothing either. */
 export async function passwordLogin(password: string, returnTo: string, userAgent: string | undefined) {
   const expected = config.adminPassword;
-  if (!expected || expected.length < 12) throw new LoginRejected("还没有设置管理员密码（环境变量 ADMIN_PASSWORD，至少 12 位）");
+  if (!expected || expected.length < 12) throw new LoginRejected("Senha administrativa não configurada: defina ADMIN_PASSWORD com pelo menos 12 caracteres");
   const given = createHmac("sha256", "admin-password").update(password).digest();
   const wanted = createHmac("sha256", "admin-password").update(expected).digest();
-  if (!timingSafeEqual(given, wanted)) throw new LoginRejected("密码不对");
+  if (!timingSafeEqual(given, wanted)) throw new LoginRejected("Senha incorreta");
   const [user] = await sql<{ id: number }[]>`
-    INSERT INTO admin_users (email, display_name, last_login_at) VALUES (${PASSWORD_ADMIN}, '管理员', now())
+    INSERT INTO admin_users (email, display_name, last_login_at) VALUES (${PASSWORD_ADMIN}, 'Administrador', now())
     ON CONFLICT (email) DO UPDATE SET last_login_at = now() RETURNING id`;
   const token = await createSession(user!.id, userAgent);
   await audit(`admin:${user!.id}`, "auth.login", null, null, null, { method: "password" });

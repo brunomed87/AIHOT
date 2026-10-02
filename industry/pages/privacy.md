@@ -1,34 +1,34 @@
-# 隐私说明
+# Privacidade
 
-这是开源框架自带的模板，只写了这套软件默认会处理哪些数据。上线前请按你的实际情况改写（运营主体、联系方式、你另外接入的统计或服务），必要时请专业人士审阅。
+Modelo do framework, descrevendo os dados tratados por padrão. Antes de publicar um site, adapte responsável, contato e serviços adicionais à operação real. Procure revisão profissional quando necessário.
 
-| 项 | 值 |
+| Campo | Valor |
 |---|---|
-| 版本 | 0.1（模板） |
-| 生效日期 | 请填写 |
-| 运营主体 | 请填写 |
-| 隐私事务联系 | 请填写 |
+| Versão | 0.1 (modelo) |
+| Vigência | Preencher |
+| Responsável | Preencher |
+| Contato de privacidade | Preencher |
 
-页首说明：
+Apresentação:
 
-> 使用本站不需要注册或登录。我们只处理让网站正常运行、处理反馈所必需的信息，不出售个人信息。
+> A leitura não exige cadastro ou login. São tratados somente dados necessários ao funcionamento e às sugestões; informações pessoais não são vendidas.
 
-## 1. 浏览器本地数据
+## 1. Dados locais do navegador
 
-收藏、已读记录、主题偏好和反馈草稿只保存在你当前的浏览器里，不会发送到服务器。清除浏览器数据后它们会消失；换设备不会同步。你可以在“收藏”页导出和导入这些数据。
+Favoritos, leituras, tema visual e rascunhos de sugestões ficam no navegador e não são enviados ao servidor. Limpar os dados remove esses registros; outro dispositivo não os sincroniza. Favoritos permite exportar e importar esses dados.
 
-## 2. 反馈
+## 2. Sugestões
 
-你在反馈页提交的内容、选填的邮箱、提交时所在页面的地址，以及你选择附上的截图，会保存在服务器上，用于处理你的反馈。为防止滥用，服务器会保存一个由网络地址和浏览器类别计算出的、无法还原的标识，用于限流和封禁滥用来源。
+Conteúdo enviado, e-mail opcional, endereço da página de origem e capturas anexadas ficam no servidor para tratar a solicitação. Para limitar abusos, o servidor guarda identificador irreversível calculado a partir do endereço de rede e categoria do navegador, usado para limites e bloqueios.
 
-## 3. 服务器与网络日志
+## 3. Registros de servidor e rede
 
-本软件默认不做访客统计。你的服务器、反向代理或 CDN 可能会按它们自己的配置记录访问日志（如 IP 地址、访问时间、页面地址、浏览器信息）。请在这里写明你实际使用的服务和保存期限。
+O software não faz análise de visitantes por padrão. Servidor, proxy e CDN podem registrar IP, horário, página e navegador conforme suas configurações. O responsável deve especificar serviços e prazos reais de retenção.
 
-## 4. 第三方内容
+## 4. Conteúdo de terceiros
 
-本站展示的是第三方原文的摘要与链接。点击原文链接后，你访问的是对方网站，适用对方的隐私政策。
+O site exibe resumos e links de terceiros. Ao abrir o original, aplica-se a política de privacidade daquele site.
 
-## 5. 联系我们
+## 5. Contato
 
-请写明联系方式，以及查询、更正或删除反馈资料的方式。
+O responsável deve preencher contato e formas de consultar, corrigir e remover dados enviados.

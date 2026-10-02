@@ -41,17 +41,17 @@ function TodayLabel() {
   const [, m, d] = today.split("-").map(Number) as [number, number, number];
   return (
     <span className="text-[12.5px] text-ink-4" suppressHydrationWarning>
-      {m}月{d}日 · {beijingWeekday(today).replace("星期", "周")}
+      {String(d).padStart(2,"0")}/{String(m).padStart(2,"0")} · {beijingWeekday(today)}
     </span>
   );
 }
 
 export default function Home() {
   const { data, filters } = useLoaderData<typeof loader>();
-  const title = filters.tag ? `#${filters.tag}` : "精选";
+  const title = filters.tag ? `#${filters.tag}` : "Destaques";
   return (
     <div className="pb-6">
-      {/* Phones: brand bar, today's hot topics, then the feed under "最新精选". */}
+      {/* Celular: marca, repercussão atual e lista dos selecionados recentes. */}
       <div className="flex h-14 items-center justify-between lg:hidden">
         <Wordmark size={20} className="text-ink" />
         <TodayLabel />
@@ -66,7 +66,7 @@ export default function Home() {
 
       {data.hot && <HotTopics entries={data.hot} />}
 
-      <h2 className="mt-6 text-[20px] font-bold text-ink lg:hidden">{filters.tag ? title : "最新精选"}</h2>
+      <h2 className="mt-6 text-[20px] font-bold text-ink lg:hidden">{filters.tag ? title : "Destaques recentes"}</h2>
       <div className="-mx-4 mt-3 flex items-center gap-2 pl-4 pr-2 lg:hidden">
         <CategoryTabs base="/" category={filters.category} channel={filters.channel} layoutId="home-cat-mobile" size="sm" className="min-w-0 flex-1" />
         <SearchIconLink />

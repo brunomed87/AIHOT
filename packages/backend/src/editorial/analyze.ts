@@ -1,13 +1,11 @@
-// analyzeArticle: the judging and writing steps, each with its own prompt from the industry pack
-// (industry/prompts/):
-//   1. prefilter: does the material belong to this industry at all (wide recall). Only BLOCK stops an
-//      item; UNKNOWN goes on like PASS (a BLOCK given while material is missing counts as UNKNOWN);
-//   2. score: two independent scores against the source tier's threshold (industry/selection.ts) decide 精选;
-//   3. writing: the Chinese title, summary and reason by the content understanding for selected and
-//      near-selected items, by the cheaper title/summary prompts for the rest;
-//   4. structure (no reader-facing text): category, tags, subject companies and the fact frame the
-//      topics and the event grouping need; it runs beside the scoring.
-// Material with only a title or a feed summary has its article page fetched before it is judged.
+// Etapas de avaliação e redação, cada uma com instruções em industry/prompts/:
+// 1. pré-filtro: relevância ampla. BLOCK interrompe; UNKNOWN continua como PASS.
+//    BLOCK com material ausente equivale a UNKNOWN.
+// 2. pontuação: duas notas independentes comparadas ao limite da fonte decidem seleção.
+// 3. redação: título, resumo e motivo em português para selecionados e próximos do limite;
+//    demais usam instruções de título e resumo com menor custo.
+// 4. estrutura: categoria, marcadores, instituições e fato, em paralelo à pontuação.
+// Materiais com somente título ou resumo do feed têm a página coletada antes da avaliação.
 import { z } from "zod";
 import { CATEGORY_KEYS } from "@aihot/contracts/taxonomy";
 import { CATEGORIES } from "@aihot/industry/taxonomy";
@@ -46,10 +44,7 @@ export const ANALYZE_PROMPT_VERSION = Object.values(PROMPT_VERSIONS).join("+");
 /** Independent score calls per article; their sum decides, their mean (floored) is shown. */
 export const SCORE_CALLS = 2;
 
-/**
- * The thresholds on the mean score, per source tier (industry/selection.ts): selected when
- * score1 + score2 >= 2 × threshold. Tiers without a threshold are not scored for 精选.
- */
+/** Limite médio por classe da fonte em industry/selection.ts: soma das notas >= duas vezes o limite. Classes sem limite não selecionam. */
 export function tierThreshold(tier: string): number | null {
   return SELECTION.thresholds[tier] ?? null;
 }
@@ -82,13 +77,13 @@ export function scoreInputTime(at: Date): string {
 }
 
 /**
- * The score input: no source facts (the prompt forbids guessing them), the publication time, the
- * original title (items are scored before any Chinese copy exists) and the whole body.
+ * Entrada da pontuação: sem fatos presumidos sobre a fonte; horário de publicação,
+ * título original anterior à redação em português e corpo completo.
  */
 export function buildScoreInput(a: AnalyzeInputArticle): string {
   let body: string;
   if (a.xPost) {
-    const quoted = a.xPost.quoted?.text ? `\n\n[引用 ${a.xPost.quoted.handle ? `@${a.xPost.quoted.handle}` : "原推文"}]：${a.xPost.quoted.text}` : "";
+    const quoted = a.xPost.quoted?.text ? `\n\n[Citação de ${a.xPost.quoted.handle ? `@${a.xPost.quoted.handle}` : "Publicação original"}]: ${a.xPost.quoted.text}` : "";
     body = `${String(a.xPost.text ?? "").trim()}${quoted}`.trim();
   } else {
     body = (a.bodyText ?? a.excerpt ?? "").trim();
@@ -96,10 +91,10 @@ export function buildScoreInput(a: AnalyzeInputArticle): string {
   if (!body) body = a.title;
   const at = a.publishedAt ?? a.discoveredAt ?? null;
   return [
-    "请按系统规则评估以下单篇材料所代表的事件。只输出 attentionScore。",
-    `【发布时间（北京时间）】\n${at ? scoreInputTime(at) : ""}`,
-    `【标题】\n${a.title.trim()}`,
-    `【完整正文】\n${body.length > MAX_BODY_CHARS ? body.slice(0, MAX_BODY_CHARS) : body}`,
+    "Avalie o acontecimento representado por este material conforme as regras do sistema. Retorne somente attentionScore.",
+    `[PUBLICAÇÃO NO HORÁRIO DE PEQUIM]\n${at ? scoreInputTime(at) : ""}`,
+    `[TÍTULO]\n${a.title.trim()}`,
+    `[TEXTO COMPLETO]\n${body.length > MAX_BODY_CHARS ? body.slice(0, MAX_BODY_CHARS) : body}`,
   ].join("\n\n");
 }
 
@@ -139,7 +134,7 @@ const UnderstandSchema = z.object({
 
 const SummarizeSchema = z.object({ titleZh: z.string(), summaryZh: z.string(), bodyZh: z.string() });
 
-const ZH_COUNT = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"];
+const ZH_COUNT = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
 
 /** The structure step's prompt (it writes nothing a reader sees), filled from the pack's vocabulary. */
 const STRUCTURE_SYSTEM = promptText("structure", {
@@ -148,7 +143,7 @@ const STRUCTURE_SYSTEM = promptText("structure", {
   categoryTags: CATEGORY_TAGS.join("、"),
   topicTags: TOPIC_TAGS.join("、"),
   entityTags: ENTITY_TAGS.join("、"),
-  entities: Object.entries(ENTITIES).map(([id, e]) => `${id}（${e.aliases.slice(0, 3).join("/")}）`).join("，"),
+  entities: Object.entries(ENTITIES).map(([id, e]) => `${id}(${e.aliases.slice(0, 3).join("/")})`).join(", "),
 });
 
 export interface AnalysisRun {
@@ -158,7 +153,7 @@ export interface AnalysisRun {
    * is not scored. `refused`: the model's content filter declined it, so it is not selected.
    */
   scores: { model: string; threshold: number; values: number[]; receiptIds: number[]; reused: boolean; refused?: boolean } | null;
-  /** The reader-facing copy: `understand` (selected, near-selected), `summarize`, `verbatim` (a Chinese short post), `none`. */
+  /** Redação pública: understand para selecionados ou próximos; summarize, verbatim para texto curto em português, ou none. */
   writing: {
     kind: "understand" | "summarize" | "verbatim" | "none";
     model: string | null;
@@ -343,7 +338,7 @@ async function runSummarize(a: AnalyzeInputArticle, opts: StepOpts): Promise<Non
   const short = isShortTweetInput(t);
   const main = collapseWhitespace(t.mainText || t.title);
   const plain = { reasonZh: null, tags: null, receiptIds: [] as number[], reused: true };
-  // A short post already in Chinese is its own copy, and too little text is not written up from a title.
+  // Publicação curta em português conserva o texto; material insuficiente não vira resumo inventado.
   if (short && !needsShortTweetTranslation(main)) return { kind: "verbatim", model: null, titleZh: main, summaryZh: main, ...plain };
   if (!short && t.text.trim().length < 20) return { kind: "none", model: null, titleZh: looksZh(t.title) ? t.title : "", summaryZh: "", ...plain };
   const model = await modelFor("summarize");
@@ -407,8 +402,7 @@ export function normalizeAnalysis(run: AnalysisRun) {
   const label = run.prefilter.label;
   const titleZh = collapseWhitespace(run.writing?.titleZh ?? "");
   const summaryZh = (run.writing?.summaryZh ?? "").trim();
-  // Past the prefilter (PASS or UNKNOWN) an item is relevant, but without a usable Chinese title and
-  // summary it cannot be published: it waits.
+  // PASS ou UNKNOWN permite continuar; ausência de título ou resumo válido mantém o item aguardando.
   const relevance = label === "BLOCK" ? "block" : run.writing && (!titleZh || !summaryZh) ? "unknown" : "pass";
   // Selected when the two scores add up to twice the tier threshold; the mean, floored,
   // is the score shown (it never decides a half point on its own).

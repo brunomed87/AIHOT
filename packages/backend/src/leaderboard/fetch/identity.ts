@@ -71,7 +71,7 @@ export class IdentityResolver {
       if (!this.dryRun) {
         await sql`
           INSERT INTO lb_models (id, slug, name, provider, provider_slug, released_at, release_date_source, metadata_source, created_at, updated_at)
-          VALUES (${id}, ${slug}, ${baseName}, ${meta.organization ?? "其他"}, ${"other"}, ${meta.releasedAt ?? null}, ${meta.releasedAt ? this.sourceKey : null}, ${this.sourceKey}, now(), now())
+          VALUES (${id}, ${slug}, ${baseName}, ${meta.organization ?? "Outros"}, ${"other"}, ${meta.releasedAt ?? null}, ${meta.releasedAt ? this.sourceKey : null}, ${this.sourceKey}, now(), now())
           ON CONFLICT (slug) DO NOTHING`;
         const [row] = await sql<{ id: string }[]>`SELECT id FROM lb_models WHERE slug = ${slug}`;
         id = row!.id;

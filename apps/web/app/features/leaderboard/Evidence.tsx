@@ -10,7 +10,7 @@ const DOT: Record<LbConfidence, string> = {
 };
 
 function rangeText(s: LbStability): string {
-  return s.from === s.to ? `第 ${s.from} 名` : `${s.from}—${s.to} 名`;
+  return s.from === s.to ? `nº ${s.from} posição` : `${s.from}—${s.to} posição`;
 }
 
 function position(r: DOMRect): CSSProperties {
@@ -57,12 +57,12 @@ export function EvidenceBadge({ confidence, stability, rank }: { confidence: LbC
           style={at}
           className="pointer-events-none fixed z-[60] w-56 rounded-tile border border-line bg-raised p-3 text-left text-[12px] leading-relaxed text-ink-2 shadow-[var(--shadow-pop)]"
         >
-          <span className="block text-[11px] text-ink-4">名次浮动范围</span>
+          <span className="block text-[11px] text-ink-4">Amplitude das posições</span>
           <span className="num block text-[15px] font-semibold text-ink">{rangeText(stability)}</span>
           <span className="mt-1.5 block text-ink-3">
-            在 {stability.scenarios} 个对照情景中重新检查资格后的名次。
-            {stability.unavailable > 0 && ` ${stability.unavailable} 个情景下参评证据不足。`}
-            不是置信区间。
+            em {stability.scenarios} cenários de comparação após rever a elegibilidade.
+            {stability.unavailable > 0 && ` ${stability.unavailable} cenários com evidência insuficiente para elegibilidade.`}
+            Não é um intervalo de confiança.
           </span>
         </span>, document.body
       )}

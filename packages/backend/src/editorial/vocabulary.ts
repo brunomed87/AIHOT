@@ -26,4 +26,4 @@ export function normalizeTags(v: unknown, opts: { max?: number; fallbackCategory
 }
 
 /** The category guide the structure step reads: one line per category. */
-export const CATEGORY_GUIDE = CATEGORIES.map((c) => `- ${c.key}（${c.label}）：${c.guide}`).join("\n");
+export const CATEGORY_GUIDE = CATEGORIES.map((c) => `- ${c.key}(${c.label}): ${c.guide}`).join("\n");

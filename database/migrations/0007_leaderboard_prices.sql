@@ -1,5 +1,5 @@
 -- Official, subscription and third-party relay prices are kept apart (F11). Only 'official'
--- is shown as the API price; a model without one shows "待核验". Prices never affect ranking.
+-- é exibido como preço da API; ausência mostra A verificar. Preços nunca afetam posições.
 CREATE TABLE lb_prices (
   model_id      text NOT NULL REFERENCES lb_models (id),
   kind          text NOT NULL CHECK (kind IN ('official', 'subscription', 'relay')),

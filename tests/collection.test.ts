@@ -35,11 +35,11 @@ const MP_URL = `https://mp.weixin.qq.com/s/test-${T}`;
 let bodyCalls = 0;
 const dajiala = await stub((_hit, req) => {
   if (req.url.startsWith("/fbmain/monitor/v3/post_history")) {
-    return { code: 0, data: [{ position: 1, url: MP_URL, title: `公众号文章 ${T}`, post_time: Math.floor(Date.now() / 1000) - 3600, digest: "摘要", sn: `sn-${T}` }], remain_money: 100 };
+    return { code: 0, data: [{ position: 1, url: MP_URL, title: `公众号文章 ${T}`, post_time: Math.floor(Date.now() / 1000) - 3600, digest: "Resumo", sn: `sn-${T}` }], remain_money: 100 };
   }
   bodyCalls += 1;
   if (bodyCalls === 1) return new Reply(503, { error: "busy" });
-  return { code: 0, title: `公众号文章 ${T}`, content: `<p>正文第一段 ${T}</p><p>正文第二段</p>`, author: "作者", desc: "描述" };
+  return { code: 0, title: `公众号文章 ${T}`, content: `<p>正文第一段 ${T}</p><p>正文第二段</p>`, author: "Autor", desc: "描述" };
 });
 
 process.env.SOCIALDATA_BASE_URL = socialdata.url;

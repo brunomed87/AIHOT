@@ -10,19 +10,19 @@ export const DISPLAY_METHOD = "kemeny-order-support-1.0";
 
 /** Evidence budgets: broad 30%, human preference 10%, specialised evaluations 60%. */
 export const BUDGETS = [
-  { key: "broad", name: "综合评测", weight: 0.3 },
-  { key: "preference", name: "真人盲选", weight: 0.1 },
-  { key: "coding", name: "编程与设计", weight: 0.12 },
-  { key: "writing", name: "写作与表达", weight: 0.09 },
-  { key: "reasoning", name: "数学与推理", weight: 0.12 },
-  { key: "knowledge", name: "知识与事实", weight: 0.06 },
-  { key: "vision", name: "视觉理解", weight: 0.06 },
-  { key: "tools", name: "工具与办公", weight: 0.06 },
-  { key: "multilingual", name: "中文与多语言", weight: 0.06 },
-  { key: "professional", name: "行业专业任务", weight: 0.03 },
+  { key: "broad", name: "Avaliações gerais", weight: 0.3 },
+  { key: "preference", name: "Preferência humana cega", weight: 0.1 },
+  { key: "coding", name: "Programação e design", weight: 0.12 },
+  { key: "writing", name: "Escrita e expressão", weight: 0.09 },
+  { key: "reasoning", name: "Matemática e raciocínio", weight: 0.12 },
+  { key: "knowledge", name: "Conhecimento e fatos", weight: 0.06 },
+  { key: "vision", name: "Compreensão visual", weight: 0.06 },
+  { key: "tools", name: "Ferramentas e trabalho profissional", weight: 0.06 },
+  { key: "multilingual", name: "Chinês e multilinguismo", weight: 0.06 },
+  { key: "professional", name: "Tarefas profissionais específicas", weight: 0.03 },
 ] as const;
 
-/** Budgets that count as a "专项" for the overall eligibility rule. */
+/** Orçamentos considerados especializados na regra de elegibilidade geral. */
 const SPECIALTY_EXCLUDED = new Set(["broad", "preference"]);
 
 export interface ScoringSource {

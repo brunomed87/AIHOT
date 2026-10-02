@@ -1,4 +1,4 @@
-// 信源转为编辑来源后，补齐尚未分析的资料；沿用正文、历史归档和人工覆盖规则。
+// Promoção editorial completa análise faltante, preservando corpo, histórico e correções manuais.
 import { stub, tag } from "./setup.ts";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -24,8 +24,8 @@ const provider = await stub((_hit, req) => {
   let answer: unknown;
   if (system.includes("pré-filtro amplo de relevância oftalmológica")) answer = { label: input.includes("OFFTOPIC") ? "BLOCK" : "PASS", reason: "测试" };
   else if (system.includes("avaliador de atenção geral")) answer = { attentionScore: 80 };
-  else if (system.includes("escreve conteúdo de")) answer = { itemType: "model_release", authorRole: "principal", tags: ["模型发布"], editorialJudgment: "测试判断", titleZh: "某实验室发布新模型", summaryZh: "某实验室发布新模型，并公布评测结果和价格。" };
-  else if (system.includes("extrai estrutura de material oftalmológico")) answer = { category: "ai-models", tags: ["模型发布"], subjects: [], fact: { title: "某实验室发布新模型" } };
+  else if (system.includes("escreve conteúdo de")) answer = { itemType: "model_release", authorRole: "principal", tags: ["Lançamento de modelos"], editorialJudgment: "测试判断", titleZh: "某实验室发布新模型", summaryZh: "某实验室发布新模型，并公布评测结果和价格。" };
+  else if (system.includes("extrai estrutura de material oftalmológico")) answer = { category: "ai-models", tags: ["Lançamento de modelos"], subjects: [], fact: { title: "某实验室发布新模型" } };
   else throw new Error("unexpected model request");
   return { id: "stub", choices: [{ message: { content: JSON.stringify(answer) } }], usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 } };
 });
@@ -114,7 +114,7 @@ test("promoting a settled auto-created source resumes normal editorial extractio
 
 test("resumed extraction and analysis publish the fetched body at its current revision", async () => {
   const sourceId = await source("extract");
-  // 外部推送会规范化为 HTTPS；正文链路单独使用真实 HTTP 回环夹具。
+  // Ingestão normaliza HTTPS; teste de corpo usa HTTP de loopback real.
   const id = await material(sourceId, "extract", { bodyText: null, bodyStatus: "pending" });
   await settleNonEditorial(id);
   await edit(sourceId, { participation_mode: "editorial" });
@@ -300,7 +300,7 @@ test("failure after processing job insertion rolls back source, article reset an
   await sql`UPDATE articles SET processing_attempts = 3, processing_error = 'preserve on rollback', processing_retry_at = now() + interval '1 day' WHERE id = ${id}`;
   const [beforeSource] = await sql`SELECT * FROM sources WHERE id = ${sourceId}`;
   const [beforeArticle] = await sql`SELECT * FROM articles WHERE id = ${id}`;
-  // 在重新发布标记写入时故意失败，并确认此前已走过文章重置及任务插入。
+  // Falha intencional ao marcar republicação, verificando que artigo e tarefa já foram alterados.
   await sql.unsafe(`CREATE FUNCTION test_promotion_rollback() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN
       IF NEW.key = 'republish.source:${sourceId}' THEN
@@ -356,7 +356,7 @@ test("overlapping promotion and old settlement leave the unscheduled tail recove
   }
   try {
     await hold`SELECT pg_advisory_lock(${lockKey})`;
-    // 在重置和首批任务均已写入、尚未提交时暂停真实晋升事务。
+    // Pausa transação real de promoção após reset e primeiras tarefas, antes de confirmar.
     await sql.unsafe(`CREATE FUNCTION test_promotion_gate() RETURNS trigger LANGUAGE plpgsql AS $$
       BEGIN
         IF NEW.key = 'republish.source:${sourceId}' THEN PERFORM pg_advisory_xact_lock(${lockKey}); END IF;

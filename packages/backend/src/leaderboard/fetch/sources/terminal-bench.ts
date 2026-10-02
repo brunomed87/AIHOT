@@ -7,7 +7,7 @@ import type { Fetcher, ParsedRow } from "../types.ts";
 
 const REPO = "harbor-framework/terminal-bench";
 const DIR = "leaderboard/submissions";
-const REFERENCE_ONLY = "保留模型与 Agent 的完整系统成绩供参考，不参与综合或编程排名。";
+const REFERENCE_ONLY = "Resultados de sistemas completos de modelo e agente preservados para referência, sem participar dos rankings geral ou de programação.";
 
 interface Display { url: string; label: string }
 interface Submission {
@@ -41,7 +41,7 @@ export const terminalBench: Fetcher = {
       const m = s.metrics;
       if (!Number.isFinite(m?.accuracy)) continue;
       const effort = s.metadata.reasoning_effort && s.metadata.reasoning_effort !== "none" ? s.metadata.reasoning_effort : null;
-      const label = `${s.metadata.agent_display.label}${s.source_filter.agent_version ? ` ${s.source_filter.agent_version}` : ""} · ${effort ? `${effort} 推理` : "来源未报告推理档位"}`;
+      const label = `${s.metadata.agent_display.label}${s.source_filter.agent_version ? ` ${s.source_filter.agent_version}` : ""} · ${effort ? `${effort} Raciocínio` : "A fonte não informou o nível de raciocínio"}`;
       const hw = m.accuracy_ci95_half_width;
       const name = s.source_filter.model_name.split("/").pop()!;
       rows.push({
@@ -52,7 +52,7 @@ export const terminalBench: Fetcher = {
         releasedAt: s.metadata.date,
         configuration: { key: `tb4:${f.name}`, label, kind: "SCAFFOLDED", priority: 0, rank: 0, ineligible: REFERENCE_ONLY },
         metricKey: "terminal-bench-4",
-        metricName: "Terminal-Bench 4 · 系统参考",
+        metricName: "Terminal-Bench 4 · referência de sistemas",
         rawScore: m.accuracy / 100,
         lowerBound: hw == null ? null : (m.accuracy - hw) / 100,
         upperBound: hw == null ? null : (m.accuracy + hw) / 100,
@@ -85,9 +85,9 @@ export const terminalBench: Fetcher = {
     }
     return [{
       sourceKey: "terminal-bench-4",
-      sourceName: "Terminal-Bench 4 · 系统参考",
+      sourceName: "Terminal-Bench 4 · referência de sistemas",
       sourceUrl: `https://api.github.com/repos/${REPO}/contents/${DIR}`,
-      license: "Apache 2.0 · 官方 harbor-framework/terminal-bench 仓库内的成绩提交；保留署名、协议与修改说明。",
+      license: "Apache 2.0 · resultados no repositório oficial harbor-framework/terminal-bench; preserve créditos, protocolo e descrição das alterações.",
       attributionUrl: "https://www.tbench.ai/",
       // Scores change only through merged submissions, so the data date is the last commit touching them.
       publishedAt: data.date,

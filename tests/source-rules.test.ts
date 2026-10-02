@@ -95,7 +95,7 @@ test("a config entry the collector does not implement fails the fetch instead of
   const [row] = await sql<{ updated_at: Date }[]>`SELECT updated_at FROM sources WHERE id = ${id("denied")}`;
   await assert.rejects(
     updateSource(id("denied"), { patch: { config: { ...SOURCES.denied.config, detail: { titleFoo: "h1" } } }, version: row!.updated_at.toISOString() }, "test"),
-    /不支持的配置项：detail\.titleFoo/,
+    /Configuração não aceita:detail\.titleFoo/,
     "the admin refuses it before it is saved",
   );
 });

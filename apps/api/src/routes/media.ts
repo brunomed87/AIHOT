@@ -22,7 +22,7 @@ export function registerMedia(app: FastifyInstance) {
       return reply.code(204).header("X-Img-Proxy-Sig", "valid").header("X-Accel-Expires", String(remaining)).send();
     }
     if (!verdict.ok) {
-      return reply.code(403).header("Cache-Control", "no-store").type("text/plain; charset=utf-8").send("Forbidden");
+      return reply.code(403).header("Cache-Control", "no-store").type("text/plain; charset=utf-8").send("Acesso negado");
     }
     try {
       const { body, type, pendingAnimation } = await produceImage(verdict.url, verdict.mode);

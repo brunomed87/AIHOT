@@ -1,4 +1,4 @@
-// 普通采集必须处理已返回列表的尾部；首次回灌、详情预算和成功游标仍遵守原有边界。
+// Coleta normal processa cauda recebida; importação inicial, orçamento de detalhes e cursor respeitam limites originais.
 import { tag } from "./setup.ts";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -74,7 +74,7 @@ const cursor = async (id: string) => (await sql`SELECT cursor FROM sources WHERE
 const jobs = async (id: string) => (await sql`SELECT count(*)::int AS n FROM pgboss.job j JOIN articles a ON a.id=j.data->>'articleId' WHERE a.source_id=${id}`)[0]!.n as number;
 const revisions = async (id: string) => (await sql`SELECT count(*)::int AS n FROM article_revisions r JOIN articles a ON a.id=r.article_id WHERE a.source_id=${id}`)[0]!.n as number;
 
-test("已初始化 RSS 的第 61 条在接受 304 前已经保存", async () => {
+test("Item 61 de RSS inicializado é gravado antes de aceitar 304", async () => {
   const { id, listing } = await source("rss", "rss", items("rss", 61));
   const first = await collectSource(id);
   assert.deepEqual([first.status, first.found, first.created, first.revised], ["ok", 61, 61, 0]);
@@ -90,7 +90,7 @@ test("已初始化 RSS 的第 61 条在接受 304 前已经保存", async () => 
 });
 
 for (const size of [0, 1, 59, 60, 61, 100]) {
-  test(`JSON 普通采集保留 ${size} 条返回记录`, async () => {
+  test(`Coleta JSON preserva os ${size} registros retornados`, async () => {
     const { id } = await source(`size-${size}`, "json_list", items(`size-${size}`, size));
     const result = await collectSource(id);
     assert.deepEqual([result.status, result.found, result.created, result.revised], ["ok", size, size, 0]);
@@ -98,7 +98,7 @@ for (const size of [0, 1, 59, 60, 61, 100]) {
   });
 }
 
-test("超过参数数量上限的大列表仍判重并保存新尾部", async () => {
+test("Lista acima do limite de parâmetros deduplica e salva novos itens finais", async () => {
   const known: Item = { url: `${base}/${T}`, title: "Large", date: null, summary: "" };
   const tail = { ...known, url: known.url + "-tail", title: "Tail" };
   const { id, listing } = await source("large", "json_list", [known]);
@@ -115,7 +115,7 @@ test("超过参数数量上限的大列表仍判重并保存新尾部", async ()
   assert.equal(await jobs(id), 2);
 });
 
-test("前 60 条已知时仍创建和修订尾部，并只排入正常处理一次", async () => {
+test("Sessenta itens conhecidos não impedem criação e revisão da cauda com uma tarefa por item", async () => {
   const rows = items("json-tail", 61);
   const { id, listing } = await source("json-tail", "json_list", rows.slice(0, 60));
   assert.equal((await collectSource(id)).created, 60);
@@ -124,7 +124,7 @@ test("前 60 条已知时仍创建和修订尾部，并只排入正常处理一�
   assert.deepEqual([added.status, added.found, added.created, added.revised], ["ok", 61, 1, 0]);
   const [tail] = await sql`SELECT id,revision FROM articles WHERE url=${rows[60]!.url}`;
   assert.equal(tail!.revision, 1);
-  // 模拟旧任务已结束，再验证新修订确实走入队路径。
+  // Simula término da tarefa antiga e verifica que nova revisão entra na fila.
   await sql`DELETE FROM pgboss.job WHERE data->>'articleId'=${tail!.id}`;
   await sql`UPDATE articles SET processing_queued_at=NULL WHERE id=${tail!.id}`;
   rows[60] = { ...rows[60]!, title: "尾部修订后的标题", summary: "尾部修订后的正文" };
@@ -143,7 +143,7 @@ test("前 60 条已知时仍创建和修订尾部，并只排入正常处理一�
 });
 
 for (const reverse of [false, true]) {
-  test(`网页列表的 100 条文章不会因${reverse ? "旧文在前" : "新文在前"}而丢失`, async () => {
+  test(`Lista com 100 artigos preserva todos, com ${reverse ? "antigos primeiro" : "recentes primeiro"}`, async () => {
     const rows = items(`web-${reverse}`, 100);
     if (reverse) rows.reverse();
     const { id, listing } = await source(`web-${reverse}`, "web_list", rows, { sortByPublishedAt: reverse });
@@ -154,7 +154,7 @@ for (const reverse of [false, true]) {
   });
 }
 
-test("首次回灌保留数量和年龄限制，下一次普通采集补齐再接受 304", async () => {
+test("Importação inicial mantém limites e coleta normal completa cauda antes de aceitar 304", async () => {
   const rows = items("initial", 100);
   rows[0]!.date = new Date(Date.now() - 400 * 86400000).toISOString();
   const { id, listing } = await source("initial", "rss", rows, { _aihot: { initialBackfillLimit: 7, initialBackfillMonths: 12 } }, false);
@@ -171,7 +171,7 @@ test("首次回灌保留数量和年龄限制，下一次普通采集补齐再�
   assert.equal(listing.requests[1]!.etag, undefined);
 });
 
-test("大列表仍严格限制详情请求并保留已知详情标题", async () => {
+test("Lista grande limita requisições de detalhe e preserva títulos conhecidos", async () => {
   const rows = items("detail", 100).map(i => ({ ...i, title: "Read more", date: null }));
   const { id } = await source("detail", "web_list", rows, { detail: { maxFetches: 3, titleSelector: "h1", titleAuthoritative: true, publishedAtSelector: "time" } });
   const before = detailRequests.length;
@@ -187,7 +187,7 @@ test("大列表仍严格限制详情请求并保留已知详情标题", async ()
   assert.equal(await revisions(id), 100);
 });
 
-test("尾部归一化别名仍取首次记录，URL、分类和噪声过滤保持生效", async () => {
+test("Aliases finais preservam primeiro registro e filtros de endereço, categoria e ruído", async () => {
   const rows = items("filters", 60);
   rows.push({ ...rows[0]!, url: rows[0]!.url + "?utm_source=tail", title: "不应覆盖首次标题" });
   rows.push(...items("filters-tail", 5));
@@ -208,7 +208,7 @@ test("尾部归一化别名仍取首次记录，URL、分类和噪声过滤保�
   assert.equal(await revisions(id), 61);
 });
 
-test("尾部存储失败不推进 RSS 验证器，重试补齐且不重复修订", async () => {
+test("Falha na cauda não avança validador RSS e repetição completa sem revisão duplicada", async () => {
   const rows = items("retry", 61);
   const { id, listing } = await source("retry", "rss", rows.slice(0, 1));
   assert.equal((await collectSource(id)).created, 1);
@@ -216,8 +216,8 @@ test("尾部存储失败不推进 RSS 验证器，重试补齐且不重复修订
   listing.items = rows;
   listing.version = 2;
   const constraint = `tail_failure_${T}`;
-  // 仅拒绝本测试的尾部标题；前缀正常提交，不向运行时代码加入故障开关。
-  // PostgreSQL 的 DDL 不接受值参数；只将已转义的测试文本作为字面量插入。
+  // Rejeita somente título final deste teste; prefixo grava normalmente, sem chave de falha no produto.
+  // DDL PostgreSQL não aceita parâmetros de valor; inserir somente texto de teste escapado como literal.
   const blockedTitle = sql.unsafe("'" + rows[60]!.title.replaceAll("'", "''") + "'");
   await sql`ALTER TABLE articles ADD CONSTRAINT ${sql(constraint)} CHECK (title <> ${blockedTitle}) NOT VALID`;
   try {

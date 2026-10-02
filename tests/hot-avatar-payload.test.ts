@@ -36,7 +36,7 @@ after(async () => {
   await closeDb();
 });
 
-test('faces are 精选组 sources by tier (T1, T1.5, T2), at most 6; 氛围组 only counts in +N', async () => {
+test("Avatares editoriais seguem classe T1, T1.5 e T2 até seis; sinais entram na contagem adicional", async () => {
   for (const [i, person] of inputs.entries()) {
     await sql`INSERT INTO sources (id,name,kind,tier,participation_mode,icon_url,next_fetch_at)
       VALUES (${sourceId(i)},${name(i)},'rss',${person.tier},${person.kind === 'editorial' ? 'editorial' : 'hot_signal'},${imageUrl(i)},'2100-01-01')`;
@@ -68,11 +68,11 @@ test('faces are 精选组 sources by tier (T1, T1.5, T2), at most 6; 氛围组 o
   const full=extras.participants(entries[0]!);
   const home=(await loadHotStrip())![0]!.participants;
 
-  // T1 (face first), T1.5, T2 (faces first, then stored order), then 氛围组 whatever its tier.
+  // T1 com avatares primeiro, T1.5, T2 com avatares e depois ordem armazenada; sinais ao final independentemente da classe.
   const order=[5,2,3,1,6,8,9,7,0,4];
   assert.deepEqual(full.map(p=>p.name),order.map(name));
   assert.deepEqual(home,full,'home and /hot show the same faces');
   assert.deepEqual(full.map(p=>p.iconUrl),order.map(i=>proxiedImage(imageUrl(i),'avatar')),'every name keeps its icon for the tooltip');
-  // The six visible faces get responsive images (T1 without avatar shows an initial); the seventh 精选组 face does not.
+  // Seis avatares visíveis recebem imagens responsivas; T1 sem avatar usa inicial. Sétimo editorial não recebe.
   assert.deepEqual(full.filter(p=>p.iconSrcSet).map(p=>p.name),[5,3,1,6,8].map(name));
 });

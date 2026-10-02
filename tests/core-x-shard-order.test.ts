@@ -1,10 +1,10 @@
-// 分片查询按信源 ID 排序，数据库行位置改变不能造成重复付费请求。
+// Consultas por lotes ordenam id da fonte; mudança física de linhas não pode duplicar cobrança.
 import { stub, tag } from "./setup.ts";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import type { SourceRow } from "@aihot/backend/sources/types";
 
-// 单连接确保测试的扫描设置与采集使用同一会话，不影响其他测试进程。
+// Uma conexão garante mesma sessão para configuração da varredura e coleta, sem afetar outros testes.
 process.env.DATABASE_POOL_MAX = "1";
 const { config } = await import("@aihot/backend/config");
 const { closeDb, sql } = await import("@aihot/backend/db");
@@ -50,7 +50,7 @@ async function remove(members: Member[]) {
 }
 
 async function resetLayout() {
-  // 仅重置本会话的临时表，避免共享表空闲页使插入顺序与物理顺序不同。
+  // Reinicia somente tabela temporária desta sessão para evitar diferença entre ordem inserida e física.
   await sql`TRUNCATE pg_temp.fetch_runs, pg_temp.sources RESTART IDENTITY`;
 }
 
@@ -78,7 +78,7 @@ let savedBudget: Array<{ per_minute: number; per_hour: number; per_day: number }
 let savedPublic: Awaited<ReturnType<typeof publicState>>;
 before(async () => {
   savedPublic = await publicState();
-  // 复制真实迁移后的结构；LIKE 不复制外键，且原序列默认值需改为临时序列。
+  // Copia estrutura migrada real. LIKE não copia chaves estrangeiras; sequência padrão deve ser temporária.
   await sql`CREATE TEMP TABLE pg_temp.sources (LIKE public.sources INCLUDING ALL)`;
   await sql`CREATE TEMP TABLE pg_temp.fetch_runs (LIKE public.fetch_runs INCLUDING ALL)`;
   await sql`CREATE TEMP SEQUENCE pg_temp.x_shard_fetch_run_id OWNED BY pg_temp.fetch_runs.id`;
@@ -92,7 +92,7 @@ before(async () => {
   assert.deepEqual(transaction, session, "collection and receipt transactions use the same temporary-table session");
   savedBudget = await sql`SELECT per_minute, per_hour, per_day FROM budgets WHERE service = 'socialdata'`;
   await sql`UPDATE budgets SET per_minute = 1000, per_hour = 10000, per_day = 100000 WHERE service = 'socialdata'`;
-  // 强制真实堆扫描，避免数据库大小或执行计划碰巧掩盖无序读取。
+  // Força varredura física para que tamanho e plano não escondam leitura sem ordem.
   await sql`SET enable_indexscan = off`;
   await sql`SET enable_bitmapscan = off`;
 });
@@ -140,7 +140,7 @@ test("same shard search reuses its receipt after physical row order changes", as
   assert.equal(initial.length, 1);
   assert.equal(initial[0]!.recorded_attempts, 1);
 
-  // 只重建本会话的空响应信源，恢复完全相同的逻辑输入并改变物理位置。
+  // Recria somente fonte de resposta vazia desta sessão, mantendo entrada lógica e mudando posição física.
   await resetLayout();
   await insert(members);
   assert.deepEqual(await physicalIds(members), ids);
@@ -149,7 +149,7 @@ test("same shard search reuses its receipt after physical row order changes", as
   assert.deepEqual(await receiptsFor(key), initial, "the original receipt and attempt must be reused");
   assert.equal(initial[0]!.query, queryFor(members));
 
-  // 成功采集会写 lastOkAt；重试控制恢复原水位，避免引入新的搜索边界。
+  // Sucesso grava lastOkAt; controle restaura posição anterior para não mudar limite de busca.
   await sql`UPDATE pg_temp.sources SET cursor = ${sql.json(INITIAL_CURSOR)} WHERE id IN ${sql(ids)}`;
   assert.equal((await collectXShard(key, ids)).status, "ok");
   assert.equal(queries.length - start, 1);

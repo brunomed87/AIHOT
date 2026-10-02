@@ -51,7 +51,7 @@ export const eqbench: Fetcher = {
         sourceKey: b.key,
         sourceName: b.name,
         sourceUrl: `https://eqbench.com/${b.file}`,
-        license: "MIT · EQ-bench-site README 元数据声明",
+        license: "MIT · declaração nos metadados do README de EQ-bench-site",
         attributionUrl: b.page,
         publishedAt: commit.date,
         rows,

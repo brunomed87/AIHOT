@@ -1,34 +1,34 @@
-# 使用规则
+# Regras de uso
 
-这是开源框架自带的模板。上线前请按你的实际情况改写（运营主体、允许和不允许的用途、联系方式），必要时请专业人士审阅。
+Modelo do framework aberto. Antes de publicar um site, adapte responsável, usos permitidos, usos proibidos e contato à operação real. Procure revisão profissional quando necessário.
 
-| 项 | 值 |
+| Campo | Valor |
 |---|---|
-| 版本 | 0.1（模板） |
-| 生效日期 | 请填写 |
-| 运营主体 | 请填写 |
-| 联系方式 | 请填写 |
+| Versão | 0.1 (modelo) |
+| Vigência | Preencher |
+| Responsável | Preencher |
+| Contato | Preencher |
 
-页首说明：
+Apresentação:
 
-> 本站聚合公开信源，用模型生成中文摘要与精选，原文版权归各来源所有。网站、RSS、公开 API 与 MCP 均可匿名使用。
+> Este site reúne fontes públicas, gera resumos e seleciona conteúdo em português. Os direitos dos originais pertencem às fontes. Site, RSS, API pública e MCP permitem leitura anônima.
 
-## 1. 内容与版权
+## 1. Conteúdo e direitos autorais
 
-本站展示的标题、摘要和推荐理由由模型根据公开来源生成，可能有误，重要信息请以原文为准。原文版权归各来源所有；站内只在来源允许时展示全文，其余只展示摘要和原文链接。
+Títulos, resumos e justificativas gerados por modelos podem conter erros. Confira informações importantes no original. Direitos pertencem às fontes. Texto integral só aparece quando permitido; nos demais casos, resumo e link.
 
-## 2. 来源方的更正与下架
+## 2. Correção e retirada por fontes
 
-如果你是来源方，希望更正、下架或调整展示方式，请通过反馈页联系我们，我们会尽快处理。
+Se você representa uma fonte e deseja corrigir, retirar ou alterar a exibição, entre em contato pela página de sugestões. As solicitações serão analisadas assim que possível.
 
-## 3. 使用本站的数据
+## 3. Uso dos dados
 
-请写明你允许的用途（例如个人阅读、组织内部使用），以及需要事先取得你同意的用途（例如商业产品、公开转载、批量再分发）。
+O responsável deve definir usos permitidos, como leitura pessoal e uso interno, e usos que exigem consentimento prévio, como produtos comerciais, republicação e redistribuição em massa.
 
-## 4. 接口与频率
+## 4. Interfaces e frequência
 
-RSS、公开 API 和 MCP 为匿名只读接口。请按响应中的缓存时间轮询，遇到 429 请遵守 Retry-After，不要并发重试。
+RSS, API pública e MCP são interfaces anônimas de leitura. Respeite o tempo de cache das respostas; após 429, siga Retry-After sem tentativas concorrentes.
 
-## 5. 免责
+## 5. Limitações
 
-本站按“现状”提供，不保证内容完整、准确和持续可用。
+Serviço fornecido no estado atual, sem garantia de completude, precisão ou disponibilidade contínua.

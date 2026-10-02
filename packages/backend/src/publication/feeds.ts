@@ -23,10 +23,10 @@ interface FeedMeta {
 }
 
 const FEEDS: Record<"selected" | "selectedFull" | "all" | "daily", FeedMeta> = {
-  selected: { id: "selected", path: "/feed.xml", title: `${SITE.name} — 精选`, description: `最新 50 条 ${SITE.name} 精选摘要，保留标题、站内阅读与原文入口；需要阅读器内全文可改订 /feed/full.xml。`, homePath: "/", pollHintMinutes: 30 },
-  selectedFull: { id: "selected-full", path: "/feed/full.xml", title: `${SITE.name} — 精选全文`, description: "与精选摘要相同的最新 50 条；仅对明确允许再分发的来源内联正文，其余仍提供摘要和阅读入口。", homePath: "/", pollHintMinutes: 30 },
-  all: { id: "all", path: "/feed/all.xml", title: `${SITE.name} — 全部动态`, description: "最近 7 天公开动态，按真实发布时间倒序；不含未审内容、低相关条目和已合并的重复条目。", homePath: "/all", pollHintMinutes: 30 },
-  daily: { id: "daily", path: "/feed/daily.xml", title: `${SITE.name} ${withSubject("日报")}`, description: `${SITE.name} 每天 08:00 北京时间发布的${withSubject("日报")}，保留最近 30 期。`, homePath: "/daily", pollHintMinutes: 30 },
+  selected: { id: "selected", path: "/feed.xml", title: `${SITE.name} — destaques`, description: `Os 50 mais recentes de ${SITE.name} com resumos selecionados, títulos, leitura no site e originais. Para texto integral no leitor, use /feed/full.xml.`, homePath: "/", pollHintMinutes: 30 },
+  selectedFull: { id: "selected-full", path: "/feed/full.xml", title: `${SITE.name} — texto completo dos selecionados`, description: "Os mesmos 50 selecionados recentes. Corpo integral somente quando a fonte autoriza redistribuição; demais itens mantêm resumo e links.", homePath: "/", pollHintMinutes: 30 },
+  all: { id: "all", path: "/feed/all.xml", title: `${SITE.name} — todas as notícias`, description: "Conteúdo público dos últimos sete dias por publicação real decrescente; exclui conteúdo não revisado, pouco relevante e duplicatas já agrupadas.", homePath: "/all", pollHintMinutes: 30 },
+  daily: { id: "daily", path: "/feed/daily.xml", title: `${SITE.name} ${withSubject("Relatório diário")}`, description: `${SITE.name} Publicado diariamente às 08h de Pequim:${withSubject("Relatório diário")}; mantém as 30 edições mais recentes.`, homePath: "/daily", pollHintMinutes: 30 },
 };
 
 /** RSS <author> needs an address; a no-reply one on the site's own domain. */
@@ -47,7 +47,7 @@ function channel(meta: { title: string; description: string; homePath: string; s
     <title>${escapeXml(meta.title)}</title>
     <link>${escapeXml(siteUrl(meta.homePath))}</link>
     <description>${escapeXml(meta.description)}</description>
-    <language>zh-CN</language>
+    <language>${escapeXml(SITE.locale)}</language>
     <atom:link href="${escapeXml(siteUrl(meta.selfPath))}" rel="self" type="application/rss+xml" />
     <ttl>${meta.ttl}</ttl>
     <generator>${escapeXml(`${SITE.name} (${siteUrl("/agent")})`)}</generator>
@@ -66,9 +66,8 @@ type FeedRow = Pick<ItemRow, "id" | "title" | "summary" | "url" | "category" | "
 const FEED_IMAGE_SECONDS = 7 * 86400;
 
 /**
- * The body a full feed carries, in Chinese when the page has it: an X post's translation (with the post
- * it quotes, translated too), else a complete Chinese translation of the article, else the original. It
- * ends with an attribution line (also a mark on copies taken from the feed).
+ * O RSS integral usa tradução em português quando disponível, incluindo citações.
+ * Sem tradução completa, conserva o original autorizado. Termina com atribuição.
  */
 function fullContent(r: FeedRow, aihot: string): string | null {
   let html: string | null = null;
@@ -76,19 +75,19 @@ function fullContent(r: FeedRow, aihot: string): string | null {
   if (x?.text) {
     html = textToHtml(x.translation ?? x.text);
     if (x.quoted?.text) {
-      html += `<blockquote><p>引用 @${escapeXml(x.quoted.handle)}：</p>${textToHtml(x.quoted.translation ?? x.quoted.text)}${x.quoted.url ? `<p><a href="${escapeXml(x.quoted.url)}">${escapeXml(x.quoted.url)}</a></p>` : ""}</blockquote>`;
+      html += `<blockquote><p>Citação de @${escapeXml(x.quoted.handle)}: </p>${textToHtml(x.quoted.translation ?? x.quoted.text)}${x.quoted.url ? `<p><a href="${escapeXml(x.quoted.url)}">${escapeXml(x.quoted.url)}</a></p>` : ""}</blockquote>`;
     }
   } else if (r.body_html) {
-    html = r.language !== "zh" && r.tr_html && r.tr_complete ? r.tr_html : r.body_html;
+    html = !['pt', 'pt-BR'].includes(r.language ?? '') && r.tr_html && r.tr_complete ? r.tr_html : r.body_html;
   }
   if (!html) return null;
-  return `${proxyBodyImages(html, true, FEED_IMAGE_SECONDS)}<p>—— 本文由 ${escapeXml(SITE.name)} 聚合整理，完整版与更多动态见 <a href="${aihot}">${aihot}</a></p>`;
+  return `${proxyBodyImages(html, true, FEED_IMAGE_SECONDS)}<p>— Conteúdo reunido por ${escapeXml(SITE.name)} . Texto completo e outras notícias em <a href="${aihot}">${aihot}</a></p>`;
 }
 
 function itemXml(r: FeedRow, includeContent: boolean): string {
   const aihot = itemUrl(r.id);
   const summary = r.summary ?? "";
-  const description = `<p>${escapeXml(summary)}</p>\n<p>🔗 <a href="${escapeXml(r.url)}">阅读原文</a></p>\n<p>via ${escapeXml(SITE.name)} · <a href="${aihot}">${aihot}</a></p>`;
+  const description = `<p>${escapeXml(summary)}</p>\n<p>🔗 <a href="${escapeXml(r.url)}">Ler original</a></p>\n<p>via ${escapeXml(SITE.name)} · <a href="${aihot}">${aihot}</a></p>`;
   const label = r.category ? CATEGORY_LABELS[r.category as PublicApiCategoryKey] : undefined;
   const category = label ? `\n      <category>${escapeXml(label)}</category>` : "";
   let content = "";
@@ -130,17 +129,17 @@ export async function itemFeed(kind: ItemFeedKind, category: PublicApiCategoryKe
         a.body_html, tr.body_html AS tr_html, tr.complete AS tr_complete` : sql``}
     FROM page JOIN publications p ON p.article_id = page.article_id JOIN sources s ON s.id = p.source_id
     ${includeContent ? sql`LEFT JOIN articles a ON a.id = p.article_id AND p.syndicate
-      LEFT JOIN translations tr ON tr.article_id = p.article_id AND tr.lang = 'zh' AND tr.revision >= a.revision
+      LEFT JOIN translations tr ON tr.article_id = p.article_id AND tr.lang = 'pt' AND tr.revision >= a.revision
       LEFT JOIN quote_translations qt ON p.channel = 'x' AND qt.tweet_id = substring(a.x_post->'quoted'->>'url' from '/status/([0-9]+)')` : sql``}
     ORDER BY coalesce(p.published_at, p.discovered_at) DESC, p.article_id DESC`;
   let meta: { title: string; description: string; homePath: string; selfPath: string; ttl: number };
   if (category) {
     const label = CATEGORY_LABELS[category] ?? category;
     meta = {
-      title: includeContent ? `${SITE.name} — ${label}全文` : `${SITE.name} — ${label}`,
+      title: includeContent ? `${SITE.name} — ${label}Texto completo` : `${SITE.name} — ${label}`,
       description: includeContent
-        ? `${SITE.name} 每日精选「${label}」分类全文源。仅对明确允许再分发的来源内联正文。`
-        : `${SITE.name} 每日精选「${label}」分类摘要，按分类订阅、不被全量精选刷屏。`,
+        ? `${SITE.name} Seleção diária da categoria: ${label}. Texto integral somente quando a fonte permite redistribuição.`
+        : `${SITE.name} Seleção diária da categoria: ${label}. Resumos por categoria, sem todas as notícias das demais áreas.`,
       homePath: "/",
       selfPath: includeContent ? `/feed/full/category/${category}.xml` : `/feed/category/${category}.xml`,
       ttl: 30,
@@ -160,8 +159,8 @@ export async function dailyFeed(): Promise<string> {
   const items = rows.map((r) => {
     const url = dailyUrl(r.key);
     const lead = reportHeadline(r.content, "daily", gone);
-    const title = lead ? `${SITE.name} ${withSubject("日报")} · ${r.key} — ${lead}` : `${SITE.name} ${withSubject("日报")} · ${r.key}`;
-    const description = `<p>${escapeXml(r.content.lead?.leadParagraph ?? lead ?? "")} — 点击查看完整日报</p>\n<p>via ${escapeXml(SITE.name)} · <a href="${url}">${url}</a></p>`;
+    const title = lead ? `${SITE.name} ${withSubject("Relatório diário")} · ${r.key} — ${lead}` : `${SITE.name} ${withSubject("Relatório diário")} · ${r.key}`;
+    const description = `<p>${escapeXml(r.content.lead?.leadParagraph ?? lead ?? "")} — Abra o relatório diário completo</p>\n<p>via ${escapeXml(SITE.name)} · <a href="${url}">${url}</a></p>`;
     return `    <item>
       <title>${cdata(title)}</title>
       <link>${url}</link>

@@ -1,4 +1,4 @@
-// 时间门槛使用可控时钟和promise门闩，不等待真实秒数来掩盖过期结果。
+// Cortes temporais usam relógio controlado e barreiras de promessas, sem espera real que esconda resultados expirados.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { cached } from "@aihot/backend/lib/cache";
@@ -8,7 +8,7 @@ function gate<T>() {
   return { promise, resolve };
 }
 
-test("绝对截止优先于fresh和stale窗口，并发读共享刷新", async (t) => {
+test("Corte absoluto prevalece sobre janelas de cache e compartilha atualização concorrente", async (t) => {
   t.mock.timers.enable({ apis: ["Date"], now: 1000 });
   let loads = 0;
   const pending = gate<{ expires: number; value: number }>();
@@ -23,7 +23,7 @@ test("绝对截止优先于fresh和stale窗口，并发读共享刷新", async (
   assert.deepEqual(await Promise.all([a, b]), [{ expires: 3000, value: 2 }, { expires: 3000, value: 2 }]);
 });
 
-test("发布后加入的读者不会接受发布前仍在途的过期快照", async (t) => {
+test("Leitor após publicação rejeita resposta antiga ainda em andamento", async (t) => {
   t.mock.timers.enable({ apis: ["Date"], now: 1000 });
   const pending = gate<{ expires: number; value: number }>();
   let loads = 0;
@@ -38,7 +38,7 @@ test("发布后加入的读者不会接受发布前仍在途的过期快照", as
   assert.equal(loads, 2);
 });
 
-test("clear后旧请求的完成不能替换新值或解除新请求的共享", async () => {
+test("Limpeza impede requisição anterior de substituir valor novo ou remover compartilhamento", async () => {
   const first = gate<number>();
   const second = gate<number>();
   let loads = 0;
@@ -54,7 +54,7 @@ test("clear后旧请求的完成不能替换新值或解除新请求的共享", 
   assert.deepEqual(await Promise.all([current, shared, cache.get()]), [2, 2, 2]);
 });
 
-test("截止后刷新错误向读者传递，不回退为新鲜旧值", async (t) => {
+test("Erro após corte é propagado sem retornar retrato expirado", async (t) => {
   t.mock.timers.enable({ apis: ["Date"], now: 1000 });
   let loads = 0;
   const cache = cached(async () => { if (++loads > 1) throw new Error("测试数据库失败"); return { expires: 2000 }; },
@@ -65,7 +65,7 @@ test("截止后刷新错误向读者传递，不回退为新鲜旧值", async (t
 });
 
 
-test("没有绝对截止的调用保留原有后台刷新语义", async (t) => {
+test("Sem corte absoluto mantém atualização de fundo existente", async (t) => {
   t.mock.timers.enable({ apis: ["Date"], now: 1000 });
   let loads = 0;
   const cache = cached(async () => ++loads, { freshMs: 1000, maxStaleMs: 10_000 });

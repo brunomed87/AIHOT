@@ -4,11 +4,11 @@
     {
       "date": "2026-10-01",
       "time": "08:00",
-      "kind": "公告",
-      "title": "网站上线",
+      "kind": "Aviso",
+      "title": "Site lançado",
       "body": [
-        "用 AIHOT 开源框架搭起了这个站：自动盯住信源、精选、把同一件事归到一起，每天早上出一份日报。",
-        "这是示例条目。新条目写在 industry/changelog.json 的最前面，并把 latestVersion 改成它的日期和时间，导航上就会出现提醒红点。"
+        "Este site usa o framework aberto AIHOT para acompanhar fontes, selecionar notícias, agrupar relatos do mesmo acontecimento e publicar um relatório diário pela manhã.",
+        "Este é um exemplo. Adicione atualizações no início de industry/changelog.json e ajuste latestVersion para a data e hora da nova entrada; a navegação mostrará o indicador de novidades."
       ]
     }
   ]

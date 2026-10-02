@@ -1,4 +1,4 @@
-// 仅供事件撤回回归使用的虚构资料；所有读写限定于测试库。
+// Dados fictícios somente para regressão de retirada; leituras e gravações restritas ao banco de teste.
 import { tag } from "./setup.ts";
 import { randomUUID } from "node:crypto";
 import { sql } from "@aihot/backend/db";
@@ -24,7 +24,7 @@ export async function article(sourceId: string, title: string, opts: { eligible?
     bodyText: "虚构测试正文", bodyHtml: "<p>虚构测试正文</p>", bodyStatus: "ok", via: "fetch", publishedAt: new Date(Date.now() - 60_000) });
   articles.push(articleId);
   await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,category,title_zh,summary_zh,reason_zh,score,selected)
-    VALUES(${articleId},1,'rule',${opts.eligible === false ? 'block' : 'pass'},'ai-models',${title},${title + '摘要'},'测试',90,true)`;
+    VALUES(${articleId},1,'rule',${opts.eligible === false ? 'block' : 'pass'},'ai-models',${title},${title + "Resumo"},'测试',90,true)`;
   await publishArticle(articleId, opts.pending ? {} : { releasedAt: new Date(Date.now() - 60_000) });
   return articleId;
 }
@@ -58,7 +58,7 @@ export async function rank(entries: Array<{ id: number; publicId: string; marker
       badges: [], participantCount: 2, sourceCount: 2, signalCount: 0, reportCount: 2, sourceNames: ["虚构来源"], latestAt: at.toISOString(), firstReportAt: at.toISOString(),
       representativeItemId: e.a, representativeUrl: a!.url, representativeSource: "虚构来源", participants: [] });
   }
-  // 故意保留同一持久榜单，使撤回后的即时安全不依赖重算碰巧换了ranking ID。
+  // Preserva mesmo ranking persistido para que segurança após retirada não dependa de novo id por recálculo.
   const [saved] = await sql<{ id: number }[]>`INSERT INTO hot_rankings(computed_at,rule_version,entries,published) VALUES(${at},'withdrawal-test',${sql.json(rows as never)},true) RETURNING id`;
   rankings.push(saved!.id);
   return saved!.id;

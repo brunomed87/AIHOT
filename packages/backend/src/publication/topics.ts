@@ -24,7 +24,7 @@ const topicsCache = cached(
   { freshMs: 60_000, maxStaleMs: 10 * 60_000 },
 );
 export interface TopicCountSnapshot { counts: TopicCount[]; refreshAt: string | null }
-// 已知的发布或近期窗口截止必须同步刷新，不能继续返回后台更新中的旧统计。
+// Cortes conhecidos de publicação ou janela exigem atualização síncrona, sem devolver estatísticas antigas em renovação de fundo.
 const countsCache = cached(() => queryTopicCounts(new Date()), {
   freshMs: 60_000, maxStaleMs: 10 * 60_000,
   expiresAt: (value) => value.refreshAt ? Date.parse(value.refreshAt) : null,
@@ -80,7 +80,7 @@ export async function topicPageCounts(now?: Date): Promise<TopicCount[]> {
 }
 
 export function topicCountSnapshot(now?: Date): Promise<TopicCountSnapshot> {
-  // 显式时间用于同一请求的计数与条目读取，不混入其他时刻的共享缓存。
+  // Tempo explícito comum para contagem e itens da mesma requisição, sem misturar cache de outro instante.
   return now ? queryTopicCounts(now) : countsCache.get();
 }
 

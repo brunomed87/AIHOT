@@ -83,7 +83,7 @@ export const mercor: Fetcher = {
       sourceKey: "mercor-apex-agents",
       sourceName: `Mercor ${b.displayName} ${version}`,
       sourceUrl: PAGE,
-      license: "官方公开结果；数据与代码许可不等于榜单再分发授权",
+      license: "Resultados oficiais públicos; licença de dados e código não implica autorização para redistribuir o ranking",
       attributionUrl: PAGE,
       publishedAt,
       rows,

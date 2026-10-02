@@ -119,7 +119,7 @@ async function refreshSitemap(): Promise<SitemapSnapshot> {
     await writeFile(CACHE_FILE, snapshot.xml).catch(() => {});
     return snapshot;
   } catch (error) {
-    // 回退只能明确标为过期；磁盘旧文档也不能借本次读取获得新的缓存寿命。
+    // Alternativa deve estar explicitamente obsoleta; arquivo antigo não ganha validade de cache na leitura atual.
     if (lastGood) return { xml: lastGood.xml, refreshAt: new Date(0).toISOString() };
     const last = await readFile(CACHE_FILE, "utf8").catch(() => null);
     if (last) return { xml: last, refreshAt: new Date(0).toISOString() };

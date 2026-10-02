@@ -21,28 +21,28 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  if (!loaderData) return [{ title: titled("页面不存在") }];
+  if (!loaderData) return [{ title: titled("Página não encontrada") }];
   const { board, entries } = loaderData;
   const path = board.key === "overall" ? "/leaderboard" : `/leaderboard/category/${board.key}`;
   return pageMeta({
     title: board.title,
     rawTitle: true,
-    description: board.key === "overall" ? `汇总多家公开模型评测榜单，给出 ${SITE.name} 共识分、评测完整度、上线日期与 API 参考价格。` : board.description,
+    description: board.key === "overall" ? `Resultados de avaliações públicas de modelos, com ${SITE.name} índice de consenso, cobertura de avaliações, data de lançamento e preços de referência da API.` : board.description,
     path,
     image: "/og/pages/leaderboard.png",
     jsonLd: [
       {
         "@context": "https://schema.org",
         "@type": "ItemList",
-        name: board.key === "overall" ? `${SITE.name} 大模型综合榜` : `${SITE.name} ${board.name}模型榜`,
+        name: board.key === "overall" ? `${SITE.name} Ranking geral de modelos` : `${SITE.name} ${board.name}Ranking de modelos`,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
         numberOfItems: entries.length,
         itemListElement: entries.map((e) => ({ "@type": "ListItem", position: e.rank, name: e.model.name, url: `${siteUrl()}${modelHref(e.model.slug)}` })),
       },
       breadcrumbLd(
         board.key === "overall"
-          ? [{ name: "模型榜", path: "/leaderboard" }]
-          : [{ name: "模型榜", path: "/leaderboard" }, { name: `${board.name}榜`, path }],
+          ? [{ name: "Ranking de modelos", path: "/leaderboard" }]
+          : [{ name: "Ranking de modelos", path: "/leaderboard" }, { name: `${board.name}ranking`, path }],
       ),
     ],
   });
@@ -66,9 +66,9 @@ export default function LeaderboardPage() {
       <div className="mt-3 flex flex-col gap-1 lg:flex-row lg:items-center lg:justify-between">
         <p className="text-[13.5px] text-ink-2">{board.description}</p>
         <p className="num text-[12px] text-ink-4">
-          {board.sourceCount} 项评测<span className="mx-2">·</span>
-          {board.operatorCount} 家机构<span className="mx-2">·</span>
-          {shortStamp(run.generatedAt)} 更新
+          {board.sourceCount} avaliações <span className="mx-2">·</span>
+          {board.operatorCount} instituições <span className="mx-2">·</span>
+          {shortStamp(run.generatedAt)} Atualizado
         </p>
       </div>
 
@@ -77,26 +77,26 @@ export default function LeaderboardPage() {
       <section className="card mt-3 overflow-hidden" aria-labelledby="lb-board-title">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3 lg:px-[22px]">
           <h2 id="lb-board-title" className="text-[16px] font-bold text-ink">
-            {board.key === "overall" ? "综合榜" : `${board.name}榜`}
-            <span className="mono ml-2 text-[11px] font-normal tracking-wide text-ink-4">{filtered ? `${shown.length} 个模型` : `TOP ${entries.length}`}</span>
+            {board.key === "overall" ? "Ranking geral" : `${board.name}ranking`}
+            <span className="mono ml-2 text-[11px] font-normal tracking-wide text-ink-4">{filtered ? `${shown.length} modelos` : `TOP ${entries.length}`}</span>
           </h2>
           <PillToggles
-            label="筛选模型"
-            items={[{ key: "domestic", label: "国产厂商" }, { key: "open-weights", label: "开放权重" }]}
+            label="Filtrar modelos"
+            items={[{ key: "domestic", label: "Fabricantes chineses" }, { key: "open-weights", label: "Pesos abertos" }]}
             selected={filters}
             onChange={setFilters}
           />
         </div>
-        {shown.length ? <BoardTable entries={shown} board={board.key} /> : <p role="status" className="border-t border-line px-5 py-10 text-center text-[14px] text-ink-3">当前榜单暂无符合条件的模型。</p>}
+        {shown.length ? <BoardTable entries={shown} board={board.key} /> : <p role="status" className="border-t border-line px-5 py-10 text-center text-[14px] text-ink-3">Nenhum modelo corresponde aos filtros atuais.</p>}
         <div className="border-t border-line px-4 py-3 text-[12px] leading-relaxed text-ink-4 lg:px-[22px]">
           {!filtered && pending.length > 0 && <p className="mb-1 text-ink-3">
-            综合榜前十中暂未进入{board.name}榜：{pending.map((p, i) => <span key={p.model.slug}>
-              {i > 0 && "、"}<Link to={`/leaderboard/${p.model.slug}`} className="font-medium text-ink-2 hover:text-accent">{p.model.name}</Link>（已有 {p.sources} 项{board.name}评测）
-            </span>)}。分类榜只比较测过同类评测的模型。
+            Entre os dez primeiros do ranking geral, ainda não aparecem no ranking de {board.name}:{pending.map((p, i) => <span key={p.model.slug}>
+              {i > 0 && "、"}<Link to={`/leaderboard/${p.model.slug}`} className="font-medium text-ink-2 hover:text-accent">{p.model.name}</Link>(com {p.sources} avaliações de {board.name})
+            </span>)}. Os rankings por categoria comparam somente modelos avaliados na mesma categoria.
           </p>}
-          <p>按多项公开评测的共同证据排名。每个榜单或筛选结果最多展示 30 个模型，筛选后保留原榜名次与分数。</p>
-          {filtered && <p>国产厂商按模型开发方归属筛选，不代表所有版本均可在国内直接使用。开放权重仅收录已核验的官方权重，使用许可与部署要求请查看权重页面。</p>}
-          <p>共识指数不是正确率；同分仍按共同证据确定的名次展示。</p>
+          <p>Ordenado pela evidência compartilhada de avaliações públicas. Cada ranking ou filtro exibe até 30 modelos, mantendo posições e índices originais.</p>
+          {filtered && <p>O filtro de fabricantes chineses considera o desenvolvedor do modelo e não garante disponibilidade de todas as versões na China. Pesos abertos incluem somente versões oficiais verificadas; consulte licenças e requisitos nas páginas dos pesos.</p>}
+          <p>O índice de consenso não é uma taxa de acerto. Empates de índice mantêm a ordem determinada pela evidência compartilhada.</p>
         </div>
       </section>
 
@@ -104,17 +104,17 @@ export default function LeaderboardPage() {
         <section className="card p-5">
           <h2 className="flex items-center gap-1.5 text-[14px] font-semibold text-ink">
             <IconInfo size={16} className="text-accent" />
-            如何看这张榜
+            Como interpretar o ranking
           </h2>
-          <p className="mt-2 text-[13px] leading-relaxed text-ink-3">{board.howToRead}价格不参与排名，缺测不记零分，指数不是正确率。</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-ink-3">{board.howToRead} Preços não alteram a ordem; avaliações ausentes não valem zero; o índice não é uma taxa de acerto.</p>
           <Link to="/leaderboard/rules" className="mt-2.5 inline-flex items-center gap-1 text-[12.5px] font-medium text-accent hover:text-accent-ink">
-            了解计算方法 →
+            Conheça o método →
           </Link>
         </section>
         <section className="card p-5">
-          <h2 className="text-[14px] font-semibold text-ink">关于价格</h2>
+          <h2 className="text-[14px] font-semibold text-ink">Sobre os preços</h2>
           <p className="mt-2 text-[13px] leading-relaxed text-ink-3">
-            API 价格来自厂商官网，按每百万 Token 展示。{run.fx ? `美元报价按 ${run.fx.asOf} 汇率折算成人民币。` : ""}缓存价格指命中后的输入价格，缓存写入、存储及订阅费用另计。
+            Preços das APIs obtidos nos sites dos fabricantes, por milhão de tokens.{run.fx ? `Cotações em dólares convertidas pela taxa de ${run.fx.asOf} para yuan chinês.` : ""} O preço de cache considera a entrada após um acerto de cache. Gravação, armazenamento e assinaturas são cobrados separadamente.
           </p>
         </section>
       </div>

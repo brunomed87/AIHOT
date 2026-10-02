@@ -55,7 +55,7 @@ export const artificialAnalysis: Fetcher = {
       sourceKey: "artificial-analysis",
       sourceName: "Artificial Analysis Intelligence Index",
       sourceUrl: "https://artificialanalysis.ai/api/v2/language/models/free",
-      license: "API 数据展示或分享须显著署名；再分发权与定制条款须另行取得并遵守 Terms of Use",
+      license: "Exibição ou compartilhamento de dados da API exige crédito destacado. Direitos de redistribuição e termos específicos precisam ser obtidos separadamente e respeitar os termos de uso",
       attributionUrl: "https://artificialanalysis.ai/data-api/docs",
       publishedAt: null,
       rows,

@@ -97,7 +97,7 @@ export const vals: Fetcher = {
       sourceKey: "vals-finance-agent",
       sourceName: "Vals Finance Agent",
       sourceUrl: PAGE,
-      license: "官方公开结果；公开再展示保留官方署名，完整再分发授权仍以 Vals 条款为准",
+      license: "Resultados oficiais públicos; exibição pública preserva créditos oficiais. Redistribuição integral continua sujeita aos termos do Vals",
       attributionUrl: PAGE,
       publishedAt,
       rows,

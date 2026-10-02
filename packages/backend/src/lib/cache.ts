@@ -44,7 +44,7 @@ export function cached<T>(load: () => Promise<T>, opts: { freshMs: number; maxSt
         return Promise.resolve(value.data);
       }
       return refresh().then((data) => {
-        // 加入旧的在途读取时，它的截止可能已早于本次请求；重新读取，不延长旧快照。
+        // Ao compartilhar leitura antiga em andamento, verificar se seu corte já passou; reler sem prolongar retrato antigo.
         return expired(data, now) ? refresh() : data;
       });
     },

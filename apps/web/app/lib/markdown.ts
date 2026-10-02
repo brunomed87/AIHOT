@@ -85,7 +85,7 @@ export function renderMarkdown(md: string, site: string): RenderedCopy {
     }
     const para: string[] = [];
     while (i < lines.length && lines[i]!.trim() && !/^(#{2,4}\s|\||>|\s*[-*]\s|\s*\d+[.．]\s)/.test(lines[i]!)) para.push(lines[i++]!.trim());
-    html.push(`<p>${inline(para.join(""), site)}</p>`);
+    html.push(`<p>${inline(para.join(" "), site)}</p>`);
   }
   return { html: html.join("\n"), outline };
 }
@@ -97,17 +97,14 @@ export interface CopyDocument {
   body: string;
 }
 
-/**
- * Splits a page copy file (industry/pages/) into its page parts: the first heading (title), the meta table,
- * the page-top statement (页首说明) and the verbatim body starting at the first "## " section.
- */
+/** Separa página institucional em título, tabela de metadados, apresentação inicial e corpo a partir da primeira seção ##. */
 export function parseCopyFile(md: string, firstSection = /^## /m): CopyDocument {
   const title = (/^#\s+(.+)$/m.exec(md)?.[1] ?? "").replace(/（现行版）|（现网）/g, "").trim();
   const meta: Record<string, string> = {};
   for (const m of md.matchAll(/^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$/gm)) {
-    if (m[1] !== "项" && !/^-+$/.test(m[1]!)) meta[m[1]!] = m[2]!;
+    if (m[1] !== "Campo" && m[1] !== "avaliações de" && !/^-+$/.test(m[1]!)) meta[m[1]!] = m[2]!;
   }
-  const introMatch = /页首说明：\s*\n+((?:>.*\n?)+)/.exec(md);
+  const introMatch = /(?:Apresentação:|\u9875\u9996\u8bf4\u660e\uff1a)\s*\n+((?:>.*\n?)+)/.exec(md);
   const intro = introMatch ? introMatch[1]!.replace(/^>\s?/gm, "").replace(/\n/g, "").trim() : null;
   const start = md.search(firstSection);
   return { title, meta, intro, body: start >= 0 ? md.slice(start) : md };

@@ -5,7 +5,7 @@ import { configurationOf } from "../configuration.ts";
 import type { Fetcher, ParsedRow } from "../types.ts";
 
 const BASE = "https://maker.taptap.cn/leaderboard/data";
-const CONTRIBUTOR = "来源的 contributor 别名未对应到已核实的公开模型。";
+const CONTRIBUTOR = "O apelido contributor da fonte não corresponde a um modelo público verificado.";
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 interface Row {
@@ -48,7 +48,7 @@ export const taptap: Fetcher = {
       sourceKey: "taptap-maker",
       sourceName: "TapTap Maker Benchmark",
       sourceUrl: `${BASE}/latest.json`,
-      license: "官方公开结果；公开再展示保留官方署名，完整再分发授权仍以易玩／TapTap 条款为准",
+      license: "Resultados oficiais públicos; preserve os créditos. Redistribuição integral segue os termos do TapTap",
       attributionUrl: "https://maker.taptap.cn/leaderboard/",
       publishedAt: `${d.edition.published_at}T00:00:00.000Z`,
       rows,

@@ -41,9 +41,9 @@ function safe<A>(tool: string, run: (args: A) => Promise<ReturnType<typeof ok> |
     try {
       return await run(args);
     } catch (error) {
-      if (error instanceof SearchBusyError) return fail("busy", "搜索繁忙，请稍后再试。");
+      if (error instanceof SearchBusyError) return fail("busy", "Busca ocupada. Tente novamente mais tarde.");
       console.error(JSON.stringify({ level: "error", msg: "mcp tool failed", tool, error: String(error).slice(0, 500) }));
-      return fail("internal_error", `${SITE.name} 暂时无法完成这个请求，请稍后再试。`);
+      return fail("internal_error", `${SITE.name} Solicitação temporariamente indisponível. Tente mais tarde.`);
     }
   };
 }
@@ -118,15 +118,15 @@ export function buildMcpServer(): McpServer {
     },
     safe(T.search, async (args: z.infer<typeof SEARCH_INPUT>) => {
       const q = args.q.trim();
-      if ([...q].length < 2) return fail("invalid_request", "搜索词需要 2 到 200 个字符。");
+      if ([...q].length < 2) return fail("invalid_request", "A busca exige entre 2 e 200 caracteres.");
       const query = (mode: "selected" | "all") => ({ mode, window: args.window, by: "timeline", category: args.category ?? null, q, limit: args.limit, cursor: null } as const);
       let res = await recent(`items:${JSON.stringify(query("selected"))}`, () => v1Items(query("selected")));
-      let scope = "精选";
+      let scope = "Destaques";
       if (res.items.length === 0) {
         res = await recent(`items:${JSON.stringify(query("all"))}`, () => v1Items(query("all")));
-        scope = "全部公开（精选无结果，已扩展）";
+        scope = "Todo o conteúdo público: nenhum selecionado encontrado, consulta ampliada";
       }
-      return ok(searchAnswer({ res, expanded: scope !== "精选" }, { q, window: args.window, category: args.category ?? null }), { schemaVersion: 1, query: res.query, items: res.items });
+      return ok(searchAnswer({ res, expanded: scope !== "Destaques" }, { q, window: args.window, category: args.category ?? null }), { schemaVersion: 1, query: res.query, items: res.items });
     }),
   );
 
@@ -155,7 +155,7 @@ export function buildMcpServer(): McpServer {
       let found = await resolveStory(args.public_id.trim());
       if (found.kind === "merged") found = await resolveStory(found.target);
       const body = found.kind === "found" ? await v1Story(found.storyId) : null;
-      if (!body) return fail("not_found", `没有这个公开事件；只使用 ${T.hot} 返回的 public_id。`);
+      if (!body) return fail("not_found", `Acontecimento público não encontrado. Use somente ${T.hot} e o public_id retornado.`);
       const story = { ...body.story, reports: body.story.reports.slice(0, args.report_limit) };
       return ok(storyAnswer(body.story, args.report_limit, "mcp"), { schemaVersion: 1, story });
     }),
@@ -169,9 +169,9 @@ export function buildMcpServer(): McpServer {
       annotations: ANNOTATIONS,
     },
     safe(T.daily, async (args: z.infer<typeof DAILY_INPUT>) => {
-      if (args.date && !isValidDate(args.date)) return fail("invalid_request", `${args.date} 不是有效日期。`);
+      if (args.date && !isValidDate(args.date)) return fail("invalid_request", `${args.date} Data inválida.`);
       const res = await recent(`daily:${args.date ?? "latest"}`, () => v1Daily(args.date ?? "latest"));
-      if (!res) return fail("not_found", args.date ? `没有 ${args.date} 的公开${withSubject("日报")}。` : `还没有公开的${withSubject("日报")}。`);
+      if (!res) return fail("not_found", args.date ? `Não existe ${args.date} e seu relatório público de${withSubject("Relatório diário")}.` : `Ainda não há publicação de${withSubject("Relatório diário")}.`);
       const r = res.report;
       return ok(dailyAnswer(r, "mcp"), res);
     }),
@@ -196,10 +196,10 @@ export function buildMcpServer(): McpServer {
 
 function hostnameFromAuthority(authority: string | string[] | undefined): string | null {
   if (typeof authority !== "string") return null;
-  // 先限定单一主机和可选端口，避免 URL 将用户信息、路径或多值头当作合法地址。
+  // Restrinja a um host e porta opcional, evitando que URL aceite usuário, caminho ou múltiplos cabeçalhos como endereço.
   const match = /^(\[[0-9a-f:.]+\]|[a-z0-9._-]+)(?::([0-9]+))?$/i.exec(authority);
   if (!match || match[0] !== authority || (match[2] !== undefined && Number(match[2]) > 65535)) return null;
-  // 普通主机按原始拼写匹配，既保留显式配置的别名，也不让别名自动命中回环白名单。
+  // Compare o host na grafia original; preserve aliases explícitos sem incluí-los automaticamente na lista de loopback.
   const hostname = match[1]!.toLowerCase();
   if (!hostname.startsWith("[")) return hostname;
   try {
@@ -246,7 +246,7 @@ export function registerMcp(app: FastifyInstance) {
   const serve = async (req: FastifyRequest, reply: FastifyReply) => {
     reply.header("Cache-Control", "no-store");
     const authorityHeader = req.headers["x-forwarded-host"] === undefined ? "host" : "x-forwarded-host";
-    // Node 会丢弃重复 Host 的后续值；只统计当前生效的原始字段，保留转发头优先级。
+    // Node descarta valores Host repetidos. Conte somente campos originais efetivos e preserve prioridade do encaminhamento.
     const authorityCount = req.raw.rawHeaders.filter((name, index) => index % 2 === 0 && name.toLowerCase() === authorityHeader).length;
     const host = authorityCount === 1 ? hostnameFromAuthority(req.headers[authorityHeader]) : null;
     if (host === null || !ALLOWED_HOSTS.has(host)) return reply.code(421).type("application/json").send({ error: "misdirected_request" });
@@ -283,7 +283,7 @@ export function registerMcp(app: FastifyInstance) {
       return reply.send(res.body);
     } catch (error) {
       req.log.error({ err: error }, "mcp error");
-      return reply.code(500).type("application/json").send({ jsonrpc: "2.0", error: { code: -32603, message: "Internal error" }, id: null });
+      return reply.code(500).type("application/json").send({ jsonrpc: "2.0", error: { code: -32603, message: "Erro interno" }, id: null });
     }
   };
 
@@ -298,6 +298,6 @@ export function registerMcp(app: FastifyInstance) {
     method: ["PUT", "PATCH"],
     url: "/api/mcp",
     handler: async (_req, reply) =>
-      reply.code(405).header("Allow", CORS_METHODS).header("Cache-Control", "no-store").type("application/json").send({ jsonrpc: "2.0", error: { code: -32000, message: "Method not allowed" }, id: null }),
+      reply.code(405).header("Allow", CORS_METHODS).header("Cache-Control", "no-store").type("application/json").send({ jsonrpc: "2.0", error: { code: -32000, message: "Método não permitido" }, id: null }),
   });
 }

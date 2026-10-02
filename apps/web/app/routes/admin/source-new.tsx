@@ -8,7 +8,7 @@ import { bj } from "../../features/admin/format";
 import { KIND_LABEL, MODE_LABEL, TIER_LABEL } from "../../features/admin/labels";
 import { AdminPage, Button, Card, Empty, Field, Input, Select, Textarea } from "../../features/admin/ui";
 
-export const meta: Route.MetaFunction = () => [{ title: `新建信源 · ${SITE.name} 后台` }];
+export const meta: Route.MetaFunction = () => [{ title: `Nova fonte · ${SITE.name} Painel administrativo` }];
 
 const TEMPLATES: Record<string, Record<string, unknown>> = {
   rss: { feedUrl: "https://example.com/feed.xml" },
@@ -34,23 +34,23 @@ export default function NewSource() {
       setError(null);
       return JSON.parse(config) as Record<string, unknown>;
     } catch (e) {
-      setError(`配置不是合法 JSON：${(e as Error).message}`);
+      setError(`Configuração JSON inválida:${(e as Error).message}`);
       return null;
     }
   };
 
   return (
-    <AdminPage title="新建信源" subtitle="先判重、先预览：优先 RSS/JSON 等稳定协议；首抓成功且有真实条目才算接入完成。一手身份要有运营主体或官方交叉链接证据。">
+    <AdminPage title="Nova fonte" subtitle="Verifique duplicatas e prévia antes de criar. Prefira RSS ou JSON estáveis. A integração só é concluída após uma coleta com itens reais. Primeira mão exige comprovação da instituição responsável ou links oficiais cruzados.">
       <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
-        <Card title="信源定义">
+        <Card title="Definição da fonte">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="ID" hint="小写字母、数字和连字符，创建后不可改">
+            <Field label="ID" hint="Letras minúsculas, números e hífens; não pode ser alterado depois de criar">
               <Input value={form.id} onChange={(e) => setForm({ ...form, id: e.target.value.toLowerCase() })} placeholder="openai-blog" />
             </Field>
-            <Field label="名称">
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="OpenAI 博客" />
+            <Field label="Nome">
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Blog da OpenAI" />
             </Field>
-            <Field label="类型">
+            <Field label="Tipo">
               <Select
                 value={form.kind}
                 onChange={(e) => {
@@ -62,27 +62,27 @@ export default function NewSource() {
                 {Object.entries(KIND_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </Select>
             </Field>
-            <Field label="采集间隔（分钟）">
+            <Field label="Intervalo de coleta em minutos">
               <Input type="number" min={1} max={1440} value={form.interval_minutes} onChange={(e) => setForm({ ...form, interval_minutes: Number(e.target.value) })} />
             </Field>
-            <Field label="参与方式">
+            <Field label="Forma de participação">
               <Select value={form.participation_mode} onChange={(e) => setForm({ ...form, participation_mode: e.target.value })}>
                 {Object.entries(MODE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </Select>
             </Field>
-            <Field label="等级">
+            <Field label="Nível">
               <Select value={form.tier} onChange={(e) => setForm({ ...form, tier: e.target.value })}>
                 {Object.entries(TIER_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </Select>
             </Field>
-            <Field label="标签（逗号分隔）">
+            <Field label="Marcadores separados por vírgula">
               <Input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
             </Field>
             <div className="flex flex-col justify-end gap-2 text-[13px] text-ink-2">
               {([
-                ["first_party", "一手信源"],
-                ["site_fulltext", "站内可展示全文"],
-                ["syndicate_fulltext", "对外接口可带全文"],
+                ["first_party", "Fonte de primeira mão"],
+                ["site_fulltext", "Permitir texto completo no site"],
+                ["syndicate_fulltext", "Permitir texto completo nas interfaces externas"],
               ] as const).map(([k, label]) => (
                 <label key={k} className="inline-flex items-center gap-2">
                   <input type="checkbox" className="size-4 accent-[var(--accent)]" checked={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.checked })} />
@@ -92,14 +92,14 @@ export default function NewSource() {
             </div>
           </div>
           <div className="mt-4">
-            <Field label="采集配置（JSON）">
+            <Field label="Configuração da coleta (JSON)">
               <Textarea className="font-mono !text-[12px]" rows={10} value={config} onChange={(e) => setConfig(e.target.value)} spellCheck={false} />
             </Field>
             {error && <div className="mt-1 text-[12.5px] text-hot">{error}</div>}
           </div>
           {duplicate && (
             <div className="mt-4 rounded-card bg-amber/10 px-4 py-3 text-[13px] text-ink-2 ring-1 ring-amber/25">
-              这个地址已经在监控：<Link className="font-medium text-accent" to={`/admin/sources/${encodeURIComponent(duplicate.id)}`}>{duplicate.name}</Link>（{duplicate.id}）。没有新建。
+              Este endereço já está monitorado:<Link className="font-medium text-accent" to={`/admin/sources/${encodeURIComponent(duplicate.id)}`}>{duplicate.name}</Link>({duplicate.id}). Nenhuma fonte foi criada.
             </div>
           )}
           <div className="mt-5 flex justify-end gap-2">
@@ -112,7 +112,7 @@ export default function NewSource() {
                 if (r) setPreview(r);
               }}
             >
-              预览抓取
+              Prévia da coleta
             </Button>
             <Button
               tone="primary"
@@ -132,25 +132,25 @@ export default function NewSource() {
                 else setDuplicate(r.duplicate);
               }}
             >
-              创建
+              Criar
             </Button>
           </div>
         </Card>
-        <Card title={preview ? `预览：${preview.count} 条（${preview.ms}ms）` : "预览"}>
+        <Card title={preview ? `Prévia:${preview.count} itens (${preview.ms}ms)` : "Prévia"}>
           {!preview ? (
-            <Empty>填好配置后点“预览抓取”，这里显示将会采集到的条目（不入库）。</Empty>
+            <Empty>Preencha a configuração e selecione Prévia da coleta. Os itens previstos aparecerão aqui sem gravação no banco.</Empty>
           ) : preview.items.length ? (
             <ul className="space-y-3">
               {preview.items.map((i) => (
                 <li key={i.url} className="text-[13px]">
                   <a href={i.url} target="_blank" rel="noreferrer" className="font-medium text-ink hover:text-accent">{i.title}</a>
-                  <div className="text-[12px] text-ink-4">{i.publishedAt ? bj(i.publishedAt, true) : "无发布时间"}</div>
+                  <div className="text-[12px] text-ink-4">{i.publishedAt ? bj(i.publishedAt, true) : "Sem data de publicação"}</div>
                   {i.excerpt && <div className="mt-0.5 line-clamp-2 text-[12.5px] text-ink-3">{i.excerpt}</div>}
                 </li>
               ))}
             </ul>
           ) : (
-            <Empty>没有抓到条目。</Empty>
+            <Empty>Nenhum item coletado.</Empty>
           )}
         </Card>
       </div>

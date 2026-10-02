@@ -89,7 +89,7 @@ export const epoch: Fetcher = {
         sourceKey: b.key,
         sourceName: b.name,
         sourceUrl: ARCHIVE,
-        license: "CC BY 4.0 · Epoch AI 自行评测数据",
+        license: "CC BY 4.0 · dados de avaliações realizadas pelo Epoch AI",
         attributionUrl: b.page,
         publishedAt: latest,
         rows,

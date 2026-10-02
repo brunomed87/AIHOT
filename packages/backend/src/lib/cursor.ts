@@ -8,14 +8,14 @@ export function encodeCursor(prefix: string, payload: Record<string, unknown>): 
 }
 
 export function decodeCursor<T extends Record<string, unknown>>(prefix: string, cursor: string): T {
-  if (!cursor.startsWith(`${prefix}.`)) throw new InvalidCursorError("unknown cursor format");
+  if (!cursor.startsWith(`${prefix}.`)) throw new InvalidCursorError("Formato de cursor desconhecido");
   try {
     const json = Buffer.from(cursor.slice(prefix.length + 1), "base64url").toString("utf8");
     const value = JSON.parse(json);
     if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("not an object");
     return value as T;
   } catch {
-    throw new InvalidCursorError("malformed cursor");
+    throw new InvalidCursorError("Cursor malformado");
   }
 }
 

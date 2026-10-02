@@ -1,4 +1,4 @@
-// 用本地模型与显式门闩复现旧上下文和异步回写；不连接真实模型或依赖sleep排序。
+// Modelo local e barreiras explícitas reproduzem contexto antigo e gravação assíncrona, sem modelo real ou ordem por espera.
 import { gate, stub } from "./setup.ts";
 import { pair, story, source, article, sourceVersion, cleanup, fixtureTag, trackStory } from "./events-oss-withdrawal-fixture.ts";
 import assert from "node:assert/strict";
@@ -42,7 +42,7 @@ async function waitForCall(asked: { promise: Promise<void> }, run: Promise<unkno
   await Promise.race([asked.promise, run.then(() => assert.fail("未通过受控模型请求，不能算作竞态复现"))]);
 }
 
-test("撤回后重建不把旧事件标题或综述重新送模型", async () => {
+test("Reconstrução após retirada não envia título ou síntese antigos ao modelo", async () => {
   for (const origin of ["model", "manual", "replay"] as const) {
     const p = await pair(`prompt-${origin}`, { origin });
     await remove(p.a);
@@ -75,7 +75,7 @@ for (const change of ["withdraw", "source", "correction"]) {
   });
 }
 
-test("生成只用当前公开可用报道，零输入不调用模型", async () => {
+test("Geração usa relatos públicos atuais e não chama modelo sem entradas", async () => {
   const p = await pair("input-gates", { eligibleB: false });
   const pending = await article(await source(), "尚未释放的输入", { pending: true });
   await sql`INSERT INTO fact_articles(fact_id,article_id,role) VALUES(${p.factId},${pending},'report')`;
@@ -86,7 +86,7 @@ test("生成只用当前公开可用报道，零输入不调用模型", async ()
   assert.ok(await loadStoryDetail(p.id), "非eligible的合法历史稿仍有事件页面");
 });
 
-test("输入缩减和旧无provenance版本强制重写，纯新增可保留已验证上下文", async () => {
+test("Redução de entradas ou ausência de origem verificável exige reescrita; acréscimos preservam contexto válido", async () => {
   const p = await pair("provenance");
   answer = () => safe;
   assert.equal((await composeStoryDigest(p.id)).updated, true);
@@ -103,7 +103,7 @@ test("输入缩减和旧无provenance版本强制重写，纯新增可保留已�
   assert.ok(!prompts.at(-1)!.includes(p.marker));
 });
 
-test("超过40篇时分别记录全部资格guard和实际写作上下文", async () => {
+test("Mais de quarenta relatos registram elegibilidade completa e contexto realmente usado", async () => {
   const src = await source();
   const ids: string[] = [];
   for (let i = 0; i < 42; i++) ids.push(await article(src, `有序报道${String(i).padStart(2, "0")}`));
@@ -118,7 +118,7 @@ test("超过40篇时分别记录全部资格guard和实际写作上下文", asyn
   assert.equal(provider.hits(), hits);
 });
 
-test("两次不同输入的并发生成只提交当前世代", async () => {
+test("Gerações concorrentes com entradas distintas só confirmam geração atual", async () => {
   const p = await pair("concurrent");
   const firstAsked = gate(); const secondAsked = gate(); const firstHold = gate(); const secondHold = gate();
   let calls = 0;
@@ -143,7 +143,7 @@ test("两次不同输入的并发生成只提交当前世代", async () => {
   assert.equal(count!.n, 1);
 });
 
-test("撤回发生在首次归组回答之前，晚到结果不能新建可复活的旧标题", async () => {
+test("Retirada antes do primeiro agrupamento impede resposta tardia de recriar título antigo", async () => {
   const shared = "某机构发布新的人工智能模型并介绍测试结果";
   const seed = await article(await source(), shared);
   await story([{ id: seed }], shared);
@@ -152,7 +152,7 @@ test("撤回发生在首次归组回答之前，晚到结果不能新建可复�
   const asked = gate(); const hold = gate();
   answer = async (user) => {
     asked.open(); await hold.promise;
-    return { query: "模型发布", decisions: [...user.matchAll(/【候选 (C\d+)】/g)].map(m => ({ id: m[1], relation: "UNRELATED", confidence: 0.99, note: "不同事件" })) };
+    return { query: "Lançamento de modelos", decisions: [...user.matchAll(/[CANDIDATO (C\d+)]/g)].map(m => ({ id: m[1], relation: "UNRELATED", confidence: 0.99, note: "不同事件" })) };
   };
   const run = groupArticle(a);
   await waitForCall(asked, run);
@@ -164,12 +164,12 @@ test("撤回发生在首次归组回答之前，晚到结果不能新建可复�
 });
 
 
-test("归组途中更正后旧结果丢弃，下一次只用当前公开文字", async () => {
+test("Correção durante agrupamento descarta resposta antiga; próxima usa textos públicos atuais", async () => {
   const shared = "某机构发布新的人工智能模型并介绍测试结果";
   const marker = `待更正主张${fixtureTag}`;
   const a = await article(await source(), shared + marker);
   const asked = gate(); const hold = gate();
-  answer = async (user) => { asked.open(); await hold.promise; return { query: "发布", decisions: [...user.matchAll(/【候选 (C\d+)】/g)].map(m => ({ id: m[1], relation: "UNRELATED", confidence: 0.99, note: "不同事件" })) }; };
+  answer = async (user) => { asked.open(); await hold.promise; return { query: "Lançamento", decisions: [...user.matchAll(/[CANDIDATO (C\d+)]/g)].map(m => ({ id: m[1], relation: "UNRELATED", confidence: 0.99, note: "不同事件" })) }; };
   const run = groupArticle(a);
   await waitForCall(asked, run);
   try { await overrideFields(a, { fields: { title: shared + "安全更正", summary: "安全更正后的摘要" }, reason: "测试", version: 0 }, "test"); }
@@ -183,7 +183,7 @@ test("归组途中更正后旧结果丢弃，下一次只用当前公开文字",
   assert.ok(!JSON.stringify(await loadStoryDetail(retry.storyId!)).includes(marker));
 });
 
-test("已撤回的排队归组不再询问模型或建立事实", async () => {
+test("Agrupamento enfileirado de material retirado não chama modelo nem cria fato", async () => {
   const a = await article(await source(), "某机构发布新的人工智能模型并介绍测试结果 已撤回");
   await remove(a);
   const hits = provider.hits();
@@ -192,7 +192,7 @@ test("已撤回的排队归组不再询问模型或建立事实", async () => {
   assert.equal((await sql`SELECT fact_id FROM fact_articles WHERE article_id=${a}`).length, 0);
 });
 
-test("合并改变世代后旧事件模型结果不能写回", async () => {
+test("Mesclagem muda geração e bloqueia resultado de modelo antigo", async () => {
   const p = await pair("merge-race");
   const target = await pair("merge-target");
   const asked = gate(); const hold = gate();
@@ -206,7 +206,7 @@ test("合并改变世代后旧事件模型结果不能写回", async () => {
 });
 
 
-test("已移走成员的旧综述依赖仍在撤回时失效", async () => {
+test("Dependência de membro removido invalida síntese antiga durante retirada", async () => {
   const p = await pair("detached-dependency");
   answer = () => ({ title: p.marker, digest: p.marker + "形成的旧综述", latest: p.marker });
   await composeStoryDigest(p.id);

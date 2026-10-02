@@ -16,14 +16,14 @@ export default function LeaderboardFrame() {
       <header className="flex flex-col gap-3 pb-4 pt-5 sm:flex-row sm:items-end sm:justify-between lg:pt-1">
         <div>
           <div className="mono text-[11px] font-semibold tracking-[0.16em] text-accent">{SITE.name.toUpperCase()} LEADERBOARD</div>
-          <h1 className="mt-1.5 text-[24px] font-semibold leading-[1.3] text-ink">AI 模型排行榜</h1>
+          <h1 className="mt-1.5 text-[24px] font-semibold leading-[1.3] text-ink">Ranking de modelos de IA</h1>
         </div>
         <div className="flex gap-2">
           <Link to="/leaderboard/sources" className={chip}>
-            评测来源 <IconArrowUpRight size={13} />
+            Fontes de avaliação <IconArrowUpRight size={13} />
           </Link>
           <Link to="/leaderboard/rules" className={chip}>
-            排名怎么算 <IconArrowUpRight size={13} />
+            Como o ranking é calculado <IconArrowUpRight size={13} />
           </Link>
         </div>
       </header>

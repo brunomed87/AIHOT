@@ -1,4 +1,4 @@
-// 撤回一篇报道不隐藏仍合法的其他报道，也不能留下可重新公开的事件副本。
+// Retirar um relato mantém os outros permitidos e não deixa cópia antiga republicável do acontecimento.
 import { pair, story, source, article, rank, sourceVersion, cleanup } from "./events-oss-withdrawal-fixture.ts";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -33,7 +33,7 @@ async function cleanStory(p: Awaited<ReturnType<typeof pair>>) {
   assert.ok(!JSON.stringify(mcp).includes(p.marker));
 }
 
-test("主次事件和预热出口同步去掉撤回主张，剩余报道不被隐藏", async () => {
+test("Acontecimentos principais, secundários e saídas em cache removem alegação retirada sem ocultar relatos restantes", async () => {
   const p = await pair("all-exits", { origin: "manual" });
   const c = await article(await source(), "另一个合法公开报道");
   const secondary = await story([{ id: p.a, role: "mention" }, { id: c }], p.marker, "replay");
@@ -60,8 +60,8 @@ test("主次事件和预热出口同步去掉撤回主张，剩余报道不被�
   const changed = await get(`/api/site/stories/${p.publicId}`, String(before.headers.etag));
   assert.equal(changed.statusCode, 200);
   const detail = (await loadStoryDetail(p.id))!;
-  const card = { kicker: detail.whyHot.rank ? `热点第 ${detail.whyHot.rank} · 事件` : "事件", title: detail.title,
-    subtitle: detail.latest ?? detail.digest, meta: `${detail.sourceCount} 个来源 · ${detail.reportCount} 篇报道`, accent: detail.whyHot.rank ? "hot" as const : "teal" as const };
+  const card = { kicker: detail.whyHot.rank ? `Posição por repercussão: ${detail.whyHot.rank} · acontecimento` : "Acontecimento", title: detail.title,
+    subtitle: detail.latest ?? detail.digest, meta: `${detail.sourceCount} fontes · ${detail.reportCount} reportagens`, accent: detail.whyHot.rank ? "hot" as const : "teal" as const };
   assert.ok(!JSON.stringify(card).includes(p.marker));
   const og = await get(`/og/stories/${p.publicId}.png`);
   assert.equal(og.headers.etag, `"og-${ogEtag(card)}"`);
@@ -70,7 +70,7 @@ test("主次事件和预热出口同步去掉撤回主张，剩余报道不被�
   assert.ok(audit!.n > 0, "旧人工文字保留在私有审计，而非被永久销毁");
 });
 
-test("summary-only退出事件输入，但自身合法摘要页仍存在", async () => {
+test("Somente resumo sai das entradas de síntese mas mantém sua página permitida", async () => {
   const p = await pair("summary-only");
   await withdraw(p.a, "summary-only");
   await cleanStory(p);
@@ -80,7 +80,7 @@ test("summary-only退出事件输入，但自身合法摘要页仍存在", async
   assert.equal(own.json().readingMode, "summary-only");
 });
 
-test("来源退出editorial在后台republish之前已安全", async () => {
+test("Fonte fora de editorial torna-se segura antes da republicação administrativa", async () => {
   for (const mode of ["isolated", "hot_signal"]) {
     const p = await pair(mode);
     await updateSource(p.sourceA, { patch: { participation_mode: mode }, version: await sourceVersion(p.sourceA) }, "test");
@@ -90,7 +90,7 @@ test("来源退出editorial在后台republish之前已安全", async () => {
   }
 });
 
-test("只撤全文许可或暂停不改变仍公开摘要的事件文字", async () => {
+test("Retirar integral ou pausar fonte não modifica texto de acontecimento ainda público", async () => {
   const p = await pair("licence-control");
   const [before] = await sql`SELECT title,digest,summary,latest,version FROM stories WHERE id=${p.id}`;
   for (const patch of [{ site_fulltext: false }, { enabled: false }]) {
@@ -100,7 +100,7 @@ test("只撤全文许可或暂停不改变仍公开摘要的事件文字", async
   assert.equal((await get(`/api/site/items/${p.a}`)).statusCode, 200);
 });
 
-test("更正清除旧事件主张；非eligible历史报道仍可维持事件页面", async () => {
+test("Correção limpa alegações antigas e relatos históricos permitidos mantêm página do acontecimento", async () => {
   const corrected = await pair("correction");
   await overrideFields(corrected.a, { fields: { title: "已更正的安全标题", summary: "已更正的安全摘要" }, reason: "测试更正", version: 0 }, "test");
   await cleanStory(corrected);
@@ -111,9 +111,9 @@ test("更正清除旧事件主张；非eligible历史报道仍可维持事件页
   assert.equal((await get(`/api/site/stories/${historical.publicId}`)).statusCode, 404);
 });
 
-test("重复和版本冲突不重新失效；队列写失败不能提交不安全撤回", async () => {
+test("Repetição e conflito não reinvalidam; falha na fila não confirma retirada insegura", async () => {
   const p = await pair("atomic");
-  // 只拒绝此事件的重建任务，保留事务原子性断言而不启动worker。
+  // Rejeita somente reconstrução deste acontecimento e preserva verificação de atomicidade sem iniciar worker.
   const constraint = "story_withdrawal_queue_failure";
   await sql`ALTER TABLE pgboss.job ADD CONSTRAINT ${sql(constraint)} CHECK (name <> 'events.digest' OR data->>'storyId' <> ${sql.unsafe("'" + p.id + "'")}) NOT VALID`;
   try {
@@ -121,7 +121,7 @@ test("重复和版本冲突不重新失效；队列写失败不能提交不安�
     const [state] = await sql`SELECT visibility FROM publications WHERE article_id=${p.a}`;
     assert.equal(state!.visibility, "public", "投影和事件失效应一起回滚");
   } finally { await sql`ALTER TABLE pgboss.job DROP CONSTRAINT ${sql(constraint)}`; }
-  // 旧接口可能先写override再投影；读取实际版本，不掩盖不成功的第一次操作。
+  // Interface antiga pode gravar correção antes da projeção; ler versão real sem esconder primeira falha.
   const [override] = await sql`SELECT version FROM editorial_overrides WHERE article_id=${p.a}`;
   await withdraw(p.a, "withdrawn", override?.version ?? 0);
   await cleanStory(p);
@@ -133,7 +133,7 @@ test("重复和版本冲突不重新失效；队列写失败不能提交不安�
 });
 
 
-test("同一事件两篇并发撤回不会死锁，也保留第三篇合法报道", async () => {
+test("Duas retiradas concorrentes não bloqueiam e preservam terceiro relato permitido", async () => {
   const p = await pair("concurrent-removal");
   const c = await article(await source(), "第三篇仍然合法的报道");
   await sql`INSERT INTO fact_articles(fact_id,article_id,role) VALUES(${p.factId},${c},'report')`;
@@ -146,11 +146,11 @@ test("同一事件两篇并发撤回不会死锁，也保留第三篇合法报�
 });
 
 
-test("兼容迁移修复升级前的旧坏状态，首次公开读取无需再次触发编辑", async () => {
+test("Migração compatível corrige estado antigo antes da primeira leitura pública", async () => {
   const cases = [];
   for (const kind of ["withdrawn", "summary-only", "isolated", "audit-detached"]) {
     const p = await pair(`upgrade-${kind}`, { origin: "replay" });
-    // 模拟旧版本已提交的状态，故意不调用新版发布或来源变更入口。
+    // Simula estado confirmado de versão antiga, sem usar publicação ou atualização de fonte atuais.
     if (kind === "isolated") await sql`UPDATE sources SET participation_mode='isolated' WHERE id=${p.sourceA}`;
     else await sql`UPDATE publications SET visibility=${kind === "audit-detached" ? "withdrawn" : kind} WHERE article_id=${p.a}`;
     if (kind === "audit-detached") {
@@ -189,7 +189,7 @@ for (const mode of ["isolated", "hot_signal"]) {
   });
 }
 
-test("无历史综述的人工事件先移走成员再撤回也不会遗失失效范围", async () => {
+test("Acontecimento manual sem síntese preserva alcance de invalidação após mover e retirar membro", async () => {
   const p = await pair("legacy-detach", { origin: "manual" });
   assert.equal((await sql`SELECT 1 FROM story_digests WHERE story_id=${p.id}`).length, 0);
   await detachFromFact(p.a, "测试移走", "test");
@@ -200,10 +200,10 @@ test("无历史综述的人工事件先移走成员再撤回也不会遗失失�
   assert.equal((await get(`/api/site/items/${p.a}`)).statusCode, 404);
 });
 
-test("历史稿自动重置归组后撤回不保留无历史事件副本", async () => {
+test("Retirada após reset de vínculo histórico não preserva cópia de acontecimento sem histórico", async () => {
   const p = await pair("legacy-reset", { origin: "replay" });
   assert.equal((await sql`SELECT 1 FROM story_digests WHERE story_id=${p.id}`).length, 0);
-  // 真实历史稿分支在清理旧归属后直接退出，整个用例不需要模型调用。
+  // Caminho histórico real termina após limpar vínculo antigo; caso dispensa modelos.
   await sql`UPDATE articles SET backfill=true,published_at=now()-interval '3 days' WHERE id=${p.a}`;
   assert.equal((await groupArticle(p.a, { force: true })).verdict, "historical");
   await cleanStory(p);

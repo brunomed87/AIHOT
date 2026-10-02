@@ -1,4 +1,4 @@
-// 事件派生文字的输入边界：权限变更与安全回退同事务提交，旧文字仅留在私有审计。
+// Limites de entrada do texto derivado: permissão e alternativa segura na mesma transação; texto anterior apenas em auditoria privada.
 import { audit } from "../audit.ts";
 import { storyReportCondition, listedCondition, evidenceCondition } from "../publication/scope.ts";
 import { sql, type Db } from "../db.ts";
@@ -22,7 +22,7 @@ export function digestInputsHash(reports: DigestReport[]): string {
     .map(r => [r.id, r.title, r.summary ?? "", r.source_name, r.first_party, r.at.toISOString()])));
 }
 
-// 合并会搬动fact归属；和失效共用短事务锁，避免查询旧归属后漏清存活事件。
+// Mesclagem muda vínculos de fatos. Compartilha bloqueio curto com invalidação para não deixar acontecimento sobrevivente com texto antigo.
 export async function lockStoryMembership(db: Db) {
   await db`SELECT pg_advisory_xact_lock(hashtext('story_content_membership'))`;
 }
@@ -30,7 +30,7 @@ export async function lockStoryMembership(db: Db) {
 export async function invalidateStoryInputs(db: Db, articleIds: string[], now = new Date(), removedFactIds: number[] = []): Promise<void> {
   if (!articleIds.length && !removedFactIds.length) return;
   await lockStoryMembership(db);
-  // 成员已移走时，旧综述仍可能保留其依赖；不能只看当前fact_articles。
+  // Síntese antiga pode depender de membro já removido; não consultar somente fact_articles atuais.
   const recorded = await db<{ story_id: number }[]>`
     SELECT story_id FROM (
       SELECT DISTINCT ON (story_id) story_id,article_ids FROM story_digests ORDER BY story_id,version DESC
@@ -47,20 +47,20 @@ export async function invalidateStoryInputs(db: Db, articleIds: string[], now = 
     SELECT id,title,summary,digest,latest,version,origin FROM stories
     WHERE id=ANY(${ids}::bigint[]) AND merged_into IS NULL ORDER BY id FOR UPDATE`;
   for (const story of stories) {
-    // 公开历史稿也能维持事件；模型输入在digestReports中另加eligible要求。
+    // Relatos históricos públicos sustentam acontecimentos; digestReports exige elegibilidade adicional para entrada do modelo.
     const reports = await db<Array<{ fact_id: number; title: string }>>`
       SELECT fa.fact_id,p.title FROM facts f JOIN fact_articles fa ON fa.fact_id=f.id
       JOIN publications p ON p.article_id=fa.article_id JOIN sources s ON s.id=p.source_id
       WHERE f.story_id=${story.id} AND ${storyReportCondition(now)} AND ${evidenceCondition()}
       ORDER BY p.first_party DESC,p.selected DESC,coalesce(p.published_at,p.discovered_at),p.article_id`;
-    const title = reports[0]?.title ?? "事件更新中";
+    const title = reports[0]?.title ?? "Acontecimento em atualização";
     const affected = facts.filter(f => f.story_id === story.id);
-    await audit("system", "story.inputs_invalidated", `story:${story.id}`, "公开报道权限或文字改变",
+    await audit("system", "story.inputs_invalidated", `story:${story.id}`, "Permissão pública ou texto da cobertura alterado",
       { ...story, facts: affected }, { title, version: story.version + 1 }, { db });
     await db`UPDATE stories SET title=${title},summary=NULL,digest=NULL,latest=NULL,digest_updated_at=NULL,
       version=version+1,updated_at=now() WHERE id=${story.id}`;
     for (const fact of affected) {
-      const safeTitle = reports.find(r => r.fact_id === fact.id)?.title ?? "事件更新中";
+      const safeTitle = reports.find(r => r.fact_id === fact.id)?.title ?? "Acontecimento em atualização";
       await db`UPDATE facts SET title=${safeTitle},subject=NULL,action=NULL,object=NULL,conditions=NULL,occurred_at=NULL,
         version=version+1,updated_at=now() WHERE id=${fact.id}`;
     }

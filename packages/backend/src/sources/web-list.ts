@@ -40,7 +40,7 @@ export function parseLooseDate(value: string | null | undefined, utcOffset = "+0
     const direct = Date.parse(v);
     if (Number.isFinite(direct) && /\d{4}/.test(v)) return new Date(direct);
   }
-  // 2026-09-26 / 2026/09/26 / 2026-09-26T10:00 / 2026年9月26日 (+ optional time), interpreted in the given offset.
+  // Datas ISO, com barras ou grafia chinesa, mais horário opcional, interpretadas no deslocamento informado.
   const m = /(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})日?(?:(?:T|\s*)(\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(v);
   if (m) {
     const [, y, mo, d, h = "00", mi = "00", s = "00"] = m;
@@ -204,10 +204,10 @@ export function fromHtml(html: string, base: string, source: SourceRow): Candida
   return out;
 }
 
-/** A changelog heading that is only a date, bare or after a short label: "时间: 2026-09-10", "时间：2024-05-17". */
+/** Cabeçalho de atualizações contendo só data, isolada ou após rótulo curto de tempo. */
 const DATE_HEADING = /^(?:[^\d:：]{1,12}[:：])?\s*(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})日?$/;
 
-/** The day a date heading names, at midnight in the source's offset (Date.parse would read "时间: …" in the host's zone). */
+/** Data do cabeçalho à meia-noite da fonte; Date.parse poderia interpretá-la no fuso do host. */
 function headingDate(title: string, utcOffset = "+08:00"): Date | null | undefined {
   const m = DATE_HEADING.exec(title);
   if (!m) return undefined;
@@ -268,14 +268,7 @@ function scriptString(literal: string): string {
   }
 }
 
-/**
- * mimo.xiaomi.com (config.adapter "mimo_home"). The homepage's post rows navigate by script: its HTML has
- * their titles but no links, so the generic parse found only the menu (MiMo Desktop, 简体中文, #paper).
- * The rows are a prop of the homepage's own chunk, `sectionTitle:"Blog", … blogs:[{title:"…",
- * link:"/blog/…", desc:"…"}, …]`; the site's route table names the chunks of path "/" and the runtime's
- * chunk map their files, both in the scripts the homepage loads. A homepage that no longer looks like
- * this fails the fetch instead of falling back to the menu.
- */
+/** Adaptador mimo_home para mimo.xiaomi.com. HTML tem títulos sem links e parser genérico capturaria menu. Relatos vêm da propriedade blogs no pacote da página, identificado por tabela de rotas e mapa de arquivos. Estrutura diferente falha explicitamente, sem usar menu como notícia. */
 async function fromMimoHome(html: string, base: string, source: SourceRow): Promise<Candidate[]> {
   let routeChunks: string[] = [];
   let chunkFile: ((id: string) => string | null) | null = null;

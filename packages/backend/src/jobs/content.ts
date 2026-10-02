@@ -85,7 +85,7 @@ export async function queueProcessing(articleId: string, opts: { step?: Step; at
     { singletonKey: tagged ? `manual:analyze:${articleId}:${attemptTag}` : articleId, priority: r.historical ? PRIORITY.history : PRIORITY.live }, opts.db);
 }
 
-/** 信源转为编辑来源时补齐未分析的资料；其余新任务由安全网继续接手。 */
+/** Promoção a fonte editorial completa materiais sem análise; tarefas seguintes ficam com recuperação normal. */
 export async function resumeSourceArticles(sourceId: string, db: Db): Promise<void> {
   const rows = await db<{ id: string }[]>`
     WITH resumed AS (
@@ -104,7 +104,7 @@ export async function resumeSourceArticles(sourceId: string, db: Db): Promise<vo
  */
 export async function settleNonEditorial(articleId: string): Promise<{ group: boolean }> {
   const row = await sql.begin(async (tx) => {
-    // 与信源更新保持先信源、后文章的锁顺序；等待晋升提交后重新读取参与方式。
+    // Bloquear fonte antes de artigo, como atualização da fonte. Reler participação após conclusão da promoção.
     await tx`SELECT s.id FROM sources s JOIN articles a ON a.source_id = s.id WHERE a.id = ${articleId} FOR SHARE OF s`;
     const [settled] = await tx<{ participation_mode: string; backfill: boolean; published_at: Date | null; discovered_at: Date }[]>`
       UPDATE articles a SET processing_state = 'skipped', processing_attempts = 0, processing_retry_at = NULL, processing_queued_at = NULL

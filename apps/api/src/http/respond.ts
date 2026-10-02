@@ -15,14 +15,15 @@ export function requestIdOf(req: FastifyRequest): string {
 }
 
 const PROBLEM_TITLES: Record<number, string> = {
-  400: "Bad request",
-  403: "Forbidden",
-  404: "Not found",
-  405: "Method not allowed",
-  409: "Conflict",
-  429: "Too many requests",
-  500: "Internal error",
-  503: "Temporarily unavailable",
+  400: "Solicitação inválida",
+  401: "Autenticação necessária",
+  403: "Acesso negado",
+  404: "Não encontrado",
+  405: "Método não permitido",
+  409: "Conflito",
+  429: "Muitas solicitações",
+  500: "Erro interno",
+  503: "Temporariamente indisponível",
 };
 
 export interface ProblemInit {
@@ -39,7 +40,7 @@ export function sendProblem(req: FastifyRequest, reply: FastifyReply, p: Problem
   const requestId = requestIdOf(req);
   const body: Record<string, unknown> = {
     type: p.type ?? `/problems/${p.code.replace(/_/g, "-")}`,
-    title: p.title ?? PROBLEM_TITLES[p.status] ?? "Error",
+    title: p.title ?? PROBLEM_TITLES[p.status] ?? "Erro",
     status: p.status,
     detail: p.detail,
     code: p.code,
@@ -108,8 +109,8 @@ export function strictQuery(req: FastifyRequest, allowed: readonly string[]): Re
   const params = new URLSearchParams(qIndex >= 0 ? raw.slice(qIndex + 1) : "");
   const out: Record<string, string> = {};
   for (const [key, value] of params) {
-    if (!allowed.includes(key)) throw new QueryError(`Unknown query parameter: ${key}.`);
-    if (key in out) throw new QueryError(`Query parameter must not be repeated: ${key}.`);
+    if (!allowed.includes(key)) throw new QueryError(`Parâmetro desconhecido: ${key}.`);
+    if (key in out) throw new QueryError(`O parâmetro não pode ser repetido: ${key}.`);
     out[key] = value;
   }
   return out;

@@ -10,14 +10,14 @@ export function bjTime(iso: string): string {
 }
 
 export function monthDay(date: string): string {
-  return `${Number(date.slice(5, 7))}月${Number(date.slice(8, 10))}日`;
+  return `${date.slice(8,10)}/${date.slice(5,7)}`;
 }
 
-/** 今天 / 明天 / 昨天 / 9月12日 */
+/** Hoje, amanhã, ontem ou data em dia/mês. */
 export function dayWord(date: string, today: string): string {
-  if (date === today) return "今天";
-  if (date === addDays(today, 1)) return "明天";
-  if (date === addDays(today, -1)) return "昨天";
+  if (date === today) return "Hoje";
+  if (date === addDays(today, 1)) return "Amanhã";
+  if (date === addDays(today, -1)) return "Ontem";
   return monthDay(date);
 }
 
@@ -33,8 +33,8 @@ export function durationText(ms: number): string {
   const minutes = Math.max(1, Math.round(ms / 60_000));
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  if (!h) return `${m} 分钟`;
-  return m ? `${h} 小时 ${m} 分` : `${h} 小时`;
+  if (!h) return `${m} minutos`;
+  return m ? `${h} horas ${m} minutos` : `${h} horas`;
 }
 
 /** "9/26 21:40" */
@@ -44,5 +44,5 @@ export function stamp(iso: string | null | undefined): string {
 }
 
 export function typeName(type: "direct_reset" | "reset_credit"): string {
-  return type === "reset_credit" ? "重置卡发放" : "Codex 额度重置";
+  return type === "reset_credit" ? "Distribuição de créditos de reinício" : "Reinício de limites do Codex";
 }

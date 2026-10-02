@@ -14,13 +14,13 @@ export async function loader({ request }: { request: Request }) {
 
 export function meta() {
   return pageMeta({
-    title: "评测来源",
-    description: `了解 ${SITE.name} 采用和观察中的评测来源、方法与数据进展。`,
+    title: "Fontes de avaliação",
+    description: `Conheça ${SITE.name} as fontes de avaliação adotadas e em observação, seus métodos e a evolução dos dados.`,
     path: "/leaderboard/sources",
     image: "/og/pages/leaderboard.png",
     jsonLd: breadcrumbLd([
-      { name: "模型榜", path: "/leaderboard" },
-      { name: "评测来源", path: "/leaderboard/sources" },
+      { name: "Ranking de modelos", path: "/leaderboard" },
+      { name: "Fontes de avaliação", path: "/leaderboard/sources" },
     ]),
   });
 }
@@ -34,29 +34,29 @@ export default function LeaderboardSourcesPage() {
   return (
     <div className="pb-12">
       <Link to="/leaderboard" className="mt-4 inline-flex items-center gap-1.5 py-2 text-[13px] text-ink-3 transition-colors hover:text-accent lg:mt-0">
-        <IconArrowLeft size={14} /> 返回模型榜
+        <IconArrowLeft size={14} /> Voltar ao ranking de modelos
       </Link>
       <header className="pb-2 pt-3">
-        <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">评测来源</h1>
-        <p className="mt-1.5 text-[13px] text-ink-3">每个来源测什么、怎样更新、是否进入排名，都可以在这里找到。</p>
+        <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">Fontes de avaliação</h1>
+        <p className="mt-1.5 text-[13px] text-ink-3">Consulte o que cada fonte avalia, como é atualizada e se participa do ranking.</p>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div className="flex items-baseline gap-6">
             <span className="flex items-baseline gap-1.5">
               <span className="mono text-[24px] font-semibold text-ink">{rankedCount}</span>
-              <span className="text-[12px] text-ink-4">本轮参与排名</span>
+              <span className="text-[12px] text-ink-4">Fontes participantes desta rodada</span>
             </span>
             <span className="flex items-baseline gap-1.5">
               <span className="mono text-[24px] font-semibold text-ink">{totalCount}</span>
-              <span className="text-[12px] text-ink-4">已审查来源与专项</span>
+              <span className="text-[12px] text-ink-4">Fontes e categorias revisadas</span>
             </span>
           </div>
           <Link to="/leaderboard/rules" className="inline-flex items-center gap-1.5 text-[13px] text-ink-3 transition-colors hover:text-accent">
-            排名怎么算 <IconArrowUpRight size={14} />
+            Como o ranking é calculado <IconArrowUpRight size={14} />
           </Link>
         </div>
       </header>
 
-      <nav aria-label="来源分组" className="scrollbar-none -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
+      <nav aria-label="Agrupamento de fontes" className="scrollbar-none -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
         {groups.map((g) => (
           <a
             key={g.key}
@@ -88,7 +88,7 @@ export default function LeaderboardSourcesPage() {
                   <span className="mt-4 flex items-center justify-between gap-3 text-[11.5px] text-ink-4">
                     <span className="min-w-0 truncate">{s.operator}</span>
                     <span className="flex shrink-0 items-center gap-2.5">
-                      {s.budget !== null && <span className="num">证据预算 {pct(s.budget)}</span>}
+                      {s.budget !== null && <span className="num">Orçamento de evidência {pct(s.budget)}</span>}
                       <IconArrowUpRight size={13} className="transition-transform group-hover:-translate-y-px group-hover:translate-x-px" />
                     </span>
                   </span>
@@ -100,7 +100,7 @@ export default function LeaderboardSourcesPage() {
       ))}
 
       <p className="mt-10 border-t border-line pt-5 text-[12px] leading-relaxed text-ink-4">
-        “观察中”表示仍在核对数据、运行条件或使用边界，不参与综合榜和分类榜。同一评测的重复抓取和展示切片不会增加票权；不同评测之间的题库重叠仍需持续核对。
+        Em observação indica dados, condições ou limites de uso ainda em revisão; essas fontes não participam dos rankings. Repetir a coleta ou criar recortes da mesma avaliação não aumenta seu peso. Sobreposição entre avaliações distintas exige revisão contínua.
       </p>
     </div>
   );

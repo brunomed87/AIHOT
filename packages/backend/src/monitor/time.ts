@@ -29,10 +29,10 @@ export function pacificParts(d: Date): { date: string; hm: string; hour: number 
 }
 
 const bj = (d: Date) => new Date(d.getTime() + 8 * HOUR);
-const md = (d: Date) => `${bj(d).getUTCMonth() + 1}月${bj(d).getUTCDate()}日`;
+const md = (d: Date) => `${String(bj(d).getUTCDate()).padStart(2,"0")}/${String(bj(d).getUTCMonth()+1).padStart(2,"0")}`;
 const hm = (d: Date) => bj(d).toISOString().slice(11, 16);
 
-/** "9月8日 09:00–10:00" or "9月22日 15:00–9月23日 15:00" in Beijing time. */
+/** Intervalo de data e hora de Pequim, incluindo datas diferentes quando necessário. */
 export function beijingRange(from: Date, through: Date): string {
   if (from.getTime() === through.getTime()) return `${md(from)} ${hm(from)}`;
   const sameDay = bj(from).toISOString().slice(0, 10) === bj(through).toISOString().slice(0, 10);
@@ -65,18 +65,18 @@ export function scheduleFrom(stated: StatedTime): Schedule {
     // A whole Pacific day.
     const from = pacificToUtc(stated.date, "00:00");
     const through = new Date(pacificToUtc(stated.date, "23:59").getTime() + 60_000);
-    return { precision: "date", from: from.toISOString(), through: through.toISOString(), label: `北京时间预计 ${beijingRange(from, through)}` };
+    return { precision: "date", from: from.toISOString(), through: through.toISOString(), label: `Previsão no horário de Pequim: ${beijingRange(from, through)}` };
   }
   const start = pacificToUtc(stated.date, stated.from ?? "18:00");
   if (stated.precision === "deadline") {
-    return { precision: "deadline", from: start.toISOString(), through: start.toISOString(), label: `北京时间预计 ${md(start)} ${hm(start)} 前` };
+    return { precision: "deadline", from: start.toISOString(), through: start.toISOString(), label: `Previsão no horário de Pequim: até ${md(start)} ${hm(start)}` };
   }
   if (stated.precision === "approximate") {
-    return { precision: "approximate", from: start.toISOString(), through: start.toISOString(), label: `北京时间约 ${md(start)} ${hm(start)}` };
+    return { precision: "approximate", from: start.toISOString(), through: start.toISOString(), label: `Aproximadamente, horário de Pequim: ${md(start)} ${hm(start)}` };
   }
   // exact / window: a stated clock time lands within the hour.
   const end = stated.through ? pacificToUtc(stated.through < (stated.from ?? "18:00") ? addPacificDays(stated.date, 1) : stated.date, stated.through) : new Date(start.getTime() + HOUR);
-  return { precision: stated.precision === "exact" ? "window" : stated.precision, from: start.toISOString(), through: end.toISOString(), label: `北京时间预计 ${beijingRange(start, end)}` };
+  return { precision: stated.precision === "exact" ? "window" : stated.precision, from: start.toISOString(), through: end.toISOString(), label: `Previsão no horário de Pequim: ${beijingRange(start, end)}` };
 }
 
 export type EstimateBasis = "model" | "source" | "source_day" | "history";
@@ -94,7 +94,7 @@ const USUAL_FROM = "16:30";
 const USUAL_TO = "21:30";
 
 function estimate(from: Date, through: Date, basis: EstimateBasis, reason: string): Estimate {
-  return { from: from.toISOString(), through: through.toISOString(), basis, label: `北京时间 ${beijingRange(from, through)}`, reason };
+  return { from: from.toISOString(), through: through.toISOString(), basis, label: `Horário de Pequim ${beijingRange(from, through)}`, reason };
 }
 
 /**
@@ -114,25 +114,25 @@ export function estimateFor(opts: { schedule: Schedule | null; announcedAt: Date
     const sane = a && b && b > a && b.getTime() - a.getTime() <= 36 * HOUR && a >= announcedAt;
     const consistent = !schedule || (a && b && b >= new Date(schedule.from) && a <= new Date(new Date(schedule.through).getTime() + 12 * HOUR)
       && (schedule.precision === "deadline" || a >= new Date(schedule.from)));
-    if (sane && consistent) return estimate(a!, b!, "model", `模型推算：${model.note}`);
+    if (sane && consistent) return estimate(a!, b!, "model", `Estimativa do modelo:${model.note}`);
   }
   if (schedule && schedule.precision === "date") {
     const day = pacificParts(new Date(schedule.from)).date;
-    return estimate(pacificToUtc(day, USUAL_FROM), pacificToUtc(day, USUAL_TO), "source_day", "Tibo 只给了日期，按他以往的习惯落在当天太平洋时间傍晚。");
+    return estimate(pacificToUtc(day, USUAL_FROM), pacificToUtc(day, USUAL_TO), "source_day", "O original fornece somente data. A estimativa usa o padrão histórico de fim de tarde no Pacífico.");
   }
   if (schedule && schedule.precision === "deadline") {
     // "Within the hour", "by 8pm": any time from the announcement (at most a day ahead) until a little
     // after the deadline, not a window that only starts at the deadline (legacy estimate).
     const deadline = new Date(schedule.through).getTime();
     const from = Math.min(Math.max(announcedAt.getTime(), deadline - 24 * HOUR), deadline);
-    return estimate(new Date(from), new Date(deadline + HOUR), "source", "按原帖给出的截止时间换算成北京时间，并预留一点延迟。");
+    return estimate(new Date(from), new Date(deadline + HOUR), "source", "Prazo original convertido para Pequim com margem para atraso.");
   }
   if (schedule) {
     // Around a time: from half an hour before it (not before the post); otherwise from the stated start.
     const start = new Date(schedule.from).getTime();
     const from = schedule.precision === "approximate" ? Math.max(announcedAt.getTime(), start - HOUR / 2) : start;
     const through = new Date(new Date(schedule.through).getTime() + 2 * HOUR);
-    return estimate(new Date(from), through, "source", "按原帖时间换算成北京时间，并预留一两个小时：他的确认帖通常比说的时间晚一点。");
+    return estimate(new Date(from), through, "source", "Horário original convertido para Pequim com margem de uma ou duas horas, conforme atrasos históricos das confirmações.");
   }
   // No time given: the next usual evening after the announcement.
   const p = pacificParts(announcedAt);
@@ -142,7 +142,7 @@ export function estimateFor(opts: { schedule: Schedule | null; announcedAt: Date
     day = pacificParts(next).date;
   }
   const from = pacificToUtc(day, USUAL_FROM);
-  return estimate(from < announcedAt ? announcedAt : from, pacificToUtc(day, USUAL_TO), "history", "原帖没有给出时间，按 Tibo 以往按下重置的时段推算。");
+  return estimate(from < announcedAt ? announcedAt : from, pacificToUtc(day, USUAL_TO), "history", "Sem horário original; estimativa pelo padrão histórico de reinícios de Tibo.");
 }
 
 /** What the recognizer extracted: relative hours, a named period, a clock time and/or a day offset. */
@@ -185,7 +185,7 @@ export function resolveStatedTime(w: StatedWords, postAt: Date): StatedTime | nu
 
 /** A schedule an operator entered in Beijing time (admin corrections). */
 export function manualSchedule(precision: SchedulePrecision, from: Date, through: Date): Schedule {
-  if (precision === "deadline") return { precision, from: from.toISOString(), through: from.toISOString(), label: `北京时间预计 ${md(from)} ${hm(from)} 前` };
-  if (precision === "approximate") return { precision, from: from.toISOString(), through: from.toISOString(), label: `北京时间约 ${md(from)} ${hm(from)}` };
-  return { precision: precision === "exact" ? "window" : precision, from: from.toISOString(), through: through.toISOString(), label: `北京时间预计 ${beijingRange(from, through)}` };
+  if (precision === "deadline") return { precision, from: from.toISOString(), through: from.toISOString(), label: `Previsão no horário de Pequim: até ${md(from)} ${hm(from)}` };
+  if (precision === "approximate") return { precision, from: from.toISOString(), through: from.toISOString(), label: `Aproximadamente, horário de Pequim: ${md(from)} ${hm(from)}` };
+  return { precision: precision === "exact" ? "window" : precision, from: from.toISOString(), through: through.toISOString(), label: `Previsão no horário de Pequim: ${beijingRange(from, through)}` };
 }

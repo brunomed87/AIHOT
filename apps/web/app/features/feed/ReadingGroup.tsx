@@ -1,5 +1,5 @@
-// Reading-group expansions on a feed item: the other sources of the card's fact ("另有 N 家信源报道")
-// and the event's developments ("展开 N 条进展"). Each loads on first open and pages on demand.
+// Expansões de leitura: outras fontes que relatam o mesmo fato
+// e progressos do acontecimento. Carrega ao abrir e pagina sob demanda.
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router";
 import { Collapse } from "../../components/ui/Presence";
@@ -140,12 +140,12 @@ function Panel({ open, children }: { open: boolean; children: ReactNode }) {
 
 function LoadState({ loading, error, next, onMore, onRetry, empty }: { loading: boolean; error: boolean; next: string | null; onMore: () => void; onRetry: () => void; empty: boolean }) {
   if (loading && empty) return <div className="space-y-2 py-1">{[0, 1].map((i) => <div key={i} className="skeleton h-4" />)}</div>;
-  if (error) return <button type="button" onClick={onRetry} className="py-1 text-[12.5px] text-hot">暂时无法加载，点此重试</button>;
-  if (next && !loading) return <button type="button" onClick={onMore} className="py-1 text-[12.5px] text-accent hover:underline">加载更多</button>;
+  if (error) return <button type="button" onClick={onRetry} className="py-1 text-[12.5px] text-hot">Não foi possível carregar. Toque para tentar novamente</button>;
+  if (next && !loading) return <button type="button" onClick={onMore} className="py-1 text-[12.5px] text-accent hover:underline">Carregar mais</button>;
   return null;
 }
 
-/** "另有 N 家信源报道": other reports of the fact the card stands for. */
+/** Outras fontes que relatam o fato representado pelo cartão. */
 export function GroupSources({ group, filters, parentId }: { group: GroupInfo; filters?: TimelineFilters; parentId: string }) {
   const { open, setOpen, state, load } = useGroupState<GroupReport>(
     `sources|${group.factId}|${parentId}`,
@@ -153,7 +153,7 @@ export function GroupSources({ group, filters, parentId }: { group: GroupInfo; f
     (b) => b.reports as GroupReport[],
   );
   const others = state.items.filter((r) => r.id !== parentId);
-  const label = group.additionalSourceCount > 0 ? `另有 ${group.additionalSourceCount} 家信源报道` : `${group.reportCount} 篇报道`;
+  const label = group.additionalSourceCount > 0 ? `Outras ${group.additionalSourceCount} fontes cobriram o acontecimento` : `${group.reportCount} reportagens`;
   return (
     <div>
       <Toggle
@@ -173,7 +173,7 @@ export function GroupSources({ group, filters, parentId }: { group: GroupInfo; f
               <Link to={`/items/${r.id}`} className="min-w-0 flex-1 truncate text-ink-2 hover:text-accent">
                 {r.title}
               </Link>
-              <a href={r.originalUrl} target="_blank" rel="noopener noreferrer" aria-label="打开原文" className="shrink-0 text-ink-4 hover:text-accent">
+              <a href={r.originalUrl} target="_blank" rel="noopener noreferrer" aria-label="Abrir original" className="shrink-0 text-ink-4 hover:text-accent">
                 <IconArrowUpRight size={13} />
               </a>
             </li>
@@ -185,7 +185,7 @@ export function GroupSources({ group, filters, parentId }: { group: GroupInfo; f
   );
 }
 
-/** "展开 N 条进展": the other facts of the card's event, newest first. */
+/** Outros fatos do acontecimento do cartão, dos mais recentes aos antigos. */
 export function GroupDevelopments({ group, filters, parentId }: { group: GroupInfo & { story: NonNullable<GroupInfo["story"]> }; filters?: TimelineFilters; parentId: string }) {
   const { open, setOpen, state, load } = useGroupState<Development>(
     `developments|${group.story.publicId}|${parentId}`,
@@ -201,7 +201,7 @@ export function GroupDevelopments({ group, filters, parentId }: { group: GroupIn
           if (!open && !state.loaded && !state.loading) void load(null);
         }}
       >
-        展开 {group.developmentCount} 条进展
+        Expandir {group.developmentCount} desdobramentos
       </Toggle>
       <Panel open={open}>
         <ol className="relative space-y-2 py-1 pl-3.5 before:absolute before:bottom-2 before:left-[3px] before:top-2 before:w-px before:bg-line">
@@ -213,26 +213,26 @@ export function GroupDevelopments({ group, filters, parentId }: { group: GroupIn
               </Link>
               <div className="mt-0.5 text-[11.5px] text-ink-4">
                 {shortSourceName(d.representative.source.name)} · <span className="num">{monthDayTime(d.representative.timelineAt)}</span>
-                {d.reportCount > 1 ? ` · ${d.reportCount} 篇报道` : ""}
+                {d.reportCount > 1 ? ` · ${d.reportCount} reportagens` : ""}
               </div>
             </li>
           ))}
         </ol>
         <LoadState loading={state.loading} error={state.error} next={state.next} empty={state.items.length === 0} onMore={() => load(state.next)} onRetry={() => load(null)} />
         <Link to={`/story/${group.story.publicId}`} className="mt-1 inline-flex items-center gap-0.5 py-1 text-[12.5px] font-medium text-accent hover:text-accent-ink">
-          查看完整事件 <IconArrowUpRight size={12} />
+          Ver acontecimento completo <IconArrowUpRight size={12} />
         </Link>
       </Panel>
     </div>
   );
 }
 
-/** "最新进展 · 9月27日 01:21 · …": why a folded event card sits where it does. */
+/** Progresso mais recente, com horário, explica a posição de cartão agrupado. */
 export function LatestDevelopment({ group }: { group: GroupInfo }) {
   if (!group.latestDevelopment || group.developmentCount <= 1) return null;
   return (
     <p className="relative z-10 mt-2.5 flex items-baseline gap-1.5 text-[13px] leading-relaxed">
-      <span className="shrink-0 font-medium text-accent">最新进展</span>
+      <span className="shrink-0 font-medium text-accent">Atualização mais recente</span>
       <span className="num shrink-0 text-ink-4">{monthDayTime(group.latestDevelopment.at)}</span>
       <span className="line-clamp-1 text-ink-3">{group.latestDevelopment.title}</span>
     </p>

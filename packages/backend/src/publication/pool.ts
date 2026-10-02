@@ -69,9 +69,8 @@ export function directMatchCondition(terms: string[]) {
 }
 
 /**
- * The public APIs' q (v1 and MCP): every term matches the subject, title or summary, or
- * the start of a body whose full text may be shown, as the API documents it ("title / Chinese
- * title / Chinese summary / body"). Results stay in time order.
+ * Busca pública v1 e MCP: termos correspondem a assunto, título original ou em português,
+ * resumo ou início de corpo cuja leitura integral foi autorizada. Mantém ordem temporal.
  */
 export function publicMatchCondition(terms: string[]) {
   if (terms.length === 0) return sql``;

@@ -4,24 +4,24 @@ export { beijingDate, beijingTime, beijingWeekday };
 
 export function dayLabel(date: string, today: string): string {
   const [y, m, d] = date.split("-").map(Number) as [number, number, number];
-  const base = `${m}月${d}日`;
-  if (date === today) return `今天 · ${base}`;
+  const base = `${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")}`;
+  if (date === today) return `Hoje · ${base}`;
   const diff = Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${date}T00:00:00Z`)) / 86400000);
-  if (diff === 1) return `昨天 · ${base}`;
-  if (y !== Number(today.slice(0, 4))) return `${y}年${base}`;
+  if (diff === 1) return `Ontem · ${base}`;
+  if (y !== Number(today.slice(0, 4))) return `${base}/${y}`;
   return base;
 }
 
 export function relativeTime(iso: string, now = Date.now()): string {
   const t = Date.parse(iso);
   const s = Math.max(0, Math.round((now - t) / 1000));
-  if (s < 60) return "刚刚";
+  if (s < 60) return "Agora mesmo";
   const m = Math.round(s / 60);
-  if (m < 60) return `${m} 分钟前`;
+  if (m < 60) return `${m} minutos atrás`;
   const h = Math.round(m / 60);
-  if (h < 24) return `${h} 小时前`;
+  if (h < 24) return `${h} horas atrás`;
   const d = Math.round(h / 24);
-  if (d < 30) return `${d} 天前`;
+  if (d < 30) return `${d} dias atrás`;
   return beijingDate(iso);
 }
 
@@ -29,10 +29,10 @@ export function fullDateTime(iso: string): string {
   return `${beijingDate(iso)} ${beijingTime(iso)}`;
 }
 
-/** "9月24日 10:51" (Beijing), for lists that span days. */
+/** Dia/mês e horário de Pequim para listas que atravessam dias. */
 export function monthDayTime(iso: string): string {
   const [, m, d] = beijingDate(iso).split("-").map(Number) as [number, number, number];
-  return `${m}月${d}日 ${beijingTime(iso)}`;
+  return `${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")} ${beijingTime(iso)}`;
 }
 
 /** "X：Ethan Mollick (@emollick)" → "Ethan Mollick"; other sources keep their name. */

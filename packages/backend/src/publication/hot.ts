@@ -24,7 +24,7 @@ async function queryLatestHotRanking(): Promise<HotRanking | null> {
       ORDER BY p.first_party DESC,p.selected DESC,p.score DESC NULLS LAST,p.article_id LIMIT 1
     ) rep ON true WHERE st.id=ANY(${ids}::bigint[]) AND st.merged_into IS NULL` : [];
   const byId = new Map(current.map(s => [s.id, s]));
-  // 榜单保留热度快照，文字和代表稿每次按当前权限读取，不复用嵌入的旧标题。
+  // Ranking preserva retrato de repercussão; texto e representante usam permissão atual, sem reutilizar títulos antigos incorporados.
   const entries = row.entries.flatMap(e => {
     const story = byId.get(e.storyId);
     return story?.article_id ? [{ ...e, title: story.title, representativeItemId: story.article_id,
@@ -33,7 +33,7 @@ async function queryLatestHotRanking(): Promise<HotRanking | null> {
   return { id: row.id, computedAt: row.computedAt, ruleVersion: row.ruleVersion, entries, coverage: row.coverage };
 }
 
-// 头像沿用榜单缓存；可能因撤回变化的事件文字每次重新读取。
+// Avatares usam cache do ranking; textos sujeitos a retirada são relidos a cada consulta.
 interface Extras {
   faces: Map<string, string | null>;
 }
@@ -65,10 +65,7 @@ async function queryExtras(ranking: HotRanking): Promise<Extras> {
   return extras;
 }
 
-/**
- * What the web adds to a ranking entry: participants with proxied faces in the order Faces shows them
- * (精选组 by tier, a real face before an initial within a tier, then 氛围组), the digest and the latest turn.
- */
+/** Dados adicionados pela interface: participantes com imagens locais na ordem editorial por classe e avatar real antes de inicial, depois sinais; síntese e progresso recente. */
 export async function rankingExtras(ranking: HotRanking) {
   const [stable, rows] = await Promise.all([
     readExtras(ranking),

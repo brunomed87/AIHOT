@@ -83,13 +83,13 @@ export function presentationStatus(e: Pick<EventRow, "status" | "estimate" | "sc
 export function eventTitle(type: EventRow["type"], status: EventRow["status"], shown: PresentationStatus, kindExplicit: boolean, basis: EventRow["confirmation_basis"] = null): string {
   const credit = type === "reset_credit";
   if (status === "confirmed") {
-    if (credit) return "重置卡已发放";
-    if (basis === "receipt_review") return "额度重置已核实到账";
-    return kindExplicit ? "Codex 额度重置已完成" : "Tibo 确认重置";
+    if (credit) return "Créditos de reinício distribuídos";
+    if (basis === "receipt_review") return "Recebimento do reinício de limites verificado";
+    return kindExplicit ? "Reinício de limites do Codex concluído" : "Tibo confirmou o reinício";
   }
-  if (shown === "likely_completed") return credit ? "重置卡应已发放" : "额度应已重置";
-  if (shown === "in_progress") return credit ? "重置卡正在发放" : "额度重置进行中";
-  return credit ? "Tibo 预告将发放重置卡" : "Tibo 预告将重置额度";
+  if (shown === "likely_completed") return credit ? "Distribuição de créditos com vigência estimada" : "Reinício de limites com vigência estimada";
+  if (shown === "in_progress") return credit ? "Créditos de reinício em distribuição" : "Reinício de limites em andamento";
+  return credit ? "Tibo anunciou distribuição de créditos" : "Tibo anunciou reinício de limites";
 }
 
 async function loadHealth(db: Db = sql) {
@@ -289,7 +289,7 @@ export async function codexResetPage(now = Date.now()): Promise<CodexResetPageDa
     const status = e.presentation?.status ?? (e.status === "confirmed" ? "confirmed" : "announced");
     const state: CalendarMark["state"] = status === "confirmed" ? "confirmed" : status === "likely_completed" ? "likely" : "pending";
     const unclear = e.presentation ? !e.presentation.kindExplicit : false;
-    const label = state === "pending" ? "待生效" : e.type === "reset_credit" ? "发重置卡" : unclear ? "重置确认" : "额度重置";
+    const label = state === "pending" ? "Aguardando vigência" : e.type === "reset_credit" ? "Distribuir créditos de reinício" : unclear ? "Confirmação de reinício" : "Reinício de limites";
     const day = e.occurredOn ?? (e.confirmedAt ? e.confirmedAt.slice(0, 10) : (e.estimate ?? e.schedule)?.from?.slice(0, 10) ?? e.createdAt!.slice(0, 10));
     return { date: day, eventId: e.id, type: e.type, state, label };
   });

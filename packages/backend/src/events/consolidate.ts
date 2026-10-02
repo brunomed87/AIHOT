@@ -105,7 +105,7 @@ export async function consolidate(storyIds: number[], opts: { dryRun?: boolean }
     await completeReceipt(sql, second.receiptId);
     const merge = firmlyTied(second.relation, second.confidence, STORY_REVIEW_MIN_CONFIDENCE);
     if (merge && !opts.dryRun) {
-      await mergeStoryInto(other.storyId, anchor.storyId, `同一事件（${first.relation}，复核 ${second.relation}）：${other.report.title}｜${anchor.report.title}`, "grouping");
+      await mergeStoryInto(other.storyId, anchor.storyId, `Mesmo acontecimento (${first.relation}, revisão ${second.relation}): ${other.report.title}｜${anchor.report.title}`, "grouping");
     }
     out.push({ ...base, merge, first: first.relation, second: second.relation, difference: first.difference || second.difference });
   }

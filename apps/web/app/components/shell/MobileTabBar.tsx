@@ -7,7 +7,7 @@ export function MobileTabBar({ changelogVersion }: { changelogVersion: string | 
   const { pathname } = useLocation();
   const dot = useChangelogDot(changelogVersion);
   return (
-    <nav aria-label="底部导航" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+    <nav aria-label="Navegação inferior" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
       <div className="mx-auto grid h-[54px] max-w-[640px] grid-cols-4">
         {TABBAR.map((t) => {
           const active = tabIsActive(t, pathname);
@@ -22,7 +22,7 @@ export function MobileTabBar({ changelogVersion }: { changelogVersion: string | 
             >
               <Icon size={21} />
               <span>{t.label}</span>
-              {dot && t.changelog && <span className="absolute right-[calc(50%-17px)] top-2 size-1.5 rounded-full bg-hot" aria-label="有新的更新" />}
+              {dot && t.changelog && <span className="absolute right-[calc(50%-17px)] top-2 size-1.5 rounded-full bg-hot" aria-label="Há novas atualizações" />}
             </Link>
           );
         })}

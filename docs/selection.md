@@ -1,82 +1,48 @@
-# 精选与校准
+# Seleção e calibração
 
-## 一条资料怎么变成精选
+## Fluxo de uma matéria
 
-1. **收进来**：同一网址、同一内容只留一份。只有标题或订阅摘要的，先抓原文页面再判断。
-2. **预筛**（`prefilter.md`）：这是不是本行业的事。宽进，只拦明显无关的：`BLOCK` 的资料不出现在任何公开页面；`PASS` 和拿不准的 `UNKNOWN` 继续往下走。
-3. **评分**（`selection-score.md`）：同一份评分标准独立打两次分（0–100）。**两次之和 ≥ 2 × 门槛**就入选，门槛按信源分级不同。页面上显示的分数是两次的平均（向下取整）。
-4. **写标题摘要**：入选的和差一点入选的（平均分高于 `understandFloor`），按 `content-understanding.md` 写中文标题、答案先行的摘要、推荐理由和标签；其余的按 `summarize-*.md` 写简短的标题摘要，进“全部动态”。
-5. **结构化**（`structure.md`）：分类、标签、主体公司、事实（谁、做了什么、对什么），和评分同时进行。主题页和事件归组靠它。
-6. **归组**（`group-*.md`）：不同来源报道的同一件事归成一个事件，事件页有综述（`story-digest.md`），“热门”按事件排。入选的资料要等归组完成（最多 3 分钟）才出现在精选里，避免同一件事先冒出好几条。
-7. **日报、周报、月报**（`report-*.md`）：每天 08:00 出日报（前一天 08:00 到当天 08:00 的精选候选），每周一 10:00 出上周周报，每月 1 日 10:30 出上月月报。资料进入站点后若跨过刊期边界才确定精选公开时间，便归入下一期候选池；截止前已确定公开时间、但仍在提交的发布事务，取稿会等它提交后再读取，避免漏过前后两期。最终刊载仍受同一事实去重和版面容量限制。
+1. Coleta e deduplicação de endereço e conteúdo. Materiais só com título ou resumo buscam a página original.
+2. prefilter.md verifica pertinência ampla: BLOCK não é público; PASS e UNKNOWN seguem.
+3. selection-score.md é aplicado duas vezes independentemente, de zero a cem. Soma pelo menos duas vezes o limite da fonte seleciona. Nota visível é a média arredondada para baixo.
+4. Selecionados e não selecionados acima de understandFloor seguem content-understanding.md para título português, resumo, justificativa e marcadores. Demais usam summarize-*.md e aparecem nas notícias gerais.
+5. structure.md extrai categoria, marcadores, instituição e fato, em paralelo à pontuação; alimenta temas e agrupamento.
+6. group-*.md agrupa relatos do mesmo acontecimento, story-digest.md sintetiza e o ranking ordena acontecimentos. Selecionados aguardam agrupamento por até três minutos, evitando repetições iniciais.
+7. Agenda original produz diário às 08:00, semanal segunda às 10:00 e mensal no primeiro dia às 10:30. O diário cobre de 08:00 anterior até atual. Materiais cuja publicação selecionada cruza o corte entram na próxima edição. Transações com horário definido antes do corte são aguardadas para evitar perda entre edições. Deduplicação factual e capacidade continuam limitando publicação. O radar médico usa agenda adicional de São Paulo.
 
-每一步的提示词都在 `industry/prompts/`，改提示词不用改代码。提示词的版本就是它内容的哈希：改了提示词，之后的新资料按新版判断，已经判过的不会重算。
+Instruções ficam em industry/prompts/. A versão corresponde ao hash do conteúdo: mudanças afetam materiais novos, sem reprocessar os anteriores automaticamente.
 
-## 门槛：`industry/selection.ts`
+## Limites
 
 ```ts
 export const SELECTION = {
-  thresholds: { T1: 60, T1_5: 65, T2: 76 },   // 两次评分的平均至少要到这个数
-  understandFloor: 50,                        // 平均分高于它的未入选资料，也按入选的写法写
+  thresholds: { T1: 60, T1_5: 65, T2: 76 },
+  understandFloor: 50,
 };
 ```
 
-官方一手信源（T1）门槛低一些，媒体和个人（T2）门槛高一些：同样一件事，官方原文更值得先看。没有门槛的分级（`EXCLUDE_MP`）不参与精选。
+Fonte oficial T1 tem limite menor; imprensa e pessoas T2 maior, favorecendo o original direto do mesmo fato. EXCLUDE_MP não seleciona. Os limites herdados são rigorosos e calibrados em IA; recalibre após trocar setor, instruções ou modelo.
 
-这组数是 AIHOT 在 AI 领域一直在用的门槛，偏严：宁可少选几条，也不让噪声进精选。换了行业、改了评分标准，一定要按下面的办法重新校准。
+## Preparar amostras
 
-## 校准
+Anote cem a duzentas matérias como selecionar ou rejeitar em .data/gold.jsonl, fora do Git. industry/gold.example.jsonl contém formato. Cada linha inclui caseId único, material com título, original, publicação, fonte e corpo; sourceFacts com tipo, classe, origem direta e idioma; samplingContext opcional; gold.decision como select, reject ou either, sendo either excluído da precisão global.
 
-### 1. 准备样本集
+bodyZh mantém o nome técnico por compatibilidade e contém a versão localizada; bodyOriginal conserva o original. Pelo menos um corpo deve existir. benchmarkSplit separa development e holdout; samplingStratum identifica grupo de análise, como regulação ou divulgação. Inclua casos difíceis para evitar métricas infladas; reserve conjunto de validação sem ajustar instruções a ele. Prefira anotadores que representem os leitores reais.
 
-从你自己的信源里挑 100–200 条资料，一条一条标“该选 / 不该选”，存成 `.data/gold.jsonl`（`.data/` 不进 Git）。每行一条：
+## Executar avaliação
 
-```json
-{"caseId":"law-001","material":{"title":"原文标题","originalTitle":null,"publishedAt":"2026-10-01T09:00:00+08:00","sourceName":"信源名称","bodyZh":null,"bodyOriginal":"正文……"},"sourceFacts":{"sourceKind":"rss","sourceTier":"T1","firstParty":true,"language":"zh"},"samplingContext":{"benchmarkSplit":"development","samplingStratum":"regulation"},"gold":{"decision":"select"}}
+```sh
+node --env-file=.env scripts/eval-selection.ts --gold .data/gold.jsonl --split development --label "Primeira versão"
 ```
 
-| 字段 | 说明 |
-|---|---|
-| `caseId` | 唯一编号 |
-| `material` | 标题、原标题、发布时间、信源名、正文（中文正文放 `bodyZh`，原文放 `bodyOriginal`，有一个就行） |
-| `sourceFacts` | 信源类型、分级、是否一手、语言。分级决定用哪个门槛 |
-| `samplingContext` | 可选。`benchmarkSplit` 分开发集和留出集，`samplingStratum` 是你自己的分组（比如“新规”“判决”“营销”），看错在哪一类 |
-| `gold.decision` | `select` 该选，`reject` 不该选，`either` 两可（不计入准确率） |
+Cada amostra recebe pré-seleção e duas notas. Saída inclui taxa de acerto, precisão dos selecionados, cobertura dos que deveriam ser selecionados, simulação de limites 40–90 a cada dois pontos e casos errados. Relatórios ficam em .data/eval/ e no SelectBench.
 
-`industry/gold.example.jsonl` 有两条示例。
+Sem --models, segue a rota de pontuação em produção, definida no painel, SCORE_MODEL ou padrão. --models default,deepseek-flash compara modelos configurados; --n 200 limita amostras; --split holdout usa validação reservada.
 
-几条建议：
+Entradas de pontuação idênticas compartilham chamadas, mas cada exemplo recebe pré-seleção, limite e referência anotada próprios. Falhas também são compartilhadas naquela execução. Repetições reutilizam recibos. Uso de tokens e latência incluem todas as tentativas dos recibos, inclusive falhas de interpretação; dados históricos de cache não representam custo novo.
 
-- 多放**难例**：差一点就该选、差一点就不该选的。一眼就能判断的放太多，准确率会虚高。
-- 分出一部分做**留出集**（`benchmarkSplit: "holdout"`），调提示词只看开发集，最后再用留出集检查一遍，免得把提示词调成只会做这几道题。
-- 标注的人最好就是以后读这个站的人，或者和他们口味一致的人。
+## Corrigir erros
 
-### 2. 跑评测
+No SelectBench, leia matéria e justificativa. Falsos negativos pedem explicitar relevância em selection-score.md; falsos positivos pedem controlar ruído. Só ajuste limites quando o problema global for notas próximas do corte. Limite move todos os casos e não corrige categorias mal descritas. Execute novamente após cada mudança e compare versões.
 
-```bash
-node --env-file=.env scripts/eval-selection.ts --gold .data/gold.jsonl --split development --label "第一版评分标准"
-```
-
-对每条样本跑一遍预筛和两次评分，输出：
-
-- 准确率、查准率（选出来的有多少是对的）、查全率（该选的有多少选上了）；
-- 门槛从 40 到 90 每隔 2 分，各自会得到什么结果；
-- 判错的条目，完整报告写到 `.data/eval/`，同时导入后台 SelectBench。
-
-默认不传 `--models` 时，评测跟随当前 production 的“精选评分”模型路由（后台切换、`SCORE_MODEL` 或默认模型）；`--models default,deepseek-flash` 可显式比较几个模型。其他常用参数：`--n 200` 最多抽多少条，`--split holdout` 只跑留出集。
-
-同次评测中，若不同标注样本渲染出完全相同的评分输入，只共享模型评分结果，各样本仍按自己的预筛结果、信源分级门槛和 gold 独立计分；失败结果也在该次运行内共享，避免并发首跑和缓存重跑得到不同的评测覆盖。重复运行会复用已有回执。报告的 token usage 与平均 latency 按相关回执的全部 provider attempts 汇总，因此解析失败后的重试不会漏计；缓存重跑显示的是这些回执的累计历史用量，不代表本次新增费用。
-
-### 3. 看错例，改标准，再跑
-
-在后台 SelectBench 里逐条看判错的资料和模型给的理由：
-
-- 该选没选上，多半是评分标准里没说清它为什么重要：在 `selection-score.md` 里把这类价值写进“必须正常评价”的部分，给出例子。
-- 不该选却选上了，多半是噪声没压住：写进“必须压住”的部分。
-- 整体偏松或偏紧，而判错的条目分数都贴着门槛，再调 `industry/selection.ts` 的门槛。
-
-先改标准，再动门槛：门槛只能整体移动，解决不了“哪一类判错了”。每改一次跑一遍，SelectBench 里能看到每一版的对比。
-
-## 换模型
-
-后台“模型与评测”页能看到每一步当前用哪个模型、近期的成功率、耗时和 token 用量，也能直接切换（只影响之后的新任务）。换评分模型之前，先用 `--models` 在同一批样本上比一比。
+O painel Modelos e avaliação apresenta rotas, sucesso, duração e tokens. Trocas afetam tarefas novas. Antes de trocar pontuação, compare modelos com --models no mesmo conjunto.

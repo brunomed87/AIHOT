@@ -24,10 +24,10 @@ export const CHANNEL_KEYS = ["all", "news", "x", "firstParty"] as const;
 export type ChannelKey = (typeof CHANNEL_KEYS)[number];
 
 export const CHANNEL_LABELS: Record<ChannelKey, string> = {
-  all: "全部",
-  news: "资讯",
+  all: "Todos",
+  news: "Notícias",
   x: "X",
-  firstParty: "一手",
+  firstParty: "Primeira mão",
 };
 
 export function isChannelKey(value: unknown): value is ChannelKey {
@@ -38,11 +38,11 @@ export const LEADERBOARD_PUBLIC_BOARDS = ["overall", "coding", "reasoning", "kno
 export type LeaderboardBoardKey = (typeof LEADERBOARD_PUBLIC_BOARDS)[number];
 
 export const LEADERBOARD_BOARD_LABELS: Record<LeaderboardBoardKey, string> = {
-  overall: "综合",
-  coding: "编程",
-  reasoning: "推理",
-  knowledge: "知识",
-  professional: "专业办公",
+  overall: "síntese",
+  coding: "Programação",
+  reasoning: "Raciocínio",
+  knowledge: "Conhecimento",
+  professional: "Trabalho profissional",
 };
 
 /** Article ids. Also the local-data import validation pattern. */

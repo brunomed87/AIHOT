@@ -92,7 +92,7 @@ async function confirmMerge(articleId: string, query: ReportView, cand: Candidat
 async function judgeSignal(articleId: string, query: ReportView, cands: CandidateView[]): Promise<{ verdicts: Map<number, Verdict>; receiptId: number }> {
   const res = await chatJson({
     model: await modelFor("group"), purpose: "group_signal", subject: `article:${articleId}`, promptVersion: RELATE_PROMPT_VERSION,
-    system: SIGNAL_SYSTEM, user: batchUser(query, cands, "帖子"), schema: SignalSchema, temperature: 0, maxTokens: 150 + 60 * cands.length,
+    system: SIGNAL_SYSTEM, user: batchUser(query, cands, "Publicação"), schema: SignalSchema, temperature: 0, maxTokens: 150 + 60 * cands.length,
   });
   return { verdicts: verdictsByFact(res.data.decisions, cands), receiptId: res.receiptId };
 }
@@ -169,7 +169,7 @@ async function resetAutomatic(articleId: string): Promise<number[]> {
       WHERE fa.article_id = ${articleId} AND NOT fa.manual AND fa.role IN ('primary', 'report') AND f.story_id IS NOT NULL`;
     const removed = await tx<{ fact_id: number }[]>`DELETE FROM fact_articles WHERE article_id = ${articleId} AND NOT manual RETURNING fact_id`;
     await tx`DELETE FROM story_signals WHERE article_id = ${articleId}`;
-    // 仅失效实际移走的自动归属，保留人工归属及其合法文字。
+    // Invalidar somente vínculos automáticos realmente removidos; preservar manuais e texto permitido.
     await invalidateStoryInputs(tx, [], new Date(), removed.map(r => r.fact_id));
     return left.map((r) => Number(r.story_id));
   });
@@ -187,7 +187,7 @@ async function redirectEmptiedStories(articleId: string, left: number[], storyId
       AND NOT EXISTS (SELECT 1 FROM facts f JOIN fact_articles fa ON fa.fact_id = f.id WHERE f.story_id = st.id AND fa.role IN ('primary', 'report'))`;
   const redirected: number[] = [];
   for (const { id } of emptied) {
-    if (await mergeStoryInto(Number(id), storyId, `报道已全部移走，旧地址跳到报道所在事件（最后一篇 ${articleId}）`, "grouping")) redirected.push(Number(id));
+    if (await mergeStoryInto(Number(id), storyId, `Todas as reportagens foram movidas; o endereço anterior redireciona ao acontecimento de destino da última reportagem ${articleId})`, "grouping")) redirected.push(Number(id));
   }
   return redirected;
 }
@@ -275,7 +275,7 @@ async function decide(articleId: string, opts: GroupOptions): Promise<GroupResul
 
   const [an] = await sql<{ id: number; relevance: string | null; title_zh: string | null; summary_zh: string | null; output: Record<string, any> | null }[]>`
     SELECT id, relevance, title_zh, summary_zh, output FROM analyses WHERE article_id = ${articleId} ORDER BY input_revision DESC, id DESC LIMIT 1`;
-  // 人工更正优先；旧analysis的事件框架不能把被改掉的主张重新带回来。
+  // Correção manual prevalece; estrutura de análise antiga não pode restaurar afirmação corrigida.
   const corrected = !!publication && (publication.title !== an?.title_zh || publication.summary !== an?.summary_zh);
   const frame = (corrected ? null : an?.output?.fact ?? null) as Record<string, any> | null;
   if (!an || an.relevance !== "pass") {
@@ -367,7 +367,7 @@ async function decide(articleId: string, opts: GroupOptions): Promise<GroupResul
         (SELECT id FROM analyses WHERE article_id=a.id ORDER BY input_revision DESC,id DESC LIMIT 1) AS analysis_id
       FROM articles a JOIN sources s ON s.id=a.source_id LEFT JOIN publications p ON p.article_id=a.id
       LEFT JOIN editorial_overrides o ON o.article_id=a.id WHERE a.id=${articleId}`;
-    // 与撤回共用article锁，来源隔离/合并共用成员锁；晚到模型不得创建旧文字副本。
+    // Bloqueio de artigo compartilhado com retirada e de membros com isolamento/mesclagem; resposta tardia não cria cópia antiga.
     if (!current || current.mode !== "editorial" || current.visibility !== "public" || current.revision !== a.revision ||
         current.analysis_id !== an.id || current.title !== (publication?.title ?? null) || current.summary !== (publication?.summary ?? null)) {
       return { manual: null, factId: null, storyId: null };

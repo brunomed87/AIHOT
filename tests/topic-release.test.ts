@@ -1,4 +1,4 @@
-// 真实发布路径配合可控时钟，保证主题统计、分页和缓存都在同一发布边界切换。
+// Publicação real com relógio controlado garante troca simultânea de estatísticas, paginação e cache no corte.
 import { tag } from "./setup.ts";
 import assert from "node:assert/strict";
 import { after, test } from "node:test";
@@ -48,7 +48,7 @@ function bounded(headers: Record<string, unknown>, deadline: number) {
   for (const [, seconds] of cc.matchAll(/(?:^|[, ])(?:max-age|s-maxage)=(\d+)/g)) assert.ok(Date.now() + Number(seconds) * 1000 <= deadline);
 }
 
-test("主题的真实发布、统计和缓存共享时间门槛", async (t) => {
+test("Publicação, estatísticas e cache de temas compartilham corte temporal", async (t) => {
   t.mock.timers.enable({ apis: ["Date"], now: START });
   assert.equal(config.selectedVisibleAfterSeconds, 180, "保留默认三分钟发布延迟");
   await sql`INSERT INTO sources(id,name,kind,tier,participation_mode,next_fetch_at) VALUES(${SOURCE},'主题测试','rss','T1','editorial','2100-01-01')`;
@@ -77,7 +77,7 @@ test("主题的真实发布、统计和缓存共享时间门槛", async (t) => {
   const beforeSitemap = await get("/sitemap.xml");
   const beforePage = await get(`/api/site/topics/${slug("page")}`);
 
-  await t.test("发布前不提前计数、索引或产生空分页", async () => {
+  await t.test("Antes da publicação não antecipa contagem, índice nem páginas vazias", async () => {
     assert.equal(beforeDirectory.statusCode, 200);
     const directory = beforeDirectory.json();
     assert.deepEqual([topic(directory, "page").total, topic(directory, "page").recent], [20, 20]);
@@ -95,7 +95,7 @@ test("主题的真实发布、统计和缓存共享时间门槛", async (t) => {
     assert.ok(entry.includes(`<lastmod>${new Date(START - DAY).toISOString()}</lastmod>`));
   });
 
-  await t.test("分类、重复标签、主体标签和非法页码保留原语义", async () => {
+  await t.test("Categorias, marcadores repetidos, instituições e páginas inválidas conservam semântica", async () => {
     const directory = beforeDirectory.json();
     assert.equal(topic(directory, "excluded").total, 1);
     assert.equal(topic(directory, "entity").total, 1);
@@ -104,7 +104,7 @@ test("主题的真实发布、统计和缓存共享时间门槛", async (t) => {
     assert.deepEqual([empty!.topic.total, empty!.pageCount, empty!.items.length], [0, 1, 0]);
   });
 
-  await t.test("预热响应及304的各层缓存截止不晚于发布时刻", async () => {
+  await t.test("Caches de respostas pré-carregadas e 304 vencem até a publicação", async () => {
     for (const response of [beforeDirectory, beforePage, beforeSitemap]) bounded(response.headers, RELEASE);
     for (const [url, previous] of [["/api/site/topics", beforeDirectory], [`/api/site/topics/${slug("page")}`, beforePage], ["/sitemap.xml", beforeSitemap]] as const) {
       const notModified = await get(url, String(previous.headers.etag));
@@ -113,7 +113,7 @@ test("主题的真实发布、统计和缓存共享时间门槛", async (t) => {
     }
   });
 
-  await t.test("固定visible_after在前1毫秒、恰好、后1毫秒一致切换", async () => {
+  await t.test("visible_after muda corretamente um milissegundo antes, no instante e depois", async () => {
     for (const [at, total] of [[RELEASE - 1, 20], [RELEASE, 21], [RELEASE + 1, 21]]) {
       t.mock.timers.setTime(at!);
       const page = (await get(`/api/site/topics/${slug("page")}`)).json();
@@ -126,7 +126,7 @@ test("主题的真实发布、统计和缓存共享时间门槛", async (t) => {
     }
   });
 
-  await t.test("发布时首次请求同步刷新目录和sitemap，不沿用旧ETag", async () => {
+  await t.test("Primeira consulta após publicação atualiza catálogo e sitemap sem ETag antigo", async () => {
     t.mock.timers.setTime(RELEASE);
     const directory = await get("/api/site/topics", String(beforeDirectory.headers.etag));
     assert.equal(directory.statusCode, 200);
@@ -140,7 +140,7 @@ test("主题的真实发布、统计和缓存共享时间门槛", async (t) => {
     assert.equal(unchanged!.visible_after.getTime(), RELEASE, "只推进时钟，不改发布数据");
   });
 
-  await t.test("最近30天采用严格边界，50篇不依赖近期文章", async () => {
+  await t.test("Janela de trinta dias usa limite estrito e cinquenta artigos independem de atualidade", async () => {
     t.mock.timers.setTime(RELEASE);
     const directory = (await get("/api/site/topics")).json();
     assert.deepEqual([topic(directory, "recent").total, topic(directory, "recent").recent, topic(directory, "recent").indexable], [20, 0, false]);
@@ -149,10 +149,10 @@ test("主题的真实发布、统计和缓存共享时间门槛", async (t) => {
     assert.equal(oldTime!.topic.total, 20, "显式时间不复用另一个时刻的缓存");
   });
 
-  await t.test("数据库失败时旧sitemap不重新取得新鲜寿命", async () => {
+  await t.test("Falha do banco não renova prazo de sitemap antigo", async () => {
     await get("/sitemap.xml");
     t.mock.timers.setTime(RELEASE + 3_600_001);
-    // 仅在专用测试库临时改名，finally恢复；不向产品代码添加失败开关。
+    // Renomeia temporariamente somente no banco exclusivo de teste e restaura em finally, sem chave de falha no produto.
     const hidden = `publications_${T}`;
     await sql`ALTER TABLE publications RENAME TO ${sql(hidden)}`;
     try {

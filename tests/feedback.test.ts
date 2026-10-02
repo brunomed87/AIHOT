@@ -54,7 +54,7 @@ async function submit(): Promise<{ id: number; file: string }> {
 const state = async (id: number) =>
   (await sql<{ forwarded: boolean; forward_error: string | null; screenshot_key: string | null }[]>`
     SELECT forwarded_at IS NOT NULL AS forwarded, forward_error, screenshot_key FROM feedback WHERE id = ${id}`)[0]!;
-const sentFor = (id: number) => feishu.sent.find((m) => m.title === `反馈 #${id}`);
+const sentFor = (id: number) => feishu.sent.find((m) => m.title === `Feedback #${id}`);
 const olderBy = (id: number, interval: string) => sql`UPDATE feedback SET created_at = now() - ${interval}::interval WHERE id = ${id}`;
 
 test("a failed screenshot upload keeps the feedback waiting, and the sweep sends it with the image", async () => {
@@ -93,7 +93,7 @@ test("a screenshot that cannot be uploaded for a day is dropped, and the text st
   feishu.uploadFails = false;
   assert.deepEqual({ ...(await state(id)) }, { forwarded: true, forward_error: null, screenshot_key: "gone:upload" });
   assert.ok(!existsSync(file), "no copy of the screenshot is kept");
-  assert.ok(JSON.stringify(sentFor(id)?.content).includes("截图未能上传"), "the chat is told the screenshot is missing");
+  assert.ok(JSON.stringify(sentFor(id)?.content).includes("captura excluída após falha no envio"), "the chat is told the screenshot is missing");
 });
 
 test("imported feedback that was never forwarded is not sent now", async () => {

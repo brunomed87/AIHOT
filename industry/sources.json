@@ -1,5 +1,5 @@
 {
-  "$comment": "示范信源：首次启动时导入（scripts/seed.ts），已存在的不会被覆盖。之后在后台“信源”里增删改。字段说明见 docs/customize.md。",
+  "$comment": "Fontes de exemplo importadas no primeiro início por scripts/seed.ts. Fontes existentes são preservadas. Depois, gerencie-as no painel Fontes. Campos explicados em docs/customize.md.",
   "sources": [
     {
       "id": "ms",
@@ -603,7 +603,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方"
+        "Oficial"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -624,7 +624,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方"
+        "Oficial"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -645,8 +645,8 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方",
-        "研究"
+        "Oficial",
+        "Pesquisa"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -667,8 +667,8 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方",
-        "开源"
+        "Oficial",
+        "Código aberto"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -689,8 +689,8 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方",
-        "研究"
+        "Oficial",
+        "Pesquisa"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -711,7 +711,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方"
+        "Oficial"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -732,8 +732,8 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方",
-        "教程"
+        "Oficial",
+        "Tutoriais"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -754,7 +754,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方"
+        "Oficial"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -775,7 +775,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方"
+        "Oficial"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -796,7 +796,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 180,
       "tags": [
-        "研究"
+        "Pesquisa"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -817,7 +817,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 60,
       "tags": [
-        "媒体"
+        "Imprensa"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -838,7 +838,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 60,
       "tags": [
-        "媒体"
+        "Imprensa"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -859,7 +859,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 60,
       "tags": [
-        "媒体"
+        "Imprensa"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -880,7 +880,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "媒体"
+        "Imprensa"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -901,7 +901,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 60,
       "tags": [
-        "媒体"
+        "Imprensa"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -922,7 +922,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "个人"
+        "Pessoal"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -943,8 +943,8 @@
       "participation_mode": "editorial",
       "interval_minutes": 180,
       "tags": [
-        "个人",
-        "周刊"
+        "Pessoal",
+        "Semanal"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -965,7 +965,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 180,
       "tags": [
-        "个人"
+        "Pessoal"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false

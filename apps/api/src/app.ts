@@ -17,8 +17,10 @@ import { registerStatic } from "./routes/static.ts";
 import { registerAgent } from "./routes/agent.ts";
 import { registerMcp } from "./routes/mcp.ts";
 import { sendProblem } from "./http/respond.ts";
+import { z } from "zod";
 
 export async function buildApp(): Promise<FastifyInstance> {
+  z.config(z.locales.ptBR());
   const app = Fastify({
     logger: { level: process.env.LOG_LEVEL || "info", redact: ["req.headers.authorization", "req.headers.cookie"] },
     // Access logs never record query strings (tokens, actors).
@@ -55,7 +57,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     if (decision) {
       for (const [k, v] of Object.entries(decision.headers)) reply.header(k, v);
       if (decision.location) return reply.code(decision.status).header("Location", decision.location).send();
-      return reply.code(decision.status).type("text/plain; charset=utf-8").send(decision.status === 410 ? "Gone" : "Not found");
+      return reply.code(decision.status).type("text/plain; charset=utf-8").send(decision.status === 410 ? "Gone" : "Não encontrado");
     }
   });
 
@@ -86,7 +88,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     if ((req.raw.url ?? "").startsWith("/api/")) {
       return sendProblem(req, reply, { status: 404, code: "not_found", detail: "No such endpoint." });
     }
-    return reply.code(404).type("text/plain; charset=utf-8").header("Cache-Control", "public, max-age=60").send("Not found");
+    return reply.code(404).type("text/plain; charset=utf-8").header("Cache-Control", "public, max-age=60").send("Não encontrado");
   });
 
   app.setErrorHandler((error, req, reply) => {

@@ -73,7 +73,7 @@ test("'by 8pm' stays a deadline and is expected from the announcement until shor
   const stated = resolveStatedTime({ precision: "deadline", relativeHours: null, period: null, clock: "20:00", clockThrough: null, dayOffset: null }, postAt)!;
   assert.equal(stated.precision, "deadline");
   const schedule = scheduleFrom(stated);
-  assert.match(schedule.label, /前$/);
+  assert.match(schedule.label, /até /);
   const estimate = estimateFor({ schedule, announcedAt: postAt });
   assert.equal(estimate.from, postAt.toISOString(), "from the announcement");
   assert.equal(Date.parse(estimate.through) - Date.parse(schedule.through), 3600_000, "an hour after the deadline");

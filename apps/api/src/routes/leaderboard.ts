@@ -21,7 +21,7 @@ export function registerLeaderboard(app: FastifyInstance) {
     });
 
   const notFound = (req: Parameters<typeof sendProblem>[0], reply: Parameters<typeof sendProblem>[1]) =>
-    sendProblem(req, reply, { status: 404, code: "not_found", detail: "not found", cacheControl: "public, max-age=60" });
+    sendProblem(req, reply, { status: 404, code: "not_found", detail: "Não encontrado", cacheControl: "public, max-age=60" });
 
   app.get("/api/site/leaderboard/boards/:key", guarded(async (req, reply) => {
     const key = (req.params as { key: string }).key;

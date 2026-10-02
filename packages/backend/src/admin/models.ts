@@ -1,4 +1,4 @@
-// Admin "模型与评测": the model each capability uses and where that choice comes from,
+// Painel Modelos e avaliação: modelo de cada capacidade e origem da escolha,
 // the prompt versions in use, quality / latency / cost of the last days per model, the switch history
 // and the SelectBench runs that compare models on the same batch. A switch is audited and applies to
 // new work only.
@@ -89,12 +89,12 @@ export async function modelsOverview(days = 7): Promise<BeforeJson<AdminModels>>
 /** Switches a capability to another registered model (or back to the environment/default when null). */
 export async function switchModel(capability: string, model: string | null, reason: string, actor: string) {
   const c = (CAPABILITIES as Record<string, Capability>)[capability];
-  if (!c) throw Object.assign(new Error("unknown capability"), { statusCode: 400 });
-  if (!reason.trim()) throw Object.assign(new Error("a reason is required"), { statusCode: 400 });
+  if (!c) throw Object.assign(new Error("Capacidade desconhecida"), { statusCode: 400 });
+  if (!reason.trim()) throw Object.assign(new Error("Informe um motivo"), { statusCode: 400 });
   if (model !== null) {
     const spec = MODELS[model];
-    if (!spec) throw Object.assign(new Error("unknown model"), { statusCode: 400 });
-    if (!!c.vision !== !!spec.vision) throw Object.assign(new Error(c.vision ? "this capability needs a vision model" : "a vision-only model cannot do this"), { statusCode: 400 });
+    if (!spec) throw Object.assign(new Error("Modelo desconhecido"), { statusCode: 400 });
+    if (!!c.vision !== !!spec.vision) throw Object.assign(new Error(c.vision ? "Esta capacidade requer um modelo com visão" : "Um modelo exclusivo de visão não atende a esta capacidade"), { statusCode: 400 });
   }
   const before = (await modelSources())[capability];
   if (model === null) await sql`DELETE FROM settings WHERE key = ${`models.${capability}`}`;
