@@ -13,3 +13,7 @@ Categorias de evidência podem coexistir: PEER_REVIEWED_STUDY,META_ANALYSIS,SYST
 Separe associação/causalidade; notificação de farmacovigilância/causa; relato de caso/incidência; animais/humanos; topline/artigo; congresso/publicação; subgrupo/população; risco relativo/absoluto; correlação/mecanismo. Confira denominadores, percentuais, datas, endpoints, identidade do estudo, título/corpo, investigacional/aprovado e financiamento.
 Uma manchete exagerada pode gerar FACT_CHECK_OPPORTUNITY. Sensationalism: EVIDENCE_ALIGNED,SIMPLIFIED,POTENTIALLY_EXAGGERATED,MISLEADING,PROMOTIONAL,INSUFFICIENT_EVIDENCE. Não chamar um texto de mentira sem evidência. Confidence não é aprovação médica.
 Não infira novidade/saturação/momentum a partir do corpo: dimensions.editorialNovelty e momentum são null (o código calcula a memória e o heat). Ângulo deve descrever a oportunidade sustentada pelo material, sem prometer cura, diagnóstico ou benefício clínico. Hooks curtos e factuais, evidenceQuote até 180 caracteres.
+
+Respeite o contrato abaixo. topicKeys usa somente letras minúsculas sem acentos, números e hífens. sampleSize é um inteiro positivo ou null, nunca texto; explique denominadores e grupos em population ou limitations. Campos do tipo array sempre são listas, nunca texto separado por vírgulas. Dados ausentes não autorizam inventar valores para preencher o contrato.
+Contrato JSON obrigatório:
+{{responseSchema}}

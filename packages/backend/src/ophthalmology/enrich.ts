@@ -15,8 +15,10 @@ const string = z.string().max(2000).nullable().default(null);
 const bool = z.boolean().nullable().default(null);
 const list = z.array(z.string().max(1000)).default([]);
 const score = z.number().min(0).max(100).nullable().default(null);
+const topicKey = z.preprocess(value => typeof value==='string' ? value.normalize('NFD').replace(/[\u0300-\u036f]/g,'') : value,
+  z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120));
 export const MedicalSchema = z.object({
-  editorialTitle: z.string().max(300), topicKeys: z.array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120)),
+  editorialTitle: z.string().max(300), topicKeys: z.array(topicKey),
   angle: z.string().max(500), specialties: list, classifications: list,
   dimensions: z.object({ medicalEvidence:score,publicInterest:score,ophthalmologyRelevance:score,editorialNovelty:score,momentum:score,
     patientUsefulness:score,reelPotential:score,carouselPotential:score,curiosity:score,factCheckPotential:score,authorityPositioning:score }),
@@ -37,7 +39,7 @@ export async function enrichMedical(row:EnrichmentInput):Promise<{ payload:Medic
   const [article]=await sql<{url:string}[]>`SELECT url FROM articles WHERE id=${row.id}`;
   const primary=await resolvePrimarySources(`${article?.url ?? ''}\n${row.body ?? ''}\n${row.html ?? ''}`);
   const res=await chatJson({ model:await modelFor('medical'), purpose:'ophthalmology_evidence',subject:`article:${row.id}`,
-    promptVersion:MEDICAL_VERSION,system:promptText('ophthalmology-evidence'),
+    promptVersion:MEDICAL_VERSION,system:promptText('ophthalmology-evidence',{responseSchema:JSON.stringify(z.toJSONSchema(MedicalSchema,{io:'output'}))}),
     user: JSON.stringify({ title:row.originalTitle, editorialTitle:row.title,summary:row.summary,body:row.body?.slice(0,25000),primaryCandidates:primary.sources }),
     schema:MedicalSchema,temperature:0,maxTokens:5000 });
   const { primarySourceUrls,...data }=res.data;
